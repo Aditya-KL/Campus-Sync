@@ -41,6 +41,9 @@ class _SplashScreenState extends State<SplashScreen> {
               Image.asset(
                 'assets/images/logo.png', // Hexagonal logo
                 width: 150,
+              errorBuilder: (context, error, stackTrace) {
+        return const Icon(Icons.broken_image, size: 100, color: Colors.red);
+        },
               )
               .animate()
               .fade(duration: 1000.ms)

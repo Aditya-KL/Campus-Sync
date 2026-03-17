@@ -1,0 +1,52 @@
+{
+  "__collections__": {
+    "timetables": {
+      "CSE_2024-2028": {
+        "Monday": [
+          { "subject": "CS2203: Artificial Intelligence", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+          { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+          { "subject": "MM2206: Structure & Properties of Materials", "time": "02:00 PM - 03:00 PM", "room": "R107" },
+          { "subject": "CS2204: IT Workshop", "time": "03:00 PM - 06:00 PM", "room": "CC Lab 1" }
+        ],
+        "Tuesday": [
+          { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+          { "subject": "CS2201: Formal Language and Automata", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+          { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" }
+        ],
+        "Wednesday": [
+          { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+          { "subject": "CS2201: Formal Language and Automata", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+          { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+          { "subject": "MM2206: Structure & Properties of Materials", "time": "02:00 PM - 03:00 PM", "room": "R107" },
+          { "subject": "CS2202: Database and Warehousing Lab", "time": "03:00 PM - 05:00 PM", "room": "CC Lab 1" }
+        ],
+        "Thursday": [
+          { "subject": "CS2201: Formal Language and Automata", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+          { "subject": "CS2202: Database and Warehousing", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+          { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+          { "subject": "CS2203: Artificial Intelligence Lab", "time": "03:00 PM - 06:00 PM", "room": "CC Lab 1" }
+        ],
+        "Friday": [
+          { "subject": "CS2206: Computer Architecture Lab", "time": "09:00 AM - 12:00 PM", "room": "Hardware Lab, CSE Dept" },
+          { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+          { "subject": "MM2206: Structure & Properties of Materials", "time": "02:00 PM - 03:00 PM", "room": "R107" }
+        ],
+        "Saturday": [],
+        "Sunday": []
+      }
+    },
+    "curriculum": {
+      "CSE_Sem4": {
+        "courses": [
+          { "code": "CS2201", "name": "Formal Language and Automata Theory", "credit": 3 },
+          { "code": "CS2202", "name": "Database and Warehousing", "credit": 4 },
+          { "code": "CS2203", "name": "Artificial Intelligence", "credit": 4.5 },
+          { "code": "CS2204", "name": "IT Workshop", "credit": 3 },
+          { "code": "CS2205", "name": "Computer Architecture", "credit": 4.5 },
+          { "code": "CS2209", "name": "IDE I (Introduction to Data Science)", "credit": 3 },
+          { "code": "MM2206", "name": "Structure & Properties of Materials", "credit": 3 }
+        ]
+      }
+    }
+  }
+}
