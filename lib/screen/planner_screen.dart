@@ -795,7 +795,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const TopActionButtons(unreadCount: 3),
+              const TopActionButtons(),
               const SizedBox(height: 18),
               // Add task button
               GestureDetector(

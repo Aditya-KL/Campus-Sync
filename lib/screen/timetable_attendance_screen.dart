@@ -29,7 +29,11 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
   // Full day names map for Firestore keys
   final List<String> _fullDayNames = [
-    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
   ];
 
   List<dynamic> _todayClasses = [];
@@ -40,8 +44,6 @@ class _TimetableScreenState extends State<TimetableScreen> {
   // 🟡 TIMETABLE SYNC LAYER
   // Separate in-memory cache for timetable_attendance UI state.
   // Key: "courseCode" → Value: Map<"Monday"/"Tuesday"/..., int (-1, 0, 1)>
-  // This is populated from Firestore on init and updated on every toggle.
-  // It NEVER touches the main 'attendance' collection.
   // =========================================================================
   Map<String, Map<String, int>> _timetableSyncCache = {};
 
@@ -52,119 +54,115 @@ class _TimetableScreenState extends State<TimetableScreen> {
     _initializeCoreDataAndCheckReset();
   }
 
-  // =========================================================================
-  // 🟡 HELPER: Get the current UI status for a course on the selected day
-  // Returns: 1 (Present), -1 (Absent), 0 (Not Marked)
-  // =========================================================================
   int _getTimetableSyncStatus(String courseCode) {
     String dayName = _fullDayNames[_selectedDayIndex];
     return _timetableSyncCache[courseCode]?[dayName] ?? 0;
   }
 
   // =========================================================================
-  // 🟡 HELPER: Write a single status update to the timetable_attendance
-  // collection. This is completely isolated from the main attendance data.
-  // Path: timetable_attendance/{uid}/{courseCode} → {dayName: status}
+  // 🟡 ATTENDANCE PATH: timetable_attendance/{uid}/attendance/{courseCode}
   // =========================================================================
+
+  // ── Ref helpers ─────────────────────────────────────────────
+  CollectionReference<Map<String, dynamic>> _attendanceCol(String uid) =>
+      FirebaseFirestore.instance
+          .collection('timetable_attendance') // 🔥 Root collection!
+          .doc(uid)
+          .collection('attendance'); // 🔥 Subcollection!
+
+  DocumentReference<Map<String, dynamic>> _attendanceDoc(
+    String uid,
+    String courseCode,
+  ) => _attendanceCol(uid).doc(courseCode);
+
+  // ── Write day-toggle status ───
   Future<void> _writeTimetableSyncStatus(
-      String uid, String courseCode, String dayName, int status) async {
-    // Clamp to valid values only: -1, 0, 1
-    assert(status == -1 || status == 0 || status == 1,
-        "Invalid timetable sync status: $status");
+    String uid,
+    String courseCode,
+    String dayName,
+    int status,
+  ) async {
+    assert(
+      status == -1 || status == 0 || status == 1,
+      "Invalid timetable sync status: $status",
+    );
+    await _attendanceDoc(
+      uid,
+      courseCode,
+    ).set({dayName: status}, SetOptions(merge: true));
+  }
 
-    await FirebaseFirestore.instance
-        .collection('timetable_attendance')
-        .doc(uid)
-        .collection('courses')
-        .doc(courseCode)
-        .set({dayName: status}, SetOptions(merge: true));
+  // ── Write attended/total to course doc ──
+  Future<void> _writeAttendance(
+    String uid,
+    String courseCode,
+    int attended,
+    int total,
+  ) async {
+    await _attendanceDoc(
+      uid,
+      courseCode,
+    ).set({'attended': attended, 'total': total}, SetOptions(merge: true));
   }
 
   // =========================================================================
-  // 🟡 LOAD: Read the full timetable_attendance doc for this user into cache.
-  // Called once during init (after weekly reset check).
-  // =========================================================================
-  Future<void> _loadTimetableSyncCache(String uid) async {
-    final coursesSnap = await FirebaseFirestore.instance
-        .collection('timetable_attendance')
-        .doc(uid)
-        .collection('courses')
-        .get();
-
-    Map<String, Map<String, int>> cache = {};
-    for (final doc in coursesSnap.docs) {
-      final data = doc.data();
-      Map<String, int> dayMap = {};
-      for (final day in _fullDayNames) {
-        int raw = (data[day] ?? 0) as int;
-        // Sanitize: only allow -1, 0, 1
-        dayMap[day] = (raw == 1 || raw == -1) ? raw : 0;
-      }
-      cache[doc.id] = dayMap;
-    }
-
-    if (mounted) setState(() => _timetableSyncCache = cache);
-  }
-
-  // =========================================================================
-  // 🟡 WEEKLY RESET (Timetable Sync ONLY)
-  // Runs every Sunday midnight → sets all course/day values to 0.
-  // Does NOT touch the main 'attendance' field on the student document.
+  // 🟡 WEEKLY RESET
   // =========================================================================
   Future<void> _checkAndResetTimetableSyncIfNeeded(String uid) async {
     final db = FirebaseFirestore.instance;
-    final tsDocRef = db.collection('timetable_attendance').doc(uid);
+    final metaRef = db
+        .collection('timetable_attendance')
+        .doc(uid)
+        .collection('meta')
+        .doc('attendance_prefs');
+    final metaDoc = await _getCached(metaRef);
 
-    // Cache-first: last_reset_timestamp rarely changes, safe to read from cache
-    final tsDoc = await _getCached(tsDocRef);
+    final now = DateTime.now();
+    final int daysSinceMonday = now.weekday - 1;
+    final DateTime thisWeekMondayMidnight = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: daysSinceMonday));
 
-    DateTime now = DateTime.now();
-    int daysSinceSunday = now.weekday == 7 ? 0 : now.weekday;
-    DateTime lastSundayMidnight = DateTime(now.year, now.month, now.day)
-        .subtract(Duration(days: daysSinceSunday));
-
-    Timestamp? lastResetTs = tsDoc.data()?['last_reset_timestamp'];
-    DateTime lastReset =
+    final Timestamp? lastResetTs = metaDoc.data()?['last_reset_timestamp'];
+    final lastReset =
         lastResetTs?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
 
-    if (lastReset.isBefore(lastSundayMidnight)) {
-      // New week — must fetch courses from server to wipe them accurately
-      final coursesSnap = await db
-          .collection('timetable_attendance')
-          .doc(uid)
-          .collection('courses')
-          .get(const GetOptions(source: Source.server));
+    if (lastReset.isBefore(thisWeekMondayMidnight)) {
+      final attendanceSnap = await _attendanceCol(
+        uid,
+      ).get(const GetOptions(source: Source.server));
 
-      final WriteBatch batch = db.batch();
-      final Map<String, int> resetDayMap = {
-        for (var d in _fullDayNames) d: 0,
-      };
-      for (final doc in coursesSnap.docs) {
-        batch.set(doc.reference, resetDayMap, SetOptions(merge: false));
+      final batch = db.batch();
+      final Map<String, int> resetDays = {for (final d in _fullDayNames) d: 0};
+      for (final doc in attendanceSnap.docs) {
+        batch.set(doc.reference, resetDays, SetOptions(merge: true));
       }
-      batch.set(tsDocRef, {
+      batch.set(metaRef, {
         'last_reset_timestamp': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       await batch.commit();
 
       if (mounted) setState(() => _timetableSyncCache = {});
-      if (mounted) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          CustomTopToast.show(
-              context, "Timetable sync reset for the new week! 📅", primaryYellow);
-        });
-      }
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!mounted) return;
+        CustomTopToast.show(
+          context,
+          "Timetable sync reset for the new week! 📅",
+          primaryYellow,
+        );
+      });
     }
   }
 
   // =========================================================================
   // 🚀 CACHE-FIRST HELPERS
-  // Try Firestore local cache first (instant on revisit), fall back to
-  // server only on a cache miss. Requires persistenceEnabled: true in main.dart
   // =========================================================================
   Future<DocumentSnapshot<Map<String, dynamic>>> _getCached(
-      DocumentReference<Map<String, dynamic>> ref) async {
+    DocumentReference<Map<String, dynamic>> ref,
+  ) async {
     try {
       return await ref.get(const GetOptions(source: Source.cache));
     } catch (_) {
@@ -173,7 +171,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> _getQueryCached(
-      Query<Map<String, dynamic>> query) async {
+    Query<Map<String, dynamic>> query,
+  ) async {
     try {
       return await query.get(const GetOptions(source: Source.cache));
     } catch (_) {
@@ -182,16 +181,20 @@ class _TimetableScreenState extends State<TimetableScreen> {
   }
 
   // =========================================================================
-  // 🔴 1. INITIALIZATION & STRICT WEEKLY RESET (Main Attendance)
+  // 🔴 1. INITIALIZATION & STRICT WEEKLY RESET
   // =========================================================================
   int _calculateCurrentSemester(String roll) {
     if (roll.length < 4) return 1;
     int joinYear = 2000 + (int.tryParse(roll.substring(0, 2)) ?? 24);
-    DateTime joinDate = DateTime(joinYear, 7, 1);
     DateTime now = DateTime.now();
-    int monthsElapsed =
-        (now.year - joinDate.year) * 12 + now.month - joinDate.month;
-    return monthsElapsed < 0 ? 1 : (monthsElapsed / 6).floor() + 1;
+    int yearsDifference = now.year - joinYear;
+    int semester;
+    if (now.month >= 7) {
+      semester = (yearsDifference * 2) + 1;
+    } else {
+      semester = (yearsDifference * 2);
+    }
+    return semester < 1 ? 1 : semester;
   }
 
   String _extractCourseCode(String subjectStr) =>
@@ -207,9 +210,11 @@ class _TimetableScreenState extends State<TimetableScreen> {
       if (user == null) return;
 
       final db = FirebaseFirestore.instance;
+
+      // Note: We still need to read the student doc once just to get their Branch and Roll Number!
       final userDocRef = db.collection('students').doc(user.uid);
 
-      // ── Step 1: student doc (cache-first — branch/rollNo needed for paths) ──
+      // ── Step 1: student doc (cache-first) ──
       final userDoc = await _getCached(userDocRef);
       if (!userDoc.exists) return;
 
@@ -217,62 +222,34 @@ class _TimetableScreenState extends State<TimetableScreen> {
       final String rollNo = userDoc.data()?['rollNo'] ?? "2401cs80";
       _currentSemester = _calculateCurrentSemester(rollNo);
 
-      // ── Main attendance weekly reset (needs fresh server data) ──────────
-      DateTime now = DateTime.now();
-      int daysSinceSunday = now.weekday == 7 ? 0 : now.weekday;
-      DateTime lastSundayMidnight = DateTime(now.year, now.month, now.day)
-          .subtract(Duration(days: daysSinceSunday));
-
-      Timestamp? lastResetTs = userDoc.data()?['last_reset_timestamp'];
-      DateTime lastReset =
-          lastResetTs?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
-
-      if (lastReset.isBefore(lastSundayMidnight)) {
-        Map<String, dynamic> rawAtt = userDoc.data()?['attendance'] ?? {};
-        Map<String, Map<String, int>> resetStats = {};
-        rawAtt.forEach((key, _) {
-          resetStats[key] = {'attended': 0, 'total': 0};
-        });
-        await userDocRef.update({
-          'attendance': resetStats,
-          'last_reset_timestamp': FieldValue.serverTimestamp(),
-        });
-        if (mounted) {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            CustomTopToast.show(
-                context, "Attendance reset for the new week! 📅", primaryYellow);
-          });
-        }
-      }
-
-      // ── Timetable sync weekly reset (independent) ───────────────────────
+      // ── Weekly reset check ──
       await _checkAndResetTimetableSyncIfNeeded(user.uid);
 
-      // ── Step 2: build paths, then fire timetable + curriculum IN PARALLEL ──
-      int startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
-      int duration = (rollNo.length >= 4 &&
-              (rollNo.substring(2, 4) == '02' || rollNo.substring(2, 4) == '03'))
+      // ── Step 2: build paths, fire IN PARALLEL ──
+      final int startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
+      final int duration =
+          (rollNo.length >= 4 &&
+              (rollNo.substring(2, 4) == '02' ||
+                  rollNo.substring(2, 4) == '03'))
           ? 5
           : 4;
       final String batchId = "$startYear-${startYear + duration}";
       final String timetableDocId = "${branch.toUpperCase()}_$batchId";
-      final String curriculumDocId = "${branch.toUpperCase()}_Sem$_currentSemester";
+      final String curriculumDocId =
+          "${branch.toUpperCase()}_Sem$_currentSemester";
 
       final results = await Future.wait([
         // [0] timetable doc (cache-first)
         _getCached(db.collection('timetables').doc(timetableDocId)),
         // [1] curriculum doc (cache-first)
         _getCached(db.collection('curriculum').doc(curriculumDocId)),
-        // [2] timetable sync cache (cache-first query)
-        _getQueryCached(db
-            .collection('timetable_attendance')
-            .doc(user.uid)
-            .collection('courses') as Query<Map<String, dynamic>>),
+        // [2] attendance subcollection
+        _getQueryCached(_attendanceCol(user.uid)),
       ]);
 
       final timetableDoc = results[0] as DocumentSnapshot<Map<String, dynamic>>;
-      final currDoc      = results[1] as DocumentSnapshot<Map<String, dynamic>>;
-      final syncSnap     = results[2] as QuerySnapshot<Map<String, dynamic>>;
+      final currDoc = results[1] as DocumentSnapshot<Map<String, dynamic>>;
+      final attendanceSnap = results[2] as QuerySnapshot<Map<String, dynamic>>;
 
       if (timetableDoc.exists) {
         _todayClasses =
@@ -283,16 +260,78 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
       if (currDoc.exists) {
         _myCourses = List<Map<String, dynamic>>.from(
-            currDoc.data()?['courses'] ?? []);
+          currDoc.data()?['courses'] ?? [],
+        );
       }
 
-      // ── Build timetable sync cache from query snapshot ──────────────────
+      // ── 🔥 THE SMART SKELETON BUILDER FOR FIRST-TIME USERS ──
+      if (attendanceSnap.docs.isEmpty && _myCourses.isNotEmpty) {
+        debugPrint("First time user detected! Building smart attendance skeleton...");
+        final batch = db.batch();
+        
+        // 1. Analyze the timetable to see which courses happen on which days
+        Map<String, Set<String>> courseSchedule = {};
+        if (timetableDoc.exists && timetableDoc.data() != null) {
+          final ttData = timetableDoc.data()!;
+          for (String day in _fullDayNames) {
+            final dayClasses = (ttData[day] as List<dynamic>?) ?? [];
+            for (var cls in dayClasses) {
+              String subject = cls['subject'] as String? ?? '';
+              String code = _extractCourseCode(subject);
+              if (code.isNotEmpty) {
+                courseSchedule.putIfAbsent(code, () => {}).add(day);
+              }
+            }
+          }
+        }
+
+        Map<String, Map<String, int>> freshCache = {};
+        
+        // 2. Build tailored documents based on the schedule
+        for (var course in _myCourses) {
+          String code = course['code'] ?? 'UNK';
+          if (code != 'UNK') {
+            final docRef = _attendanceCol(user.uid).doc(code);
+            
+            // Check which days this specific course is taught
+            Set<String> daysForThisCourse = courseSchedule[code] ?? {};
+            
+            Map<String, dynamic> initialData = {
+              'attended': 0,
+              'total': 0,
+            };
+            Map<String, int> initialCache = {};
+
+            // Only create day fields if the class actually happens on that day
+            for (String day in daysForThisCourse) {
+              initialData[day] = 0;
+              initialCache[day] = 0;
+            }
+
+            batch.set(docRef, initialData);
+            freshCache[code] = initialCache;
+          }
+        }
+        
+        await batch.commit(); 
+        debugPrint("✅ Smart skeleton profile created successfully.");
+        
+        setState(() {
+          _timetableSyncCache = freshCache;
+          _isLoading = false;
+        });
+        
+        return; 
+      }
+      // ────────────────────────────────────────────────────────
+
+      // ── Build timetable sync cache from existing attendance snapshot ──
       Map<String, Map<String, int>> syncCache = {};
-      for (final doc in syncSnap.docs) {
+      for (final doc in attendanceSnap.docs) {
         final data = doc.data();
         Map<String, int> dayMap = {};
         for (final day in _fullDayNames) {
-          int raw = (data[day] ?? 0) as int;
+          final raw = (data[day] ?? 0) as int;
           dayMap[day] = (raw == 1 || raw == -1) ? raw : 0;
         }
         syncCache[doc.id] = dayMap;
@@ -302,7 +341,6 @@ class _TimetableScreenState extends State<TimetableScreen> {
         _timetableSyncCache = syncCache;
         _isLoading = false;
       });
-
     } catch (e) {
       debugPrint("Timetable Init Error: $e");
       setState(() => _isLoading = false);
@@ -314,24 +352,23 @@ class _TimetableScreenState extends State<TimetableScreen> {
     if (user == null) return;
 
     final db = FirebaseFirestore.instance;
-
-    // Student doc comes from cache (branch/rollNo never change mid-session)
     final userDoc = await _getCached(db.collection('students').doc(user.uid));
     if (!userDoc.exists) return;
 
     final String branch = userDoc.data()?['branch'] ?? "CSE";
     final String rollNo = userDoc.data()?['rollNo'] ?? "2401cs80";
     final int startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
-    final int duration = (rollNo.length >= 4 &&
+    final int duration =
+        (rollNo.length >= 4 &&
             (rollNo.substring(2, 4) == '02' || rollNo.substring(2, 4) == '03'))
         ? 5
         : 4;
-    final String batchId      = "$startYear-${startYear + duration}";
+    final String batchId = "$startYear-${startYear + duration}";
     final String timetableDocId = "${branch.toUpperCase()}_$batchId";
 
-    // Timetable doc: cache-first (same doc, different day field access)
-    final timetableDoc = await _getCached(db.collection('timetables')
-        .doc(timetableDocId));
+    final timetableDoc = await _getCached(
+      db.collection('timetables').doc(timetableDocId),
+    );
 
     setState(() {
       _todayClasses = timetableDoc.exists
@@ -342,16 +379,22 @@ class _TimetableScreenState extends State<TimetableScreen> {
   }
 
   // =========================================================================
-  // 🔴 2. FUTURE FIREWALL & REAL-TIME CLOUD SYNC LOGIC
-  // Now also syncs timetable_attendance as a separate, non-interfering layer.
+  // 🔴 2. REAL-TIME CLOUD SYNC LOGIC
   // =========================================================================
-  void _handleAttendanceToggle(Map<String, dynamic> currentAttendanceData,
-      String subjectStr, String time, String action) {
+  void _handleAttendanceToggle(
+    Map<String, dynamic> currentAttendanceData,
+    String subjectStr,
+    String time,
+    String action,
+  ) {
     // FIREWALL: Block Future Dates
     int currentRealDayIndex = DateTime.now().weekday - 1;
     if (currentRealDayIndex < 5 && _selectedDayIndex > currentRealDayIndex) {
       CustomTopToast.show(
-          context, "Cannot mark attendance for future dates! 🚫", dangerRed);
+        context,
+        "Cannot mark attendance for future dates! 🚫",
+        dangerRed,
+      );
       return;
     }
 
@@ -361,19 +404,15 @@ class _TimetableScreenState extends State<TimetableScreen> {
     String code = _extractCourseCode(subjectStr);
     String dayName = _fullDayNames[_selectedDayIndex];
 
-    // --- Read current timetable sync status from local cache ---
     int currentSyncStatus = _getTimetableSyncStatus(code);
-
-    // --- Determine new timetable sync status ---
     int newSyncStatus;
+
     if (action == 'present') {
       newSyncStatus = currentSyncStatus == 1 ? 0 : 1;
     } else {
-      // action == 'absent'
       newSyncStatus = currentSyncStatus == -1 ? 0 : -1;
     }
 
-    // --- 1. UPDATE MAIN ATTENDANCE DATABASE (original logic, unchanged) ---
     Map<String, dynamic> courseAtt =
         currentAttendanceData[code] ?? {'attended': 0, 'total': 0};
     int att = (courseAtt['attended'] ?? 0) as int;
@@ -381,58 +420,43 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
     if (action == 'present') {
       if (currentSyncStatus == 1) {
-        // Was present → undo
         att--;
         tot--;
         CustomTopToast.show(context, "Removed 'Present' mark.", textGrey);
       } else if (currentSyncStatus == -1) {
-        // Was absent → switch to present
         att++;
         CustomTopToast.show(context, "Changed to Present! 🎉", successGreen);
       } else {
-        // Was unmarked → mark present
         att++;
         tot++;
         CustomTopToast.show(context, "Marked Present! 🎉", successGreen);
       }
     } else if (action == 'absent') {
       if (currentSyncStatus == -1) {
-        // Was absent → undo
         tot--;
         CustomTopToast.show(context, "Removed 'Absent' mark.", textGrey);
       } else if (currentSyncStatus == 1) {
-        // Was present → switch to absent
         att--;
         CustomTopToast.show(context, "Changed to Absent. 📉", dangerRed);
       } else {
-        // Was unmarked → mark absent
         tot++;
         CustomTopToast.show(context, "Marked Absent. 📉", dangerRed);
       }
     }
 
-    // Safety Bounds
     if (att < 0) att = 0;
     if (tot < att) tot = att;
 
-    // Push main attendance update
-    FirebaseFirestore.instance
-        .collection('students')
-        .doc(user.uid)
-        .update({
-      'attendance.$code': {'attended': att, 'total': tot},
-      'last_updated_timestamp': FieldValue.serverTimestamp(),
-    });
-
-    // --- 2. UPDATE TIMETABLE SYNC LAYER (separate, isolated write) ---
-    // Update local cache first for instant UI response
     setState(() {
       _timetableSyncCache[code] ??= {};
       _timetableSyncCache[code]![dayName] = newSyncStatus;
     });
 
-    // Persist to Firestore timetable_attendance (fire-and-forget, non-blocking)
-    _writeTimetableSyncStatus(user.uid, code, dayName, newSyncStatus);
+    _attendanceDoc(user.uid, code).set({
+      'attended': att,
+      'total': tot,
+      dayName: newSyncStatus,
+    }, SetOptions(merge: true));
   }
 
   // =========================================================================
@@ -447,17 +471,21 @@ class _TimetableScreenState extends State<TimetableScreen> {
       body: Stack(
         children: [
           Positioned(
-              top: -60,
-              right: -40,
-              child: CircleAvatar(
-                  radius: 140,
-                  backgroundColor: primaryYellow.withOpacity(0.35))),
+            top: -60,
+            right: -40,
+            child: CircleAvatar(
+              radius: 140,
+              backgroundColor: primaryYellow.withOpacity(0.35),
+            ),
+          ),
           Positioned(
-              bottom: -30,
-              right: -20,
-              child: CircleAvatar(
-                  radius: 130,
-                  backgroundColor: primaryYellow.withOpacity(0.15))),
+            bottom: -30,
+            right: -20,
+            child: CircleAvatar(
+              radius: 130,
+              backgroundColor: primaryYellow.withOpacity(0.15),
+            ),
+          ),
           SafeArea(
             bottom: false,
             child: Column(
@@ -467,25 +495,32 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 const SizedBox(height: 16),
                 if (_isLoading || user == null)
                   Expanded(
-                      child: Center(
-                          child: CircularProgressIndicator(
-                              color: primaryYellow)))
+                    child: Center(
+                      child: CircularProgressIndicator(color: primaryYellow),
+                    ),
+                  )
                 else
                   Expanded(
-                    child: StreamBuilder<DocumentSnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('students')
-                          .doc(user.uid)
-                          .snapshots(),
+                    // 🔥 Stream from the new Attendance subcollection
+                    child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: _attendanceCol(user.uid).snapshots(),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
                           return Center(
-                              child: CircularProgressIndicator(
-                                  color: primaryYellow));
+                            child: CircularProgressIndicator(
+                              color: primaryYellow,
+                            ),
+                          );
                         }
 
-                        Map<String, dynamic> liveAttendance =
-                            snapshot.data?.get('attendance') ?? {};
+                        final Map<String, dynamic> liveAttendance = {};
+                        for (final doc in snapshot.data!.docs) {
+                          final d = doc.data();
+                          liveAttendance[doc.id] = {
+                            'attended': (d['attended'] ?? 0) as int,
+                            'total': (d['total'] ?? 0) as int,
+                          };
+                        }
 
                         return Column(
                           children: [
@@ -494,30 +529,34 @@ class _TimetableScreenState extends State<TimetableScreen> {
                               child: _todayClasses.isEmpty
                                   ? Center(
                                       child: Text(
-                                          "No classes scheduled today! 🎉",
-                                          style: TextStyle(
-                                              color: textGrey,
-                                              fontWeight: FontWeight.bold)))
+                                        "No classes scheduled today! 🎉",
+                                        style: TextStyle(
+                                          color: textGrey,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    )
                                   : ListView.builder(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 24),
-                                      physics:
-                                          const BouncingScrollPhysics(),
+                                        horizontal: 24,
+                                      ),
+                                      physics: const BouncingScrollPhysics(),
                                       itemCount: _todayClasses.length,
                                       itemBuilder: (context, index) {
                                         final cls = _todayClasses[index];
                                         return _buildClassCard(
-                                            liveAttendance,
-                                            cls['subject'],
-                                            cls['time'],
-                                            cls['room']);
+                                          liveAttendance,
+                                          cls['subject'],
+                                          cls['time'],
+                                          cls['room'],
+                                        );
                                       },
                                     ),
                             ),
                             Expanded(
-                                flex: 5,
-                                child: _buildAttendanceSection(
-                                    liveAttendance)),
+                              flex: 5,
+                              child: _buildAttendanceSection(liveAttendance),
+                            ),
                           ],
                         );
                       },
@@ -543,26 +582,35 @@ class _TimetableScreenState extends State<TimetableScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Weekly",
-                  style: TextStyle(
-                      fontSize: 31,
-                      fontWeight: FontWeight.w900,
-                      color: textBlack,
-                      letterSpacing: -0.5)),
-              Text("Schedule",
-                  style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: primaryYellow)),
+              Text(
+                "Weekly",
+                style: TextStyle(
+                  fontSize: 31,
+                  fontWeight: FontWeight.w900,
+                  color: textBlack,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              Text(
+                "Schedule",
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: primaryYellow,
+                ),
+              ),
               const SizedBox(height: 6),
-              Text("Manage your attendance",
-                  style: TextStyle(
-                      fontSize: 13,
-                      color: textGrey,
-                      fontWeight: FontWeight.w600)),
+              Text(
+                "Manage your attendance",
+                style: TextStyle(
+                  fontSize: 13,
+                  color: textGrey,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
-          const TopActionButtons(unreadCount: 2),
+          const TopActionButtons(),
         ],
       ),
     );
@@ -589,25 +637,30 @@ class _TimetableScreenState extends State<TimetableScreen> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
-                  color: isSelected ? primaryYellow : surfaceWhite,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                              color: primaryYellow.withOpacity(0.4),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4))
-                        ]
-                      : []),
+                color: isSelected ? primaryYellow : surfaceWhite,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: primaryYellow.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : [],
+              ),
               child: Center(
-                  child: Text(_days[index],
-                      style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: isSelected ? textBlack : textGrey,
-                          fontSize: 14))),
+                child: Text(
+                  _days[index],
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: isSelected ? textBlack : textGrey,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ),
           );
         },
@@ -615,19 +668,15 @@ class _TimetableScreenState extends State<TimetableScreen> {
     );
   }
 
-  // =========================================================================
-  // 🟡 TIMETABLE SYNC: _buildClassCard reads from _timetableSyncCache
-  // instead of _sessionMarkedStatus. The UI reflects:
-  //   1  → present button highlighted green
-  //  -1  → absent button highlighted red
-  //   0  → both buttons neutral
-  // =========================================================================
-  Widget _buildClassCard(Map<String, dynamic> liveAttendance, String subject,
-      String time, String room) {
+  Widget _buildClassCard(
+    Map<String, dynamic> liveAttendance,
+    String subject,
+    String time,
+    String room,
+  ) {
     String code = _extractCourseCode(subject);
     String name = _extractCourseName(subject);
 
-    // 🟡 Read from timetable sync cache (not session map)
     int syncStatus = _getTimetableSyncStatus(code);
     bool isPresent = syncStatus == 1;
     bool isAbsent = syncStatus == -1;
@@ -636,38 +685,45 @@ class _TimetableScreenState extends State<TimetableScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: surfaceWhite,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 4))
-          ]),
+        color: surfaceWhite,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
-                color: primaryYellow.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(16)),
+              color: primaryYellow.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
               children: [
-                Text(time.split(" - ")[0],
-                    style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        color: textBlack,
-                        fontSize: 13)),
+                Text(
+                  time.split(" - ")[0],
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    color: textBlack,
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Icon(Icons.arrow_downward_rounded,
-                    size: 12, color: darkYellow),
+                Icon(Icons.arrow_downward_rounded, size: 12, color: darkYellow),
                 const SizedBox(height: 2),
-                Text(time.split(" - ")[1],
-                    style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        color: textBlack,
-                        fontSize: 13)),
+                Text(
+                  time.split(" - ")[1],
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    color: textBlack,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
@@ -676,77 +732,97 @@ class _TimetableScreenState extends State<TimetableScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(code,
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        color: darkYellow,
-                        letterSpacing: 0.5)),
+                Text(
+                  code,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    color: darkYellow,
+                    letterSpacing: 0.5,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(name,
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: textBlack,
-                        height: 1.1)),
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: textBlack,
+                    height: 1.1,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.location_on_rounded,
-                        size: 14, color: textGrey),
+                    Icon(Icons.location_on_rounded, size: 14, color: textGrey),
                     const SizedBox(width: 4),
-                    Text(room,
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: textGrey)),
+                    Text(
+                      room,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: textGrey,
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          // 🟡 Buttons driven by timetable sync status (-1, 0, 1)
           Container(
-            padding:
-                const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             decoration: BoxDecoration(
-                color: backgroundGrey,
-                borderRadius: BorderRadius.circular(20)),
+              color: backgroundGrey,
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Column(
               children: [
                 GestureDetector(
                   onTap: () => _handleAttendanceToggle(
-                      liveAttendance, subject, time, 'present'),
+                    liveAttendance,
+                    subject,
+                    time,
+                    'present',
+                  ),
                   child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          color: isPresent
-                              ? successGreen
-                              : Colors.transparent,
-                          shape: BoxShape.circle),
-                      child: Icon(Icons.check_rounded,
-                          size: 18,
-                          color: isPresent ? Colors.white : textGrey)),
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isPresent ? successGreen : Colors.transparent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.check_rounded,
+                      size: 18,
+                      color: isPresent ? Colors.white : textGrey,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 GestureDetector(
                   onTap: () => _handleAttendanceToggle(
-                      liveAttendance, subject, time, 'absent'),
+                    liveAttendance,
+                    subject,
+                    time,
+                    'absent',
+                  ),
                   child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          color:
-                              isAbsent ? dangerRed : Colors.transparent,
-                          shape: BoxShape.circle),
-                      child: Icon(Icons.close_rounded,
-                          size: 18,
-                          color: isAbsent ? Colors.white : textGrey)),
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isAbsent ? dangerRed : Colors.transparent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: isAbsent ? Colors.white : textGrey,
+                    ),
+                  ),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -758,19 +834,20 @@ class _TimetableScreenState extends State<TimetableScreen> {
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-            colors: [
-              const Color(0xFFFDFDFD),
-              const Color(0xFFF5F6F8)
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter),
+          colors: [const Color(0xFFFDFDFD), const Color(0xFFF5F6F8)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(36), topRight: Radius.circular(36)),
+          topLeft: Radius.circular(36),
+          topRight: Radius.circular(36),
+        ),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 16,
-              offset: const Offset(0, -4))
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
         ],
       ),
       child: Column(
@@ -779,26 +856,34 @@ class _TimetableScreenState extends State<TimetableScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Live Attendance",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: textBlack)),
+              Text(
+                "Live Attendance",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: textBlack,
+                ),
+              ),
               Container(
                 decoration: BoxDecoration(
-                    color: primaryYellow,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                          color: primaryYellow.withOpacity(0.4),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4))
-                    ]),
+                  color: primaryYellow,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryYellow.withOpacity(0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: IconButton(
-                    icon: Icon(Icons.edit_note_rounded,
-                        size: 22, color: textBlack),
-                    onPressed: () =>
-                        _openEditAttendanceDialog(liveAttendance)),
+                  icon: Icon(
+                    Icons.edit_note_rounded,
+                    size: 22,
+                    color: textBlack,
+                  ),
+                  onPressed: () => _openEditAttendanceDialog(liveAttendance),
+                ),
               ),
             ],
           ),
@@ -806,10 +891,14 @@ class _TimetableScreenState extends State<TimetableScreen> {
           Expanded(
             child: _myCourses.isEmpty
                 ? Center(
-                    child: Text("No courses found.",
-                        style: TextStyle(
-                            color: textGrey,
-                            fontWeight: FontWeight.bold)))
+                    child: Text(
+                      "No courses found.",
+                      style: TextStyle(
+                        color: textGrey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
                 : BarChart(
                     BarChartData(
                       alignment: BarChartAlignment.spaceAround,
@@ -817,118 +906,123 @@ class _TimetableScreenState extends State<TimetableScreen> {
                       barTouchData: BarTouchData(
                         enabled: false,
                         touchTooltipData: BarTouchTooltipData(
-                          getTooltipColor: (group) =>
-                              Colors.transparent,
+                          getTooltipColor: (group) => Colors.transparent,
                           tooltipPadding: EdgeInsets.zero,
                           tooltipMargin: 4,
-                          getTooltipItem:
-                              (group, groupIndex, rod, rodIndex) {
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
                             String val = rod.toY == 0
                                 ? "0%"
                                 : "${rod.toY.round()}%";
                             return BarTooltipItem(
-                                val,
-                                TextStyle(
-                                    color: textBlack,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 11));
+                              val,
+                              TextStyle(
+                                color: textBlack,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 11,
+                              ),
+                            );
                           },
                         ),
                       ),
                       titlesData: FlTitlesData(
                         show: true,
                         topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false)),
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false)),
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 36,
-                                interval: 25,
-                                getTitlesWidget: (value, meta) {
-                                  if (value % 25 == 0) {
-                                    return Text("${value.toInt()}",
-                                        style: TextStyle(
-                                            color: textGrey,
-                                            fontSize: 11,
-                                            fontWeight:
-                                                FontWeight.w800));
-                                  }
-                                  return const SizedBox.shrink();
-                                })),
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 36,
+                            interval: 25,
+                            getTitlesWidget: (value, meta) {
+                              if (value % 25 == 0) {
+                                return Text(
+                                  "${value.toInt()}",
+                                  style: TextStyle(
+                                    color: textGrey,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
                         bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 30,
-                                getTitlesWidget:
-                                    (double value, TitleMeta meta) {
-                                  if (value.toInt() >= 0 &&
-                                      value.toInt() <
-                                          _myCourses.length) {
-                                    String code =
-                                        _myCourses[value.toInt()]
-                                                ['code'] ??
-                                            "UNK";
-                                    return Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 8.0),
-                                        child: Text(code,
-                                            style: TextStyle(
-                                                color: darkYellow,
-                                                fontWeight:
-                                                    FontWeight.w900,
-                                                fontSize: 9)));
-                                  }
-                                  return const SizedBox.shrink();
-                                })),
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 30,
+                            getTitlesWidget: (double value, TitleMeta meta) {
+                              if (value.toInt() >= 0 &&
+                                  value.toInt() < _myCourses.length) {
+                                String code =
+                                    _myCourses[value.toInt()]['code'] ?? "UNK";
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    code,
+                                    style: TextStyle(
+                                      color: darkYellow,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
                       ),
                       gridData: FlGridData(
-                          show: true,
-                          drawVerticalLine: false,
-                          horizontalInterval: 25,
-                          getDrawingHorizontalLine: (value) => FlLine(
-                              color: const Color(0xFFE2E5E9),
-                              strokeWidth: 1.5)),
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: 25,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: const Color(0xFFE2E5E9),
+                          strokeWidth: 1.5,
+                        ),
+                      ),
                       borderData: FlBorderData(show: false),
                       barGroups: _myCourses.asMap().entries.map((entry) {
                         int index = entry.key;
                         String code = entry.value['code'] ?? "UNK";
 
                         Map<String, dynamic> courseAtt =
-                            liveAttendance[code] ??
-                                {'attended': 0, 'total': 0};
-                        int att =
-                            (courseAtt['attended'] ?? 0) as int;
+                            liveAttendance[code] ?? {'attended': 0, 'total': 0};
+                        int att = (courseAtt['attended'] ?? 0) as int;
                         int tot = (courseAtt['total'] ?? 0) as int;
-                        double percentage =
-                            tot > 0 ? (att / tot) * 100 : 0.0;
+                        double percentage = tot > 0 ? (att / tot) * 100 : 0.0;
 
                         Color barColor = percentage >= 80
                             ? successGreen
-                            : (percentage >= 70
-                                ? primaryYellow
-                                : dangerRed);
-                        if (tot == 0)
-                          barColor = textGrey.withOpacity(0.3);
+                            : (percentage >= 70 ? primaryYellow : dangerRed);
+                        if (tot == 0) barColor = textGrey.withOpacity(0.3);
 
                         return BarChartGroupData(
-                            x: index,
-                            showingTooltipIndicators: [0],
-                            barRods: [
-                              BarChartRodData(
-                                  toY: percentage,
-                                  color: barColor,
-                                  width: 16,
-                                  borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(6),
-                                      topRight: Radius.circular(6)),
-                                  backDrawRodData:
-                                      BackgroundBarChartRodData(
-                                          show: true,
-                                          toY: 100,
-                                          color: surfaceWhite))
-                            ]);
+                          x: index,
+                          showingTooltipIndicators: [0],
+                          barRods: [
+                            BarChartRodData(
+                              toY: percentage,
+                              color: barColor,
+                              width: 16,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(6),
+                                topRight: Radius.circular(6),
+                              ),
+                              backDrawRodData: BackgroundBarChartRodData(
+                                show: true,
+                                toY: 100,
+                                color: surfaceWhite,
+                              ),
+                            ),
+                          ],
+                        );
                       }).toList(),
                     ),
                   ),
@@ -951,223 +1045,264 @@ class _TimetableScreenState extends State<TimetableScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(builder: (context, setDialogState) {
-          double percentage =
-              localTotal > 0 ? (localAttended / localTotal) * 100 : 0.0;
-          if (percentage > 100) percentage = 100;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            double percentage = localTotal > 0
+                ? (localAttended / localTotal) * 100
+                : 0.0;
+            if (percentage > 100) percentage = 100;
 
-          Color pctColor = percentage >= 80
-              ? successGreen
-              : (percentage >= 70 ? primaryYellow : dangerRed);
-          if (localTotal == 0) pctColor = textGrey;
+            Color pctColor = percentage >= 80
+                ? successGreen
+                : (percentage >= 70 ? primaryYellow : dangerRed);
+            if (localTotal == 0) pctColor = textGrey;
 
-          return Dialog(
-            backgroundColor: surfaceWhite,
-            elevation: 0,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            child: Container(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Manual Edit",
+            return Dialog(
+              backgroundColor: surfaceWhite,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Manual Edit",
                               style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: textBlack)),
-                          const SizedBox(height: 4),
-                          Text("Update your attendance",
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: textBlack,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Update your attendance",
                               style: TextStyle(
-                                  fontSize: 13,
-                                  color: textGrey,
-                                  fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                      InkWell(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                              color: backgroundGrey, shape: BoxShape.circle),
-                          child: Icon(Icons.close_rounded,
-                              size: 20, color: textBlack),
+                                fontSize: 13,
+                                color: textGrey,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
+                        InkWell(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: backgroundGrey,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: textBlack,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
                         color: backgroundGrey,
-                        borderRadius: BorderRadius.circular(16)),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: selectedCourseCode,
-                        isExpanded: true,
-                        dropdownColor: surfaceWhite,
-                        icon: Icon(Icons.keyboard_arrow_down_rounded,
-                            color: textBlack),
-                        items: _myCourses.map((course) {
-                          String code = course['code'] ?? "UNK";
-                          return DropdownMenuItem<String>(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedCourseCode,
+                          isExpanded: true,
+                          dropdownColor: surfaceWhite,
+                          icon: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: textBlack,
+                          ),
+                          items: _myCourses.map((course) {
+                            String code = course['code'] ?? "UNK";
+                            return DropdownMenuItem<String>(
                               value: code,
-                              child: Text(code,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      color: textBlack)));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setDialogState(() {
-                              selectedCourseCode = val;
-                              Map<String, dynamic> cAtt =
-                                  liveAttendance[val] ??
-                                      {'attended': 0, 'total': 0};
-                              localTotal = (cAtt['total'] ?? 0) as int;
-                              localAttended =
-                                  (cAtt['attended'] ?? 0) as int;
-                            });
-                          }
-                        },
+                              child: Text(
+                                code,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: textBlack,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() {
+                                selectedCourseCode = val;
+                                Map<String, dynamic> cAtt =
+                                    liveAttendance[val] ??
+                                    {'attended': 0, 'total': 0};
+                                localTotal = (cAtt['total'] ?? 0) as int;
+                                localAttended = (cAtt['attended'] ?? 0) as int;
+                              });
+                            }
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
                           child: _buildCounterControl(
-                              "Attended",
-                              localAttended,
-                              () {
-                                if (localAttended > 0)
-                                  setDialogState(() => localAttended--);
-                              },
-                              () {
-                                if (localAttended < localTotal)
-                                  setDialogState(() => localAttended++);
-                              })),
-                      const SizedBox(width: 16),
-                      Expanded(
+                            "Attended",
+                            localAttended,
+                            () {
+                              if (localAttended > 0)
+                                setDialogState(() => localAttended--);
+                            },
+                            () {
+                              if (localAttended < localTotal)
+                                setDialogState(() => localAttended++);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
                           child: _buildCounterControl(
-                              "Total",
-                              localTotal,
-                              () {
-                                if (localTotal > 0 &&
-                                    localTotal > localAttended)
-                                  setDialogState(() => localTotal--);
-                              },
-                              () {
-                                setDialogState(() => localTotal++);
-                              })),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Center(
+                            "Total",
+                            localTotal,
+                            () {
+                              if (localTotal > 0 && localTotal > localAttended)
+                                setDialogState(() => localTotal--);
+                            },
+                            () {
+                              setDialogState(() => localTotal++);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
                       child: Text(
-                          localTotal == 0
-                              ? "--%"
-                              : "${percentage.toStringAsFixed(1)}%",
-                          style: TextStyle(
-                              fontSize: 48,
-                              fontWeight: FontWeight.w900,
-                              color: pctColor,
-                              letterSpacing: -1))),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
+                        localTotal == 0
+                            ? "--%"
+                            : "${percentage.toStringAsFixed(1)}%",
+                        style: TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          color: pctColor,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
                           backgroundColor: textBlack,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16))),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        final user = FirebaseAuth.instance.currentUser;
-                        if (user != null) {
-                          // Only writes to main attendance (manual edit does NOT touch timetable sync)
-                          FirebaseFirestore.instance
-                              .collection('students')
-                              .doc(user.uid)
-                              .update({
-                            'attendance.$selectedCourseCode': {
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user != null) {
+                            _attendanceDoc(user.uid, selectedCourseCode).set({
                               'attended': localAttended,
-                              'total': localTotal
-                            },
-                            'last_updated_timestamp':
-                                FieldValue.serverTimestamp(),
-                          });
-                        }
-                        CustomTopToast.show(
-                            context, "Attendance Saved!", successGreen);
-                      },
-                      child: const Text("Save Record",
+                              'total': localTotal,
+                            }, SetOptions(merge: true));
+                          }
+                          CustomTopToast.show(
+                            context,
+                            "Attendance Saved!",
+                            successGreen,
+                          );
+                        },
+                        child: const Text(
+                          "Save Record",
                           style: TextStyle(
-                              fontWeight: FontWeight.w800, fontSize: 16)),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                  )
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        });
+            );
+          },
+        );
       },
     );
   }
 
-  Widget _buildCounterControl(String label, int value,
-      VoidCallback onDecrement, VoidCallback onIncrement) {
+  Widget _buildCounterControl(
+    String label,
+    int value,
+    VoidCallback onDecrement,
+    VoidCallback onIncrement,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(label,
-            style: TextStyle(
-                color: textBlack,
-                fontWeight: FontWeight.w800,
-                fontSize: 14)),
+        Text(
+          label,
+          style: TextStyle(
+            color: textBlack,
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           decoration: BoxDecoration(
-              color: primaryYellow.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(16)),
+            color: primaryYellow.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               InkWell(
-                  onTap: onDecrement,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(Icons.remove_rounded,
-                          color: textBlack, size: 20))),
-              Text(value.toString(),
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: textBlack)),
+                onTap: onDecrement,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(Icons.remove_rounded, color: textBlack, size: 20),
+                ),
+              ),
+              Text(
+                value.toString(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: textBlack,
+                ),
+              ),
               InkWell(
-                  onTap: onIncrement,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(Icons.add_rounded,
-                          color: textBlack, size: 20))),
+                onTap: onIncrement,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(Icons.add_rounded, color: textBlack, size: 20),
+                ),
+              ),
             ],
           ),
-        )
+        ),
       ],
     );
   }
@@ -1198,10 +1333,11 @@ class _TopToastWidget extends StatefulWidget {
   final Color bgColor;
   final VoidCallback onDismissed;
 
-  const _TopToastWidget(
-      {required this.message,
-      required this.bgColor,
-      required this.onDismissed});
+  const _TopToastWidget({
+    required this.message,
+    required this.bgColor,
+    required this.onDismissed,
+  });
 
   @override
   State<_TopToastWidget> createState() => _TopToastWidgetState();
@@ -1217,14 +1353,18 @@ class _TopToastWidgetState extends State<_TopToastWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 350));
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
 
-    _offsetAnimation =
-        Tween<Offset>(begin: const Offset(0, -1.0), end: Offset.zero).animate(
-            CurvedAnimation(
-                parent: _controller, curve: Curves.easeOutBack));
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(0, -1.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
     _controller.forward();
 
@@ -1255,25 +1395,26 @@ class _TopToastWidgetState extends State<_TopToastWidget>
           child: FadeTransition(
             opacity: _fadeAnimation,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
               decoration: BoxDecoration(
                 color: widget.bgColor,
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6))
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
                 ],
               ),
               child: Text(
                 widget.message,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
               ),
             ),
           ),

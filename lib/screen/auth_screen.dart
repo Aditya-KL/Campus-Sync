@@ -19,7 +19,6 @@ class _AuthScreenState extends State<AuthScreen>
     with TickerProviderStateMixin {
   // ── palette (matches app theme) ────────────────────────────
   static const Color _yellow     = Color(0xFFFFD166);
-  static const Color _darkYellow = Color(0xFFE5A91A);
   static const Color _bg         = Color(0xFFF0F2F5);
   static const Color _ink        = Color(0xFF1A1D20);
   static const Color _muted      = Color(0xFF6C757D);
@@ -45,10 +44,12 @@ class _AuthScreenState extends State<AuthScreen>
   String? _generalError;
 
   final List<String> _branches = [
-    'CSE', 'AI', 'ECE', 'EEE', 'MNC', 'ME',
-    'CBE', 'CT', 'ECO', 'EP', 'MME', 'CE',
+    'CSE', 'AI', 'CBE', 'CE', 'CST', 'ECE',
+    'ECO', 'EEE', 'EP', 'ME', 'MME', 'MNC',
+
   ];
 
+  
   // ── animations ─────────────────────────────────────────────
   late AnimationController _entryCtrl;
   late AnimationController _bubbleCtrl;
@@ -165,6 +166,7 @@ class _AuthScreenState extends State<AuthScreen>
           'rollNo': _rollCtrl.text.trim(),
           'branch': _selectedBranch,
           'email':  _emailCtrl.text.trim(),
+          'isDeveloper': false,
         });
 
         await FirebaseAuth.instance.signOut();
@@ -462,7 +464,27 @@ class _AuthScreenState extends State<AuthScreen>
         Row(
           children: [
             Expanded(
-              child: _field(_rollCtrl, 'Roll No', Icons.tag_rounded),
+              child: TextFormField(
+                controller: _rollCtrl,
+                keyboardType: TextInputType.text, // Allows letters for the Dept Code
+                maxLength: 8,
+                textCapitalization: TextCapitalization.characters, // Auto-uppercase
+                decoration: InputDecoration(
+                  labelText: 'Roll Number',
+                  prefixIcon: Icon(Icons.tag_rounded),
+                  counterText: "", 
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'Required';
+                  final pattern = r'^[12][0-9][012][123](AI|CB|CE|CS|CT|EC|EE|ES|MC|ME|MM|PH|PR|CM|GT|MT|PC|ST|VL)[0-9]{2}$';
+                  final regExp = RegExp(pattern);
+
+                  if (!regExp.hasMatch(value.toUpperCase())) {
+                    return 'Invalid Roll Number';
+                  }
+                  return null;
+                },
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(child: _branchDropdown()),

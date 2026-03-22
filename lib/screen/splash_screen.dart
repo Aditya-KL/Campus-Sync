@@ -22,7 +22,6 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
 
   static const Color _yellow     = Color(0xFFFFD166);
-  static const Color _darkYellow = Color(0xFFE5A91A);
   static const Color _bg         = Color(0xFFF0F2F5);
   static const Color _ink        = Color(0xFF1A1D20);
   static const Color _muted      = Color(0xFF6C757D);

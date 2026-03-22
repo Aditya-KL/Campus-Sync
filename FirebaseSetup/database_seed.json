@@ -1,52 +1,1287 @@
 {
-  "__collections__": {
-    "timetables": {
-      "CSE_2024-2028": {
-        "Monday": [
-          { "subject": "CS2203: Artificial Intelligence", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
-          { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
-          { "subject": "MM2206: Structure & Properties of Materials", "time": "02:00 PM - 03:00 PM", "room": "R107" },
-          { "subject": "CS2204: IT Workshop", "time": "03:00 PM - 06:00 PM", "room": "CC Lab 1" }
-        ],
-        "Tuesday": [
-          { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
-          { "subject": "CS2201: Formal Language and Automata", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
-          { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" }
-        ],
-        "Wednesday": [
-          { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
-          { "subject": "CS2201: Formal Language and Automata", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
-          { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
-          { "subject": "MM2206: Structure & Properties of Materials", "time": "02:00 PM - 03:00 PM", "room": "R107" },
-          { "subject": "CS2202: Database and Warehousing Lab", "time": "03:00 PM - 05:00 PM", "room": "CC Lab 1" }
-        ],
-        "Thursday": [
-          { "subject": "CS2201: Formal Language and Automata", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
-          { "subject": "CS2202: Database and Warehousing", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
-          { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
-          { "subject": "CS2203: Artificial Intelligence Lab", "time": "03:00 PM - 06:00 PM", "room": "CC Lab 1" }
-        ],
-        "Friday": [
-          { "subject": "CS2206: Computer Architecture Lab", "time": "09:00 AM - 12:00 PM", "room": "Hardware Lab, CSE Dept" },
-          { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
-          { "subject": "MM2206: Structure & Properties of Materials", "time": "02:00 PM - 03:00 PM", "room": "R107" }
-        ],
-        "Saturday": [],
-        "Sunday": []
+  "Branch": {                            
+    "First Year": { 
+      "Semester 1": {                            
+        "curriculum": {                    
+          "course": [
+            { "code": "MA1101", "name": "Calculus and Linear Algebra", "credits": 4.0 },
+            { "code": "CS1101", "name": "Foundations of Programming", "credits": 4.5 },
+            { "code": "HS1101", "name": "English for Professionals", "credits": 2.5 },
+            { "code": "CH1101", "name": "Chemistry", "credits": 5.5 },
+            { "code": "ME1101", "name": "Mechanical Fabrication", "credits": 1.5 },
+            { "code": "ME1102", "name": "Engineering Mechanics", "credits": 4.0 },
+            { "code": "PH1101", "name": "Physics", "credits": 5.5 },
+            { "code": "CE1101", "name": "Engineering Graphics", "credits": 2.5 },
+            { "code": "EE1101", "name": "Electrical Sciences", "credits": 4.5 }
+          ]  
+        },
+        "timetable": {                    
+          
+        }
+      },
+      "Semester 2": {    
+        "curriculum": {                         
+          "course": [
+            { "code": "MA1201", "name": "Probability Theory and Ordinary Differential Equations", "credits": 4.0 },
+            { "code": "CS1201", "name": "Data Structure", "credits": 4.5 },
+            { "code": "IK1101", "name": "Indian Knowledge System (IKS)", "credits": 3.0 },
+            { "code": "PH1201", "name": "Physics", "credits": 5.5 },
+            { "code": "CE1201", "name": "Engineering Graphics", "credits": 2.5 },
+            { "code": "EE1201", "name": "Electrical Sciences", "credits": 4.5 },
+            { "code": "CH1201", "name": "Chemistry", "credits": 5.5 },
+            { "code": "ME1201", "name": "Mechanical Fabrication", "credits": 1.5 },
+            { "code": "ME1202", "name": "Engineering Mechanics", "credits": 4.0 }
+          ]
+        },
+        "timetable": {                   
+          
+        }
       }
     },
-    "curriculum": {
-      "CSE_Sem4": {
-        "courses": [
-          { "code": "CS2201", "name": "Formal Language and Automata Theory", "credit": 3 },
-          { "code": "CS2202", "name": "Database and Warehousing", "credit": 4 },
-          { "code": "CS2203", "name": "Artificial Intelligence", "credit": 4.5 },
-          { "code": "CS2204", "name": "IT Workshop", "credit": 3 },
-          { "code": "CS2205", "name": "Computer Architecture", "credit": 4.5 },
-          { "code": "CS2209", "name": "IDE I (Introduction to Data Science)", "credit": 3 },
-          { "code": "MM2206", "name": "Structure & Properties of Materials", "credit": 3 }
-        ]
+    "CSE": { 
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 17, "T": 0, "P": 8, "credits": 21 },
+          "course": [
+            { "code": "CS2101", "name": "Algorithm", "credits": 4.5 },
+            { "code": "CS2102", "name": "Digital Logic and Computer Organization", "credits": 4.5 },
+            { "code": "CS2103", "name": "Artificial Intelligence Concepts", "credits": 3.0 },
+            { "code": "CS2104", "name": "Discrete Mathematics", "credits": 3.0 },
+            { "code": "CS2105", "name": "Optimization Techniques", "credits": 3.0 },
+            { "code": "HS21XX", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 15, "T": 2, "P": 10, "credits": 22 },
+          "course": [
+            { "code": "CS2201", "name": "Formal Language and Automata Theory", "credits": 3.0 },
+            { "code": "CS2202", "name": "Database and Warehousing", "credits": 4.0 },
+            { "code": "CS2203", "name": "Artificial Intelligence", "credits": 4.5 },
+            { "code": "CS2204", "name": "IT Workshop", "credits": 3.0 },
+            { "code": "CS2205", "name": "Computer Architecture", "credits": 4.5 },
+            { "code": "CS2209", "name": "IDE I (Introduction to Data Science)", "credits": 3.0 }
+          ]
+        },
+        "timetable": {
+          "Monday": [
+            { "subject": "CS2203: Artificial Intelligence", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+            { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "CS2204: IT Workshop", "time": "03:00 PM - 06:00 PM", "room": "CC Lab 1" }
+          ],
+          "Tuesday": [
+            { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+            { "subject": "CS2201: Formal Language and Automata", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+            { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" }
+          ],
+          "Wednesday": [
+            { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+            { "subject": "CS2201: Formal Language and Automata", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+            { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "CS2202: Database and Warehousing Lab", "time": "03:00 PM - 05:00 PM", "room": "CC Lab 1" }
+          ],
+          "Thursday": [
+            { "subject": "CS2201: Formal Language and Automata", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+            { "subject": "CS2202: Database and Warehousing", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+            { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+            { "subject": "CS2203: Artificial Intelligence Lab", "time": "03:00 PM - 06:00 PM", "room": "CC Lab 1" }
+          ],
+          "Friday": [
+            { "subject": "CS2206: Computer Architecture Lab", "time": "09:00 AM - 12:00 PM", "room": "Hardware Lab, CSE Dept" },
+            { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 15, "T": 0, "P": 12, "credits": 21 },
+          "course": [
+            { "code": "CS3101", "name": "Operating System", "credits": 4.5 },
+            { "code": "CS3102", "name": "Computer Network", "credits": 4.5 },
+            { "code": "CS3103", "name": "Machine Learning", "credits": 4.5 },
+            { "code": "CS3104", "name": "Compiler", "credits": 4.5 },
+            { "code": "CS3109", "name": "IDE II (Computer Graphics)", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 14, "credits": 19 },
+          "course": [
+            { "code": "CS3201", "name": "Cyber Security", "credits": 4.0 },
+            { "code": "CS3202", "name": "Deep Learning", "credits": 4.5 },
+            { "code": "CS3203", "name": "Internet of Things", "credits": 4.5 },
+            { "code": "CS32XX", "name": "DE I (CS Electives List)", "credits": 3.0 },
+            { "code": "CS3299", "name": "Capstone Project", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "CS41XX", "name": "DE II (CS Electives List)", "credits": 3.0 },
+            { "code": "CS41XX", "name": "DE III (CS Electives List)", "credits": 3.0 },
+            { "code": "CS4109", "name": "IDE III (Data Analysis and Visualization)", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "CS4198", "name": "Summer Internship / Project", "credits": 3.0 },
+            { "code": "CS4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "CS42XX", "name": "DE IV (CS Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "DE V (CS Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "DE VI (CS Electives List)", "credits": 3.0 },
+            { "code": "CS4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
       }
+    },
+    "CBT": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 17, "T": 2, "P": 5, "credits": 21.5 },
+          "course": [
+            { "code": "CB2101", "name": "Introduction to Chemical Engineering", "credits": 2.0 },
+            { "code": "CB2102", "name": "Fluid Mechanics", "credits": 5.0 },
+            { "code": "CB2103", "name": "Heat Transfer", "credits": 4.5 },
+            { "code": "CB2104", "name": "Chemical Process Calculations", "credits": 4.0 },
+            { "code": "CB2105", "name": "Chemical Engineering Thermodynamics", "credits": 3.0 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 17, "T": 0, "P": 5, "credits": 19.5 },
+          "course": [
+            { "code": "CB2201", "name": "Mechanical Operations", "credits": 3.5 },
+            { "code": "CB2202", "name": "Mass Transfer I", "credits": 3.0 },
+            { "code": "CB2203", "name": "Fundamentals of Biochemical Engineering", "credits": 3.0 },
+            { "code": "CB2204", "name": "Process Dynamics and Control", "credits": 4.0 },
+            { "code": "CB2205", "name": "Chemical Reaction Engineering I", "credits": 3.0 },
+            { "code": "CB22PQ", "name": "IDE I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {
+            "Monday": [
+              { "subject": "IDE", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+              { "subject": "CB2201: Mechanical Operations", "time": "03:00 PM - 06:00 PM", "room": "RS07" }
+            ],
+            "Tuesday": [
+              { "subject": "CB2205: Chemical Reaction Engineering-I", "time": "09:00 AM - 11:00 AM", "room": "RS07" },
+              { "subject": "CB2202: Mass Transfer-I", "time": "11:00 AM - 12:00 PM", "room": "RS07" },
+              { "subject": "CB2203: Fundamentals of Biochemical Engineering", "time": "03:00 PM - 04:00 PM", "room": "R109" },
+              { "subject": "CB2204: Process Dynamics and Control", "time": "04:00 PM - 06:00 PM", "room": "LAB" }
+            ],
+            "Wednesday": [
+              { "subject": "CB2203: Fundamentals of Biochemical Engineering", "time": "09:00 AM - 11:00 AM", "room": "R109" },
+              { "subject": "CB2202: Mass Transfer-I", "time": "11:00 AM - 12:00 PM", "room": "RS07" },
+              { "subject": "IDE", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+              { "subject": "CB2204: Process Dynamics and Control (LAB)", "time": "03:00 PM - 05:00 PM", "room": "LAB" }
+            ],
+            "Thursday": [
+              { "subject": "IDE", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+              { "subject": "CB2202: Mass Transfer-I", "time": "03:00 PM - 04:00 PM", "room": "RS07" },
+              { "subject": "CB2204: Process Dynamics and Control", "time": "04:00 PM - 05:00 PM", "room": "LAB" }
+            ],
+            "Friday": [
+              { "subject": "CB2205: Chemical Reaction Engineering-I", "time": "10:00 AM - 11:00 AM", "room": "RS07" },
+              { "subject": "CB2201: Mechanical Operations", "time": "11:00 AM - 01:00 PM", "room": "RS07" },
+              { "subject": "IDE", "time": "02:00 PM - 03:00 PM", "room": "R109" }
+            ],
+            "Saturday": [],
+            "Sunday": []
+        }
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 15, "T": 2, "P": 8, "credits": 21 },
+          "course": [
+            { "code": "CB3101", "name": "Mass Transfer II", "credits": 4.5 },
+            { "code": "CB3102", "name": "Chemical Process Technology", "credits": 3.0 },
+            { "code": "CB3103", "name": "Process Equipment Design", "credits": 3.0 },
+            { "code": "CB3104", "name": "Chemical Reaction Engineering II", "credits": 4.0 },
+            { "code": "CB3105", "name": "Chemical Process Modeling and Simulation", "credits": 3.5 },
+            { "code": "CB31PQ", "name": "IDE II", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 16, "T": 2, "P": 4, "credits": 20 },
+          "course": [
+            { "code": "CB3201", "name": "Process Plant Design and Economics", "credits": 3.0 },
+            { "code": "CB3202", "name": "Transport Phenomena", "credits": 4.0 },
+            { "code": "CB3203", "name": "Numerical Methods in Chemical Engineering", "credits": 4.0 },
+            { "code": "CB3204", "name": "AI/ML for Chemical Engineers", "credits": 3.0 },
+            { "code": "CB3205", "name": "Chemical Plant Safety and Hazards", "credits": 3.0 },
+            { "code": "CB32PQ", "name": "DE I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "CB41PQ", "name": "DE II", "credits": 3.0 },
+            { "code": "CB41PQ", "name": "DE III", "credits": 3.0 },
+            { "code": "XX41PQ", "name": "IDE III", "credits": 3.0 },
+            { "code": "HS31PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "CB4198", "name": "Summer Internship", "credits": 3.0 },
+            { "code": "CB4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "CB42PQ", "name": "DE IV", "credits": 3.0 },
+            { "code": "CB42PQ", "name": "DE V", "credits": 3.0 },
+            { "code": "CB4298", "name": "DE VI", "credits": 3.0 },
+            { "code": "CB4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "CE": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 15, "T": 3, "P": 6, "credits": 21.0 },
+          "course": [
+            { "code": "CE2101", "name": "Geomatics Engineering", "credits": 5.0 },
+            { "code": "CE2102", "name": "Structural Mechanics", "credits": 4.0 },
+            { "code": "CE2103", "name": "Fluid Mechanics", "credits": 5.0 },
+            { "code": "CE2104", "name": "Geology for Engineers", "credits": 4.0 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 18, "T": 0, "P": 6, "credits": 21.0 },
+          "course": [
+            { "code": "CE2201", "name": "Structural Analysis", "credits": 4.0 },
+            { "code": "CE2202", "name": "Soil Mechanics", "credits": 4.0 },
+            { "code": "CE2203", "name": "Civil Engineering Materials", "credits": 4.0 },
+            { "code": "CE2204", "name": "Water Resources Engineering I", "credits": 3.0 },
+            { "code": "CE2205", "name": "Numerical Methods in Civil Engineering", "credits": 3.0 },
+            { "code": "CE22PQ", "name": "IDE I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 15, "T": 1, "P": 8, "credits": 20.0 },
+          "course": [
+            { "code": "CE3101", "name": "Design of Reinforced Concrete Structures", "credits": 4.0 },
+            { "code": "CE3102", "name": "Foundation Engineering", "credits": 4.0 },
+            { "code": "CE3103", "name": "Transportation Engineering I", "credits": 5.0 },
+            { "code": "CE3104", "name": "Environmental Engineering I", "credits": 4.0 },
+            { "code": "CE3190", "name": "IDE II", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 16, "T": 4, "P": 2, "credits": 21.0 },
+          "course": [
+            { "code": "CE3201", "name": "Design of Steel Structures", "credits": 4.0 },
+            { "code": "CE3202", "name": "Infrastructure Drawing and Estimation", "credits": 3.0 },
+            { "code": "CE3203", "name": "Construction Planning & Management", "credits": 3.0 },
+            { "code": "CE3204", "name": "Environmental Engineering II", "credits": 4.0 },
+            { "code": "CE3205", "name": "Water Resources Engineering II", "credits": 4.0 },
+            { "code": "CE3206", "name": "Transportation Engineering II", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21.0 },
+          "course": [
+            { "code": "CE41PQ", "name": "Departmental Elective I", "credits": 3.0 },
+            { "code": "CE41PQ", "name": "Departmental Elective II", "credits": 3.0 },
+            { "code": "CE41PQ", "name": "IDE III", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "CE4198", "name": "Summer Internship", "credits": 3.0 },
+            { "code": "CE4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17.0 },
+          "course": [
+            { "code": "CE42PQ", "name": "Departmental Elective III", "credits": 3.0 },
+            { "code": "CE42PQ", "name": "Departmental Elective IV", "credits": 3.0 },
+            { "code": "CE42PQ", "name": "Departmental Elective V", "credits": 3.0 },
+            { "code": "CE4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "CST": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 18, "T": 4, "P": 2, "credits": 23 },
+          "course": [
+            { "code": "CH2101", "name": "Organic Chemistry", "credits": 4 },
+            { "code": "CH2102", "name": "Inorganic Chemistry", "credits": 4 },
+            { "code": "CH2103", "name": "Introduction to Quantum Chemistry", "credits": 4 },
+            { "code": "CH2104", "name": "Fluid Mechanics", "credits": 5 },
+            { "code": "CH2105", "name": "Chemical Process Calculations", "credits": 3 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 15, "T": 2, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "CH2201", "name": "Structure and Function of Biomolecules", "credits": 3 },
+            { "code": "CH2202", "name": "Introduction to Organometallics", "credits": 4 },
+            { "code": "CH2203", "name": "Chemical Thermodynamics and Equilibrium", "credits": 4 },
+            { "code": "CH2204", "name": "Industrial Chemistry", "credits": 3 },
+            { "code": "CH2205", "name": "Chemical Technology Lab I", "credits": 3 },
+            { "code": "CH2206", "name": "IDE I", "credits": 3 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 14, "T": 3, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "CH3101", "name": "Macromolecular Science and Engineering", "credits": 4 },
+            { "code": "CH3102", "name": "Nanomaterials", "credits": 3 },
+            { "code": "CH3103", "name": "Chemical Kinetics and Electrochemistry", "credits": 3 },
+            { "code": "CH3104", "name": "Chemical Analysis Techniques", "credits": 4 },
+            { "code": "CH3105", "name": "Chemical Technology Lab II", "credits": 3 },
+            { "code": "CH3106", "name": "IDE II", "credits": 3 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 15, "T": 0, "P": 8, "credits": 19 },
+          "course": [
+            { "code": "CH3201", "name": "Medicinal Chemistry", "credits": 3 },
+            { "code": "CH3202", "name": "Environmental Science & Technology", "credits": 3 },
+            { "code": "CH3203", "name": "Computational Chemistry", "credits": 4 },
+            { "code": "CH3204", "name": "Propellants & Pyrotechnics", "credits": 3 },
+            { "code": "CH3205", "name": "Chemical Technology Lab III", "credits": 3 },
+            { "code": "CH32PQ", "name": "Department Elective I", "credits": 3 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "CH41PQ", "name": "Department Elective II", "credits": 3 },
+            { "code": "CH41PQ", "name": "Department Elective III", "credits": 3 },
+            { "code": "CH4111", "name": "IDE III (Analytical Chemistry)", "credits": 3 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3 },
+            { "code": "CH4198", "name": "Internship", "credits": 3 },
+            { "code": "CH4199", "name": "Project I", "credits": 6 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "CH42XX", "name": "Department Elective IV", "credits": 3 },
+            { "code": "CH42XX", "name": "Department Elective V", "credits": 3 },
+            { "code": "CH42XX", "name": "Department Elective VI", "credits": 3 },
+            { "code": "CH4299", "name": "Project II", "credits": 8 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "EEE": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 18, "T": 1, "P": 6, "credits": 22 },
+          "course": [
+            { "code": "EE2101", "name": "Measurements and Instrumentation", "credits": 4.0 },
+            { "code": "EE2102", "name": "Network Analysis and Synthesis", "credits": 3.0 },
+            { "code": "EC2101", "name": "Analog Circuits", "credits": 4.0 },
+            { "code": "EC2102", "name": "Signals and Systems", "credits": 4.0 },
+            { "code": "EC2103", "name": "Semiconductor Devices", "credits": 4.0 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 17, "T": 0, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "EC2201", "name": "Digital Electronics", "credits": 4.0 },
+            { "code": "EC2202", "name": "Microprocessor", "credits": 3.0 },
+            { "code": "EE2201", "name": "Control Systems", "credits": 4.0 },
+            { "code": "EC2203", "name": "Computer Organization and Architecture", "credits": 3.0 },
+            { "code": "EC2204", "name": "Internet of Things", "credits": 3.0 },
+            { "code": "XX22PQ", "name": "IDE I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 18, "T": 0, "P": 6, "credits": 21 },
+          "course": [
+            { "code": "EC3101", "name": "Microcontroller and Embedded System", "credits": 4.0 },
+            { "code": "EE3102", "name": "VLSI Design", "credits": 4.0 },
+            { "code": "EC3103", "name": "Analog Communication", "credits": 4.0 },
+            { "code": "EC3104", "name": "Engineering Electromagnetics", "credits": 3.0 },
+            { "code": "EC3105", "name": "Random Signals and Stochastic Processes", "credits": 3.0 },
+            { "code": "XX31PQ", "name": "IDE II", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 18, "T": 0, "P": 4, "credits": 20 },
+          "course": [
+            { "code": "EC3201", "name": "Digital Communication", "credits": 4.0 },
+            { "code": "EC3202", "name": "Digital Signal Processing", "credits": 4.0 },
+            { "code": "EC3203", "name": "Introduction to AI/ML", "credits": 3.0 },
+            { "code": "EC3204", "name": "Low Power MOSFETs Design and Modeling", "credits": 3.0 },
+            { "code": "EC3205", "name": "Introduction to Wireless Communications", "credits": 3.0 },
+            { "code": "EC3206", "name": "RF Systems", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "EC41XX", "name": "Department Elective I", "credits": 3.0 },
+            { "code": "EC41XX", "name": "Department Elective II", "credits": 3.0 },
+            { "code": "XX41PQ", "name": "IDE III", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "EC4198", "name": "Summer Internship", "credits": 3.0 },
+            { "code": "EC4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "EC42XX", "name": "Department Elective III", "credits": 3.0 },
+            { "code": "EC42XX", "name": "Department Elective IV", "credits": 3.0 },
+            { "code": "EC42XX", "name": "Department Elective V", "credits": 3.0 },
+            { "code": "EC4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "ECE": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 18, "T": 1, "P": 6, "credits": 22 },
+          "course": [
+            { "code": "EE2101", "name": "Measurements and Instrumentation", "credits": 4.0 },
+            { "code": "EE2102", "name": "Network Analysis and Synthesis", "credits": 3.0 },
+            { "code": "EC2101", "name": "Analog Circuits", "credits": 4.0 },
+            { "code": "EC2102", "name": "Signals and Systems", "credits": 4.0 },
+            { "code": "EC2103", "name": "Semiconductor Devices", "credits": 4.0 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 17, "T": 0, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "EC2201", "name": "Digital Electronics", "credits": 4.0 },
+            { "code": "EC2202", "name": "Microprocessor", "credits": 3.0 },
+            { "code": "EE2201", "name": "Control Systems", "credits": 4.0 },
+            { "code": "EC2203", "name": "Computer Organization and Architecture", "credits": 3.0 },
+            { "code": "EC2204", "name": "Internet of Things", "credits": 3.0 },
+            { "code": "XX22PQ", "name": "IDE I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 18, "T": 0, "P": 6, "credits": 21 },
+          "course": [
+            { "code": "EC3101", "name": "Microcontroller and Embedded System", "credits": 4.0 },
+            { "code": "EE3102", "name": "VLSI Design", "credits": 4.0 },
+            { "code": "EC3103", "name": "Analog Communication", "credits": 4.0 },
+            { "code": "EC3104", "name": "Engineering Electromagnetics", "credits": 3.0 },
+            { "code": "EC3105", "name": "Random Signals and Stochastic Processes", "credits": 3.0 },
+            { "code": "XX31PQ", "name": "IDE II", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 18, "T": 0, "P": 4, "credits": 20 },
+          "course": [
+            { "code": "EC3201", "name": "Digital Communication", "credits": 4.0 },
+            { "code": "EC3202", "name": "Digital Signal Processing", "credits": 4.0 },
+            { "code": "EC3203", "name": "Introduction to AI/ML", "credits": 3.0 },
+            { "code": "EC3204", "name": "Low Power MOSFETs Design and Modeling", "credits": 3.0 },
+            { "code": "EC3205", "name": "Introduction to Wireless Communications", "credits": 3.0 },
+            { "code": "EC3206", "name": "RF Systems", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "EC41XX", "name": "Department Elective I", "credits": 3.0 },
+            { "code": "EC41XX", "name": "Department Elective II", "credits": 3.0 },
+            { "code": "XX41PQ", "name": "IDE III", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "EC4198", "name": "Summer Internship", "credits": 3.0 },
+            { "code": "EC4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "EC42XX", "name": "Department Elective III", "credits": 3.0 },
+            { "code": "EC42XX", "name": "Department Elective IV", "credits": 3.0 },
+            { "code": "EC42XX", "name": "Department Elective V", "credits": 3.0 },
+            { "code": "EC4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "Economics": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 18, "T": 3, "P": 0, "credits": 21 },
+          "course": [
+            { "code": "HS2101", "name": "Mathematical Statistics", "credits": 4.0 },
+            { "code": "HS2102", "name": "Fundamentals of Economics", "credits": 4.0 },
+            { "code": "HS21XX", "name": "HSS Elective I", "credits": 3.0 },
+            { "code": "HS2103", "name": "Multivariate Analysis and Basic Econometrics", "credits": 3.0 },
+            { "code": "HS2104", "name": "History of Economic Thought", "credits": 3.0 },
+            { "code": "MA2102", "name": "Probability and Stochastic Processes", "credits": 4.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 18, "T": 2, "P": 0, "credits": 20 },
+          "course": [
+            { "code": "HS2201", "name": "Microeconomics I", "credits": 4.0 },
+            { "code": "HS2202", "name": "Macroeconomics I", "credits": 4.0 },
+            { "code": "HS2203", "name": "Econometrics I", "credits": 4.0 },
+            { "code": "HS2204", "name": "Game Theory", "credits": 3.0 },
+            { "code": "HS22XX", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "MA2201", "name": "Linear Algebra for Economics", "credits": 2.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 15, "T": 3, "P": 2, "credits": 20 },
+          "course": [
+            { "code": "HS3101", "name": "Microeconomics II", "credits": 4.0 },
+            { "code": "HS3102", "name": "Macroeconomics II", "credits": 4.0 },
+            { "code": "HS3103", "name": "Econometrics II", "credits": 4.0 },
+            { "code": "HS3104", "name": "Development Economics", "credits": 3.0 },
+            { "code": "HS31PQ", "name": "IDE II", "credits": 3.0 },
+            { "code": "HS3105", "name": "Data Analysis Lab", "credits": 2.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 15, "T": 0, "P": 4, "credits": 19 },
+          "course": [
+            { "code": "HS3201", "name": "International Economics", "credits": 3.0 },
+            { "code": "HS3202", "name": "Public Economics", "credits": 3.0 },
+            { "code": "HS3203", "name": "Financial Economics", "credits": 3.0 },
+            { "code": "HS3204", "name": "Time Series Analysis", "credits": 4.0 },
+            { "code": "HS32PQ", "name": "Department Elective I", "credits": 3.0 },
+            { "code": "HS3205", "name": "Econometrics Lab", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "HS41PQ", "name": "Department Elective II", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "Department Elective III", "credits": 3.0 },
+            { "code": "HS4101", "name": "Advanced Econometrics", "credits": 3.0 },
+            { "code": "HS41XX", "name": "HSS Elective", "credits": 3.0 },
+            { "code": "HS4198", "name": "Internship", "credits": 3.0 },
+            { "code": "HS4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "HS42PQ", "name": "Department Elective IV", "credits": 3.0 },
+            { "code": "HS42PQ", "name": "Department Elective V", "credits": 3.0 },
+            { "code": "HS42PQ", "name": "Department Elective VI", "credits": 3.0 },
+            { "code": "HS4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "MnC": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 18, "T": 2, "P": 4, "credits": 22 },
+          "course": [
+            { "code": "MA2101", "name": "Real Analysis", "credits": 4.0 },
+            { "code": "MA2102", "name": "Linear Algebra", "credits": 4.0 },
+            { "code": "CS2101", "name": "Data Structures and Algorithms", "credits": 4.5 },
+            { "code": "MA2103", "name": "Discrete Mathematics", "credits": 3.0 },
+            { "code": "MA2104", "name": "Probability Theory", "credits": 3.5 },
+            { "code": "HS21XX", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 18, "T": 2, "P": 4, "credits": 22 },
+          "course": [
+            { "code": "MA2201", "name": "Complex Analysis", "credits": 4.0 },
+            { "code": "MA2202", "name": "Numerical Methods", "credits": 4.0 },
+            { "code": "CS2201", "name": "Theory of Computation", "credits": 3.0 },
+            { "code": "CS2202", "name": "Database Systems", "credits": 4.0 },
+            { "code": "MA2203", "name": "Statistical Inference", "credits": 4.0 },
+            { "code": "CS2209", "name": "IDE I (Data Science)", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 16, "T": 2, "P": 6, "credits": 21 },
+          "course": [
+            { "code": "MA3101", "name": "Abstract Algebra", "credits": 4.0 },
+            { "code": "MA3102", "name": "Optimization Techniques", "credits": 3.0 },
+            { "code": "CS3101", "name": "Operating Systems", "credits": 4.5 },
+            { "code": "CS3102", "name": "Computer Networks", "credits": 4.5 },
+            { "code": "MA3103", "name": "Stochastic Processes", "credits": 3.0 },
+            { "code": "CS3109", "name": "IDE II (Graphics/ML)", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 14, "T": 2, "P": 8, "credits": 20 },
+          "course": [
+            { "code": "MA3201", "name": "Measure Theory", "credits": 4.0 },
+            { "code": "MA3202", "name": "Machine Learning", "credits": 4.5 },
+            { "code": "CS3201", "name": "Artificial Intelligence", "credits": 3.0 },
+            { "code": "CS3202", "name": "Deep Learning", "credits": 4.5 },
+            { "code": "MA3203", "name": "Graph Theory", "credits": 3.0 },
+            { "code": "MA32XX", "name": "Department Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "MA41XX", "name": "Department Elective II", "credits": 3.0 },
+            { "code": "MA41XX", "name": "Department Elective III", "credits": 3.0 },
+            { "code": "CS4109", "name": "Data Analysis and Visualization", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "MA4198", "name": "Internship", "credits": 3.0 },
+            { "code": "MA4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "MA42XX", "name": "Department Elective IV", "credits": 3.0 },
+            { "code": "MA42XX", "name": "Department Elective V", "credits": 3.0 },
+            { "code": "MA42XX", "name": "Department Elective VI", "credits": 3.0 },
+            { "code": "MA4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "ME": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 17, "T": 2, "P": 6, "credits": 21 },
+          "course": [
+            { "code": "ME2101", "name": "Engineering Thermodynamics", "credits": 4.0 },
+            { "code": "ME2102", "name": "Fluid Mechanics", "credits": 5.0 },
+            { "code": "ME2103", "name": "Strength of Materials", "credits": 4.0 },
+            { "code": "ME2104", "name": "Manufacturing Processes", "credits": 4.0 },
+            { "code": "ME2105", "name": "Engineering Mathematics", "credits": 4.0 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 17, "T": 1, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "ME2201", "name": "Heat Transfer", "credits": 4.0 },
+            { "code": "ME2202", "name": "Theory of Machines", "credits": 4.0 },
+            { "code": "ME2203", "name": "Machine Drawing", "credits": 3.0 },
+            { "code": "ME2204", "name": "Materials Engineering", "credits": 3.0 },
+            { "code": "ME2205", "name": "Instrumentation and Control", "credits": 3.0 },
+            { "code": "ME22PQ", "name": "IDE I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 16, "T": 1, "P": 8, "credits": 21 },
+          "course": [
+            { "code": "ME3101", "name": "Machine Design", "credits": 4.0 },
+            { "code": "ME3102", "name": "IC Engines", "credits": 4.0 },
+            { "code": "ME3103", "name": "Dynamics of Machines", "credits": 4.0 },
+            { "code": "ME3104", "name": "Manufacturing Technology", "credits": 4.0 },
+            { "code": "ME3105", "name": "Finite Element Methods", "credits": 3.0 },
+            { "code": "ME31PQ", "name": "IDE II", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 15, "T": 1, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "ME3201", "name": "Refrigeration and Air Conditioning", "credits": 4.0 },
+            { "code": "ME3202", "name": "Power Plant Engineering", "credits": 3.0 },
+            { "code": "ME3203", "name": "Mechatronics", "credits": 3.0 },
+            { "code": "ME3204", "name": "Robotics", "credits": 3.0 },
+            { "code": "ME3205", "name": "Computational Fluid Dynamics", "credits": 4.0 },
+            { "code": "ME32XX", "name": "Department Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "ME41XX", "name": "Department Elective II", "credits": 3.0 },
+            { "code": "ME41XX", "name": "Department Elective III", "credits": 3.0 },
+            { "code": "ME4101", "name": "Advanced Manufacturing", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "ME4198", "name": "Internship", "credits": 3.0 },
+            { "code": "ME4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "ME42XX", "name": "Department Elective IV", "credits": 3.0 },
+            { "code": "ME42XX", "name": "Department Elective V", "credits": 3.0 },
+            { "code": "ME42XX", "name": "Department Elective VI", "credits": 3.0 },
+            { "code": "ME4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "MME": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 17, "T": 1, "P": 6, "credits": 21 },
+          "course": [
+            { "code": "MM2101", "name": "Thermodynamics of Materials", "credits": 4.0 },
+            { "code": "MM2102", "name": "Physical Metallurgy", "credits": 4.0 },
+            { "code": "MM2103", "name": "Structure of Materials", "credits": 4.0 },
+            { "code": "MM2104", "name": "Mechanical Behavior of Materials", "credits": 4.0 },
+            { "code": "MM2105", "name": "Materials Characterization", "credits": 3.0 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 17, "T": 0, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "MM2201", "name": "Phase Transformations", "credits": 4.0 },
+            { "code": "MM2202", "name": "Extractive Metallurgy", "credits": 4.0 },
+            { "code": "MM2203", "name": "Transport Phenomena", "credits": 4.0 },
+            { "code": "MM2204", "name": "Polymer Science", "credits": 3.0 },
+            { "code": "MM2205", "name": "Ceramic Materials", "credits": 3.0 },
+            { "code": "MM22PQ", "name": "IDE I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 16, "T": 1, "P": 8, "credits": 21 },
+          "course": [
+            { "code": "MM3101", "name": "Materials Processing", "credits": 4.0 },
+            { "code": "MM3102", "name": "Corrosion and Surface Engineering", "credits": 4.0 },
+            { "code": "MM3103", "name": "Electronic Materials", "credits": 3.0 },
+            { "code": "MM3104", "name": "Computational Materials Science", "credits": 3.0 },
+            { "code": "MM3105", "name": "Mechanical Metallurgy", "credits": 4.0 },
+            { "code": "MM31PQ", "name": "IDE II", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 15, "T": 1, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "MM3201", "name": "Nanomaterials", "credits": 3.0 },
+            { "code": "MM3202", "name": "Biomaterials", "credits": 3.0 },
+            { "code": "MM3203", "name": "Composite Materials", "credits": 3.0 },
+            { "code": "MM3204", "name": "Materials Design", "credits": 4.0 },
+            { "code": "MM3205", "name": "Failure Analysis", "credits": 4.0 },
+            { "code": "MM32XX", "name": "Department Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "MM41XX", "name": "Department Elective II", "credits": 3.0 },
+            { "code": "MM41XX", "name": "Department Elective III", "credits": 3.0 },
+            { "code": "MM4101", "name": "Advanced Materials Engineering", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "MM4198", "name": "Internship", "credits": 3.0 },
+            { "code": "MM4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "MM42XX", "name": "Department Elective IV", "credits": 3.0 },
+            { "code": "MM42XX", "name": "Department Elective V", "credits": 3.0 },
+            { "code": "MM42XX", "name": "Department Elective VI", "credits": 3.0 },
+            { "code": "MM4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "Physics": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 18, "T": 3, "P": 2, "credits": 22 },
+          "course": [
+            { "code": "PH2101", "name": "Classical Mechanics", "credits": 4.0 },
+            { "code": "PH2102", "name": "Electromagnetism I", "credits": 4.0 },
+            { "code": "PH2103", "name": "Mathematical Methods for Physics", "credits": 4.0 },
+            { "code": "PH2104", "name": "Thermal Physics", "credits": 3.0 },
+            { "code": "PH2105", "name": "Physics Lab I", "credits": 3.0 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 18, "T": 2, "P": 4, "credits": 22 },
+          "course": [
+            { "code": "PH2201", "name": "Quantum Mechanics I", "credits": 4.0 },
+            { "code": "PH2202", "name": "Electromagnetism II", "credits": 4.0 },
+            { "code": "PH2203", "name": "Statistical Mechanics", "credits": 4.0 },
+            { "code": "PH2204", "name": "Optics", "credits": 3.0 },
+            { "code": "PH2205", "name": "Physics Lab II", "credits": 3.0 },
+            { "code": "PH22PQ", "name": "IDE I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 16, "T": 2, "P": 6, "credits": 21 },
+          "course": [
+            { "code": "PH3101", "name": "Quantum Mechanics II", "credits": 4.0 },
+            { "code": "PH3102", "name": "Solid State Physics", "credits": 4.0 },
+            { "code": "PH3103", "name": "Nuclear and Particle Physics", "credits": 3.0 },
+            { "code": "PH3104", "name": "Computational Physics", "credits": 3.0 },
+            { "code": "PH3105", "name": "Advanced Lab", "credits": 4.0 },
+            { "code": "PH31PQ", "name": "IDE II", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 15, "T": 1, "P": 6, "credits": 20 },
+          "course": [
+            { "code": "PH3201", "name": "Atomic and Molecular Physics", "credits": 3.0 },
+            { "code": "PH3202", "name": "Condensed Matter Physics", "credits": 4.0 },
+            { "code": "PH3203", "name": "Astrophysics", "credits": 3.0 },
+            { "code": "PH3204", "name": "Laser Physics", "credits": 3.0 },
+            { "code": "PH3205", "name": "Experimental Techniques", "credits": 4.0 },
+            { "code": "PH32XX", "name": "Department Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "PH41XX", "name": "Department Elective II", "credits": 3.0 },
+            { "code": "PH41XX", "name": "Department Elective III", "credits": 3.0 },
+            { "code": "PH4101", "name": "Advanced Quantum Physics", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "PH4198", "name": "Internship", "credits": 3.0 },
+            { "code": "PH4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "PH42XX", "name": "Department Elective IV", "credits": 3.0 },
+            { "code": "PH42XX", "name": "Department Elective V", "credits": 3.0 },
+            { "code": "PH42XX", "name": "Department Elective VI", "credits": 3.0 },
+            { "code": "PH4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    },
+    "AI": {
+      "Semester 3": {
+        "curriculum": {
+          "total": { "L": 17, "T": 0, "P": 8, "credits": 21 },
+          "course": [
+            { "code": "CS2101", "name": "Algorithm", "credits": 4.5 },
+            { "code": "CS2102", "name": "Digital Logic and Computer Organization", "credits": 4.5 },
+            { "code": "CS2103", "name": "Artificial Intelligence Concepts", "credits": 3.0 },
+            { "code": "CS2104", "name": "Discrete Mathematics", "credits": 3.0 },
+            { "code": "CS2105", "name": "Optimization Techniques", "credits": 3.0 },
+            { "code": "HS21PQ", "name": "HSS Elective I", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 4": {
+        "curriculum": {
+          "total": { "L": 15, "T": 2, "P": 10, "credits": 22 },
+          "course": [
+            { "code": "CS2201", "name": "Formal Language and Automata Theory", "credits": 3.0 },
+            { "code": "CS2202", "name": "Database and Warehousing", "credits": 4.0 },
+            { "code": "CS2203", "name": "Artificial Intelligence", "credits": 4.5 },
+            { "code": "CS2204", "name": "IT Workshop", "credits": 3.0 },
+            { "code": "CS2206", "name": "Data Analytics and Visualization", "credits": 4.5 },
+            { "code": "CS2209", "name": "IDE I (Introduction to Data Science)", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 5": {
+        "curriculum": {
+          "total": { "L": 15, "T": 0, "P": 12, "credits": 21 },
+          "course": [
+            { "code": "CS3101", "name": "Operating System", "credits": 4.5 },
+            { "code": "CS3102", "name": "Computer Network", "credits": 4.5 },
+            { "code": "CS3103", "name": "Machine Learning", "credits": 4.5 },
+            { "code": "CS3105", "name": "Natural Language Processing", "credits": 4.5 },
+            { "code": "CS3109", "name": "IDE II (Computer Graphics)", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 6": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 14, "credits": 19 },
+          "course": [
+            { "code": "CS3201", "name": "Cyber Security", "credits": 4.0 },
+            { "code": "CS3202", "name": "Deep Learning", "credits": 4.5 },
+            { "code": "CS3204", "name": "Computer Vision", "credits": 4.5 },
+            { "code": "CS3299", "name": "Capstone Project", "credits": 3.0 },
+            { "code": "CS32XX", "name": "DE I (AI Electives List)", "credits": 3.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 7": {
+        "curriculum": {
+          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "course": [
+            { "code": "CS41XX", "name": "DE II (AI Electives List)", "credits": 3.0 },
+            { "code": "CS41XX", "name": "DE III (AI Electives List)", "credits": 3.0 },
+            { "code": "CS4109", "name": "IDE III (Data Analysis and Visualization)", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "CS4198", "name": "Summer Internship / Project", "credits": 3.0 },
+            { "code": "CS4199", "name": "Project I", "credits": 6.0 }
+          ]
+        },
+        "timetable": {}
+      },
+
+      "Semester 8": {
+        "curriculum": {
+          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "course": [
+            { "code": "CS42XX", "name": "DE IV (AI Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "DE V (AI Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "DE VI (AI Electives List)", "credits": 3.0 },
+            { "code": "CS4299", "name": "Project II", "credits": 8.0 }
+          ]
+        },
+        "timetable": {}
+      }
+    }
+  },
+  "sem_credits": {
+    "CSE": {
+      "Semester 1": 22,
+      "Semester 2": 24,
+      "Semester 3": 21,
+      "Semester 4": 22,
+      "Semester 5": 21,
+      "Semester 6": 19,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "AI": {
+      "Semester 1": 23.5,
+      "Semester 2": 22.5,
+      "Semester 3": 21,
+      "Semester 4": 22,
+      "Semester 5": 21,
+      "Semester 6": 19,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "CBT": {
+      "Semester 1": 23.5,
+      "Semester 2": 22.5,
+      "Semester 3": 21.5,
+      "Semester 4": 19.5,
+      "Semester 5": 21,
+      "Semester 6": 20,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "CE": {
+      "Semester 1": 23.5,
+      "Semester 2": 22.5,
+      "Semester 3": 21,
+      "Semester 4": 21,
+      "Semester 5": 20,
+      "Semester 6": 21,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "CST": {
+      "Semester 1": 23.5,
+      "Semester 2": 22.5,
+      "Semester 3": 23,
+      "Semester 4": 20,
+      "Semester 5": 20,
+      "Semester 6": 19,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "ECE": {
+      "Semester 1": 22,
+      "Semester 2": 24,
+      "Semester 3": 22,
+      "Semester 4": 20,
+      "Semester 5": 21,
+      "Semester 6": 20,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "EEE": {
+      "Semester 1": 22,
+      "Semester 2": 24,
+      "Semester 3": 21,
+      "Semester 4": 20,
+      "Semester 5": 20,
+      "Semester 6": 21,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "Economics": {
+      "Semester 1": 22,
+      "Semester 2": 24,
+      "Semester 3": 21,
+      "Semester 4": 20,
+      "Semester 5": 20,
+      "Semester 6": 19,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "MnC": {
+      "Semester 1": 22,
+      "Semester 2": 24,
+      "Semester 3": 22,
+      "Semester 4": 22,
+      "Semester 5": 21,
+      "Semester 6": 20,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "ME": {
+      "Semester 1": 22,
+      "Semester 2": 24,
+      "Semester 3": 21,
+      "Semester 4": 20,
+      "Semester 5": 21,
+      "Semester 6": 20,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "MME": {
+      "Semester 1": 22,
+      "Semester 2": 24,
+      "Semester 3": 21,
+      "Semester 4": 20,
+      "Semester 5": 21,
+      "Semester 6": 20,
+      "Semester 7": 21,
+      "Semester 8": 17
+    },
+    "Physics": {
+      "Semester 1": 22,
+      "Semester 2": 24,
+      "Semester 3": 22,
+      "Semester 4": 22,
+      "Semester 5": 21,
+      "Semester 6": 20,
+      "Semester 7": 21,
+      "Semester 8": 17
     }
   }
 }
