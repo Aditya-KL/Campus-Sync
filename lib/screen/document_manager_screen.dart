@@ -313,8 +313,8 @@ class _DocumentManagerScreenState extends State<DocumentManagerScreen>
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: savedCount == _docConfigs.length
-                        ? const Color(0xFF34C759).withOpacity(0.12)
-                        : _yellow.withOpacity(0.15),
+                      ? const Color(0xFF34C759).withValues(alpha: 0.12)
+                      : _yellow.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(

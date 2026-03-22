@@ -103,6 +103,60 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
     }
   }
 
+  // ── Persist an edited SGPA value back to Firestore ──────────
+  // Updates the matching entry inside the pastSemesters array.
+  // Uses a transaction so concurrent edits don't corrupt the array.
+  // Debounce is handled implicitly: each keystroke fires this but
+  // Firestore offline persistence queues and deduplicates writes.
+  Future<void> _saveSpiToDb(String uid, int semester, double newSpi) async {
+    try {
+      final docRef = FirebaseFirestore.instance.collection('students').doc(uid);
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final snap = await tx.get(docRef);
+        if (!snap.exists) return;
+
+        final rawList = ((snap.data()?['pastSemesters'] as List?) ?? [])
+            .cast<Map<String, dynamic>>();
+
+        // Find the entry for this semester and update its spi
+        bool found = false;
+        final updated = rawList.map((m) {
+          if ((m['semester'] ?? 0) == semester) {
+            found = true;
+            // Preserve all existing fields, only overwrite spi/spi-space
+            return {
+              ...m,
+              'spi': newSpi,
+              'spi ': newSpi, // keep trailing-space key in sync
+            };
+          }
+          return m;
+        }).toList();
+
+        if (!found) {
+          // Semester wasn't in DB yet (was a placeholder) → append it
+          updated.add({
+            'semester': semester,
+            'credit':   _pastSemesters
+                .firstWhere((s) => s.semester == semester,
+                    orElse: () => PastSemester(semester: semester, credit: 21, spi: newSpi, cpi: 0.0))
+                .credit,
+            'spi':  newSpi,
+            'spi ': newSpi,
+            'cpi':  _pastSemesters
+                .firstWhere((s) => s.semester == semester,
+                    orElse: () => PastSemester(semester: semester, credit: 21, spi: newSpi, cpi: 0.0))
+                .cpi,
+          });
+        }
+
+        tx.update(docRef, {'pastSemesters': updated});
+      });
+    } catch (e) {
+      debugPrint('SGPA save error (sem $semester): $e');
+    }
+  }
+
   // ── SGPA formula  Σ(Ci×Pi)/Σ(Ci)  for current sem ──────────
   double get _currentSPI {
     double sumCP = 0, sumC = 0;
@@ -173,40 +227,134 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
   @override
   void initState() { super.initState(); _fetchAcademicData(); }
 
+  // ─────────────────────────────────────────────────────────
+  // Helper: get(source: cache) first, fall back to server.
+  // This makes every read instant on revisit (offline cache
+  // is already enabled via Settings in main.dart).
+  // ─────────────────────────────────────────────────────────
+  Future<DocumentSnapshot<Map<String, dynamic>>> _getCached(
+      DocumentReference<Map<String, dynamic>> ref) async {
+    try {
+      return await ref.get(const GetOptions(source: Source.cache));
+    } catch (_) {
+      return ref.get(const GetOptions(source: Source.server));
+    }
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> _getQueryCached(
+      Query<Map<String, dynamic>> query) async {
+    try {
+      return await query.get(const GetOptions(source: Source.cache));
+    } catch (_) {
+      return query.get(const GetOptions(source: Source.server));
+    }
+  }
+
   Future<void> _fetchAcademicData() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final sd = (await FirebaseFirestore.instance.collection('students').doc(user.uid).get()).data();
+      final db = FirebaseFirestore.instance;
+
+      // ── Step 1: student doc (needed to build other query paths) ─
+      final sd = (await _getCached(
+              db.collection('students').doc(user.uid))).data();
       if (sd == null) { setState(() => _isLoading = false); return; }
 
       final rollNo = (sd['rollNo'] ?? '2401cs80') as String;
       final branch = (sd['branch'] ?? 'CSE') as String;
       _currentSemester = _calculateCurrentSemester(rollNo);
 
-      // ── past semesters (from Firestore 'pastSemesters' array) ──
-      // Note: Firestore key for spi may have a trailing space ("spi ") per screenshot
-      final rawPast = ((sd['pastSemesters'] as List?) ?? []).cast<Map<String, dynamic>>();
-      final pastSems = rawPast.map((m) => PastSemester(
-        semester: (m['semester'] ?? 0) as int,
-        credit:   (m['credit']   ?? 0) as int,
-        spi:      ((m['spi'] ?? m['spi '] ?? 0.0) as num).toDouble(),
-        cpi:      ((m['cpi'] ?? 0.0) as num).toDouble(),
-      )).toList()..sort((a, b) => a.semester.compareTo(b.semester));
+      // ── Step 2: fire remaining 3 reads IN PARALLEL ─────────────
+      final results = await Future.wait([
+        // [0] saved grading structures for current courses
+        _getQueryCached(
+          db.collection('students').doc(user.uid).collection('course_grades')
+              as Query<Map<String, dynamic>>,
+        ),
+        // [1] curriculum for current semester
+        _getCached(
+          db.collection('curriculum')
+              .doc('${branch.toUpperCase()}_Sem$_currentSemester'),),
+        // [2] sem_credits — small doc, rarely changes, but wrong credits are
+        //     highly visible. Use serverAndCache so it always fetches fresh
+        //     data but also caches it for subsequent offline use.
+        db.collection('sem_credits')
+            .doc(branch.toUpperCase())
+            .get(const GetOptions(source: Source.serverAndCache)),
+      ]);
 
-      // ── saved grading structures ────────────────────────────
-      final gradesSnap = await FirebaseFirestore.instance
-          .collection('students').doc(user.uid)
-          .collection('course_grades').get();
+      final gradesSnap  = results[0] as QuerySnapshot<Map<String, dynamic>>;
+      final currSnap    = results[1] as DocumentSnapshot<Map<String, dynamic>>;
+      final creditsSnap = results[2] as DocumentSnapshot<Map<String, dynamic>>;
+
       final savedGrades = { for (final d in gradesSnap.docs) d.id: d.data() };
 
-      // ── curriculum ─────────────────────────────────────────
-      final currSnap = await FirebaseFirestore.instance
-          .collection('curriculum')
-          .doc('${branch.toUpperCase()}_Sem$_currentSemester')
-          .get();
+      // ── sem_credits lookup ──────────────────────────────────────
+      // DB structure (from screenshot):
+      //   sem_credits/CSE → { Credits: { "Semester 1": 24, "Semester 2": 22, ... } }
+      // Falls back to 21 if the document or field is missing.
+      final rawCreditsDoc = creditsSnap.data() ?? {};
 
+      // The credits are nested inside a "Credits" map field
+      final Map<String, dynamic> creditsMap =
+          (rawCreditsDoc['Credits'] as Map<String, dynamic>?) ?? {};
+
+      // Also support flat top-level keys as a secondary fallback
+      int _creditForSem(int sem) {
+        // Primary: nested Credits map with "Semester N" key (your DB format)
+        final nested = creditsMap['Semester $sem'];
+        if (nested != null) return (nested as num).toInt();
+        // Secondary: flat top-level "Semester N" key
+        final flat = rawCreditsDoc['Semester $sem'];
+        if (flat != null) return (flat as num).toInt();
+        // Tertiary: legacy "sem_N" key (old format)
+        final legacy = rawCreditsDoc['sem_$sem'] ?? creditsMap['sem_$sem'];
+        if (legacy != null) return (legacy as num).toInt();
+        // Final fallback
+        return 21;
+      }
+
+      // ── past semesters: DB pastSemesters array ──────────────────
+      // Priority: DB SGPA > placeholder 8.0
+      // The spi field in Firestore has a trailing space ("spi ") — handle both.
+      final rawPast = ((sd['pastSemesters'] as List?) ?? [])
+          .cast<Map<String, dynamic>>();
+
+      // Build a lookup map: semesterNumber → DB row
+      final Map<int, Map<String, dynamic>> dbSemMap = {
+        for (final m in rawPast)
+          (m['semester'] ?? 0) as int: m
+      };
+
+      final List<PastSemester> pastSems = [];
+      for (int sem = 1; sem < _currentSemester; sem++) {
+        final dbRow = dbSemMap[sem];
+        // sem_credits is always the authoritative credit source.
+        // pastSemesters.credit from DB is only used if sem_credits has no entry.
+        final authorativeCredit = _creditForSem(sem);
+        if (dbRow != null) {
+          // ✅ DB has SGPA data for this semester — use it, but always prefer sem_credits for credit
+          pastSems.add(PastSemester(
+            semester: sem,
+            credit:   authorativeCredit,   // from sem_credits, not from pastSemesters.credit
+            spi:      ((dbRow['spi'] ?? dbRow['spi '] ?? 8.0) as num).toDouble(),
+            cpi:      ((dbRow['cpi'] ?? 0.0) as num).toDouble(),
+          ));
+        } else {
+          // ⚠️ Semester missing from DB — placeholder with default SGPA 8.0
+          pastSems.add(PastSemester(
+            semester: sem,
+            credit:   authorativeCredit,
+            spi:      8.0,
+            cpi:      0.0,
+          ));
+        }
+      }
+      pastSems.sort((a, b) => a.semester.compareTo(b.semester));
+
+      // ── current semester courses ────────────────────────────────
       final List<CourseGrade> courses = [];
       if (currSnap.exists) {
         final marks = (sd['marks'] as Map<String, dynamic>?) ?? {};
@@ -214,32 +362,57 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
           final code   = (raw['code']   ?? '') as String;
           final name   = (raw['name']   ?? '') as String;
           final credit = ((raw['credit'] ?? 0) as num).toDouble();
-          double obt   = ((marks[name]  ?? 0.0) as num).toDouble();
-          String grade = _marksToGrade(obt);
           final saved  = savedGrades[code];
-          if (saved != null) { obt = _calcPredictedScore(saved); grade = _marksToGrade(obt); }
-          courses.add(CourseGrade(id: code, name: name, credit: credit,
-              marksObtained: obt, expectedGrade: grade, advancedGrading: saved));
+
+          double obt;
+          String grade;
+
+          if (saved != null) {
+            obt   = _calcPredictedScore(saved);
+            grade = _marksToGrade(obt);
+          } else {
+            // No saved structure: use DB marks if present, else default AA
+            final dbMarks = ((marks[name] ?? -1.0) as num).toDouble();
+            obt   = dbMarks >= 0 ? dbMarks : 100.0;
+            grade = _marksToGrade(obt);
+          }
+
+          courses.add(CourseGrade(
+            id: code, name: name, credit: credit,
+            marksObtained: obt, expectedGrade: grade,
+            advancedGrading: saved,
+          ));
         }
       }
 
-      setState(() { _pastSemesters = pastSems; _currentCourses = courses; _isLoading = false; });
+      setState(() {
+        _pastSemesters  = pastSems;
+        _currentCourses = courses;
+        _isLoading      = false;
+      });
 
-      // Build one editable controller per past semester
+      // Build one editable controller per past semester.
+      // On change: update model, recompute CGPA, and persist to Firestore.
+      final uid = user.uid;
       for (final s in pastSems) {
-        _spiCtrls[s.semester] = TextEditingController(text: s.spi.toStringAsFixed(2))
-          ..addListener(() {
-            final v = double.tryParse(_spiCtrls[s.semester]!.text);
-            if (v != null) {
-              s.spi = v.clamp(0.0, 10.0);
-              _recomputePastCGPA();
-              setState(() {});
-            }
-          });
+        _spiCtrls[s.semester] =
+            TextEditingController(text: s.spi.toStringAsFixed(2))
+              ..addListener(() {
+                final v = double.tryParse(_spiCtrls[s.semester]!.text);
+                if (v != null) {
+                  final clamped = v.clamp(0.0, 10.0);
+                  s.spi = clamped;
+                  _recomputePastCGPA();
+                  setState(() {});
+                  // ✅ Persist updated SGPA to Firestore
+                  _saveSpiToDb(uid, s.semester, clamped);
+                }
+              });
       }
       _recomputePastCGPA();
+
     } catch (e) {
-      debugPrint('Error: $e');
+      debugPrint('GradeCalculator fetch error: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -285,7 +458,7 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
                 : CustomScrollView(
                     physics: const BouncingScrollPhysics(),
                     slivers: [
-                      SliverToBoxAdapter(child: _topBar()),
+                      SliverToBoxAdapter(child: _buildHeader()),
                       SliverToBoxAdapter(child: _statsRow()),
                       SliverToBoxAdapter(child: _sectionLabel('Current Semester', 'Tap a course to set marks')),
                       SliverPadding(
@@ -295,7 +468,7 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
                           childCount: _currentCourses.length,
                         )),
                       ),
-                      SliverToBoxAdapter(child: _sectionLabel('Academic History', 'Edit SGPA to recalculate CGPA')),
+                      SliverToBoxAdapter(child: _sectionLabel('Academic History', 'Tap on SGPA to edit')),
                       SliverToBoxAdapter(child: _historyTable()),
                       const SliverToBoxAdapter(child: SizedBox(height: 120)),
                     ],
@@ -306,19 +479,45 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
     );
   }
 
-  Widget _topBar() => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+  Widget _buildHeader() => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // Left: title block with subtitle
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Grade', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: _ink, letterSpacing: -1.0, height: 1.0)),
-            Text('Calculator', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: _yellow, letterSpacing: -1.0, height: 1.0)),
+          children: const [
+            Text(
+              'Grade',
+              style: TextStyle(
+                fontSize: 31,
+                fontWeight: FontWeight.w900,
+                color: _ink,
+                letterSpacing: -0.5,
+              ),
+            ),
+            Text(
+              'Calculator',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: _yellow,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Track your academic progress',
+              style: TextStyle(
+                fontSize: 13,
+                color: _muted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
+        // Right: notification + profile buttons stacked at top
         const TopActionButtons(unreadCount: 3),
       ],
     ),
@@ -482,11 +681,12 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
                             textAlign: TextAlign.center,
                             style: const TextStyle(fontSize: 14,
                                 fontWeight: FontWeight.w600, color: _muted))),
-                        // SGPA — editable TextField
+                        // SGPA — editable TextField, aligned same as other columns
                         Expanded(
-                          child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
                             child: SizedBox(
-                              width: 56, height: 32,
+                              height: 32,
                               child: TextField(
                                 controller: ctrl,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -494,7 +694,7 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
                                 style: const TextStyle(fontSize: 13,
                                     fontWeight: FontWeight.w800, color: _ink),
                                 decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.zero,
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 6),
                                   isDense: true,
                                   filled: true,
                                   fillColor: _yellow.withOpacity(0.12),

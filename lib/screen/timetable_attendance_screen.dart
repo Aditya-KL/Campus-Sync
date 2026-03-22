@@ -112,10 +112,11 @@ class _TimetableScreenState extends State<TimetableScreen> {
   // Does NOT touch the main 'attendance' field on the student document.
   // =========================================================================
   Future<void> _checkAndResetTimetableSyncIfNeeded(String uid) async {
-    final tsDocRef = FirebaseFirestore.instance
-        .collection('timetable_attendance')
-        .doc(uid);
-    final tsDoc = await tsDocRef.get();
+    final db = FirebaseFirestore.instance;
+    final tsDocRef = db.collection('timetable_attendance').doc(uid);
+
+    // Cache-first: last_reset_timestamp rarely changes, safe to read from cache
+    final tsDoc = await _getCached(tsDocRef);
 
     DateTime now = DateTime.now();
     int daysSinceSunday = now.weekday == 7 ? 0 : now.weekday;
@@ -127,33 +128,56 @@ class _TimetableScreenState extends State<TimetableScreen> {
         lastResetTs?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
 
     if (lastReset.isBefore(lastSundayMidnight)) {
-      // New week detected → wipe all course/day statuses to 0
-      final coursesSnap = await tsDocRef.collection('courses').get();
+      // New week — must fetch courses from server to wipe them accurately
+      final coursesSnap = await db
+          .collection('timetable_attendance')
+          .doc(uid)
+          .collection('courses')
+          .get(const GetOptions(source: Source.server));
 
-      final WriteBatch batch = FirebaseFirestore.instance.batch();
-      Map<String, int> resetDayMap = {
+      final WriteBatch batch = db.batch();
+      final Map<String, int> resetDayMap = {
         for (var d in _fullDayNames) d: 0,
       };
       for (final doc in coursesSnap.docs) {
         batch.set(doc.reference, resetDayMap, SetOptions(merge: false));
       }
-
-      // Update the reset timestamp on the parent document
       batch.set(tsDocRef, {
         'last_reset_timestamp': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       await batch.commit();
 
-      // Clear local cache immediately
       if (mounted) setState(() => _timetableSyncCache = {});
-
       if (mounted) {
         Future.delayed(const Duration(milliseconds: 500), () {
           CustomTopToast.show(
               context, "Timetable sync reset for the new week! 📅", primaryYellow);
         });
       }
+    }
+  }
+
+  // =========================================================================
+  // 🚀 CACHE-FIRST HELPERS
+  // Try Firestore local cache first (instant on revisit), fall back to
+  // server only on a cache miss. Requires persistenceEnabled: true in main.dart
+  // =========================================================================
+  Future<DocumentSnapshot<Map<String, dynamic>>> _getCached(
+      DocumentReference<Map<String, dynamic>> ref) async {
+    try {
+      return await ref.get(const GetOptions(source: Source.cache));
+    } catch (_) {
+      return ref.get(const GetOptions(source: Source.server));
+    }
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> _getQueryCached(
+      Query<Map<String, dynamic>> query) async {
+    try {
+      return await query.get(const GetOptions(source: Source.cache));
+    } catch (_) {
+      return query.get(const GetOptions(source: Source.server));
     }
   }
 
@@ -182,87 +206,105 @@ class _TimetableScreenState extends State<TimetableScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final userDocRef =
-          FirebaseFirestore.instance.collection('students').doc(user.uid);
-      final userDoc = await userDocRef.get();
+      final db = FirebaseFirestore.instance;
+      final userDocRef = db.collection('students').doc(user.uid);
 
-      if (userDoc.exists) {
-        String branch = userDoc.data()?['branch'] ?? "CSE";
-        String rollNo = userDoc.data()?['rollNo'] ?? "2401cs80";
-        _currentSemester = _calculateCurrentSemester(rollNo);
+      // ── Step 1: student doc (cache-first — branch/rollNo needed for paths) ──
+      final userDoc = await _getCached(userDocRef);
+      if (!userDoc.exists) return;
 
-        // --- MAIN ATTENDANCE WEEKLY RESET (unchanged) ---
-        DateTime now = DateTime.now();
-        int daysSinceSunday = now.weekday == 7 ? 0 : now.weekday;
-        DateTime lastSundayMidnight = DateTime(now.year, now.month, now.day)
-            .subtract(Duration(days: daysSinceSunday));
+      final String branch = userDoc.data()?['branch'] ?? "CSE";
+      final String rollNo = userDoc.data()?['rollNo'] ?? "2401cs80";
+      _currentSemester = _calculateCurrentSemester(rollNo);
 
-        Timestamp? lastResetTs = userDoc.data()?['last_reset_timestamp'];
-        DateTime lastReset =
-            lastResetTs?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+      // ── Main attendance weekly reset (needs fresh server data) ──────────
+      DateTime now = DateTime.now();
+      int daysSinceSunday = now.weekday == 7 ? 0 : now.weekday;
+      DateTime lastSundayMidnight = DateTime(now.year, now.month, now.day)
+          .subtract(Duration(days: daysSinceSunday));
 
-        if (lastReset.isBefore(lastSundayMidnight)) {
-          Map<String, dynamic> rawAtt =
-              userDoc.data()?['attendance'] ?? {};
-          Map<String, Map<String, int>> resetStats = {};
-          rawAtt.forEach((key, _) {
-            resetStats[key] = {'attended': 0, 'total': 0};
+      Timestamp? lastResetTs = userDoc.data()?['last_reset_timestamp'];
+      DateTime lastReset =
+          lastResetTs?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+      if (lastReset.isBefore(lastSundayMidnight)) {
+        Map<String, dynamic> rawAtt = userDoc.data()?['attendance'] ?? {};
+        Map<String, Map<String, int>> resetStats = {};
+        rawAtt.forEach((key, _) {
+          resetStats[key] = {'attended': 0, 'total': 0};
+        });
+        await userDocRef.update({
+          'attendance': resetStats,
+          'last_reset_timestamp': FieldValue.serverTimestamp(),
+        });
+        if (mounted) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            CustomTopToast.show(
+                context, "Attendance reset for the new week! 📅", primaryYellow);
           });
-
-          await userDocRef.update({
-            'attendance': resetStats,
-            'last_reset_timestamp': FieldValue.serverTimestamp(),
-          });
-
-          if (mounted) {
-            Future.delayed(const Duration(milliseconds: 500), () {
-              CustomTopToast.show(
-                  context, "Attendance reset for the new week! 📅", primaryYellow);
-            });
-          }
         }
-
-        // --- 🟡 TIMETABLE SYNC: Weekly reset check (independent) ---
-        await _checkAndResetTimetableSyncIfNeeded(user.uid);
-
-        // --- FETCH STATIC DATA (Timetable & Courses) ---
-        int startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
-        int duration = (rollNo.length >= 4 &&
-                (rollNo.substring(2, 4) == '02' ||
-                    rollNo.substring(2, 4) == '03'))
-            ? 5
-            : 4;
-        String batch = "$startYear-${startYear + duration}";
-
-        String timetableDocId = "${branch.toUpperCase()}_$batch";
-        final timetableDoc = await FirebaseFirestore.instance
-            .collection('timetables')
-            .doc(timetableDocId)
-            .get();
-        if (timetableDoc.exists) {
-          _todayClasses = timetableDoc.data()?[_fullDayNames[_selectedDayIndex]] ??
-              timetableDoc.data()?["Monday"] ??
-              [];
-        }
-
-        String curriculumDocId =
-            "${branch.toUpperCase()}_Sem$_currentSemester";
-        final currDoc = await FirebaseFirestore.instance
-            .collection('curriculum')
-            .doc(curriculumDocId)
-            .get();
-        if (currDoc.exists) {
-          _myCourses = List<Map<String, dynamic>>.from(
-              currDoc.data()?['courses'] ?? []);
-        }
-
-        // --- 🟡 TIMETABLE SYNC: Load cache into memory ---
-        await _loadTimetableSyncCache(user.uid);
-
-        setState(() => _isLoading = false);
       }
+
+      // ── Timetable sync weekly reset (independent) ───────────────────────
+      await _checkAndResetTimetableSyncIfNeeded(user.uid);
+
+      // ── Step 2: build paths, then fire timetable + curriculum IN PARALLEL ──
+      int startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
+      int duration = (rollNo.length >= 4 &&
+              (rollNo.substring(2, 4) == '02' || rollNo.substring(2, 4) == '03'))
+          ? 5
+          : 4;
+      final String batchId = "$startYear-${startYear + duration}";
+      final String timetableDocId = "${branch.toUpperCase()}_$batchId";
+      final String curriculumDocId = "${branch.toUpperCase()}_Sem$_currentSemester";
+
+      final results = await Future.wait([
+        // [0] timetable doc (cache-first)
+        _getCached(db.collection('timetables').doc(timetableDocId)),
+        // [1] curriculum doc (cache-first)
+        _getCached(db.collection('curriculum').doc(curriculumDocId)),
+        // [2] timetable sync cache (cache-first query)
+        _getQueryCached(db
+            .collection('timetable_attendance')
+            .doc(user.uid)
+            .collection('courses') as Query<Map<String, dynamic>>),
+      ]);
+
+      final timetableDoc = results[0] as DocumentSnapshot<Map<String, dynamic>>;
+      final currDoc      = results[1] as DocumentSnapshot<Map<String, dynamic>>;
+      final syncSnap     = results[2] as QuerySnapshot<Map<String, dynamic>>;
+
+      if (timetableDoc.exists) {
+        _todayClasses =
+            timetableDoc.data()?[_fullDayNames[_selectedDayIndex]] ??
+            timetableDoc.data()?["Monday"] ??
+            [];
+      }
+
+      if (currDoc.exists) {
+        _myCourses = List<Map<String, dynamic>>.from(
+            currDoc.data()?['courses'] ?? []);
+      }
+
+      // ── Build timetable sync cache from query snapshot ──────────────────
+      Map<String, Map<String, int>> syncCache = {};
+      for (final doc in syncSnap.docs) {
+        final data = doc.data();
+        Map<String, int> dayMap = {};
+        for (final day in _fullDayNames) {
+          int raw = (data[day] ?? 0) as int;
+          dayMap[day] = (raw == 1 || raw == -1) ? raw : 0;
+        }
+        syncCache[doc.id] = dayMap;
+      }
+
+      setState(() {
+        _timetableSyncCache = syncCache;
+        _isLoading = false;
+      });
+
     } catch (e) {
-      debugPrint("Init Error: $e");
+      debugPrint("Timetable Init Error: $e");
       setState(() => _isLoading = false);
     }
   }
@@ -270,35 +312,31 @@ class _TimetableScreenState extends State<TimetableScreen> {
   Future<void> _fetchClassesForDay() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-    final userDoc = await FirebaseFirestore.instance
-        .collection('students')
-        .doc(user.uid)
-        .get();
+
+    final db = FirebaseFirestore.instance;
+
+    // Student doc comes from cache (branch/rollNo never change mid-session)
+    final userDoc = await _getCached(db.collection('students').doc(user.uid));
     if (!userDoc.exists) return;
 
-    String branch = userDoc.data()?['branch'] ?? "CSE";
-    String rollNo = userDoc.data()?['rollNo'] ?? "2401cs80";
-    int startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
-    int duration = (rollNo.length >= 4 &&
-            (rollNo.substring(2, 4) == '02' ||
-                rollNo.substring(2, 4) == '03'))
+    final String branch = userDoc.data()?['branch'] ?? "CSE";
+    final String rollNo = userDoc.data()?['rollNo'] ?? "2401cs80";
+    final int startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
+    final int duration = (rollNo.length >= 4 &&
+            (rollNo.substring(2, 4) == '02' || rollNo.substring(2, 4) == '03'))
         ? 5
         : 4;
-    String batch = "$startYear-${startYear + duration}";
+    final String batchId      = "$startYear-${startYear + duration}";
+    final String timetableDocId = "${branch.toUpperCase()}_$batchId";
 
-    String timetableDocId = "${branch.toUpperCase()}_$batch";
-    final timetableDoc = await FirebaseFirestore.instance
-        .collection('timetables')
-        .doc(timetableDocId)
-        .get();
+    // Timetable doc: cache-first (same doc, different day field access)
+    final timetableDoc = await _getCached(db.collection('timetables')
+        .doc(timetableDocId));
 
     setState(() {
-      if (timetableDoc.exists) {
-        _todayClasses =
-            timetableDoc.data()?[_fullDayNames[_selectedDayIndex]] ?? [];
-      } else {
-        _todayClasses = [];
-      }
+      _todayClasses = timetableDoc.exists
+          ? (timetableDoc.data()?[_fullDayNames[_selectedDayIndex]] ?? [])
+          : [];
       _isLoading = false;
     });
   }
@@ -500,6 +538,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,12 +547,19 @@ class _TimetableScreenState extends State<TimetableScreen> {
                   style: TextStyle(
                       fontSize: 31,
                       fontWeight: FontWeight.w900,
-                      color: textBlack)),
+                      color: textBlack,
+                      letterSpacing: -0.5)),
               Text("Schedule",
                   style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
                       color: primaryYellow)),
+              const SizedBox(height: 6),
+              Text("Manage your attendance",
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: textGrey,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
           const TopActionButtons(unreadCount: 2),

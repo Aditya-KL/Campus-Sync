@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'screen/auth_screen.dart';
-import 'screen/dashboard_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// ✅ SplashScreen now lives in screen/splash_screen.dart
+import 'screen/splash_screen.dart';
 
 void main() async {
-  // 1. Initialize Flutter and Firebase
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Enable Firestore offline persistence
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
 
   runApp(const CampusSyncApp());
 }
@@ -21,91 +27,51 @@ class CampusSyncApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'CampusSync',
+
+      // ── Light theme matching the app's yellow/white/grey palette ──
       theme: ThemeData(
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         fontFamily: 'Poppins',
-        scaffoldBackgroundColor: const Color(
-          0xFF121212,
-        ), // Deep dark background
-        primaryColor: Colors.white,
+        scaffoldBackgroundColor: const Color(0xFFF0F2F5),
+        primaryColor: const Color(0xFFFFD166),
+        colorScheme: ColorScheme.light(
+          primary: const Color(0xFFFFD166),
+          secondary: const Color(0xFFE5A91A),
+          surface: Colors.white,
+          background: const Color(0xFFF0F2F5),
+          onPrimary: const Color(0xFF1A1D20),
+          onBackground: const Color(0xFF1A1D20),
+          onSurface: const Color(0xFF1A1D20),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xFF1A1D20)),
+          titleTextStyle: TextStyle(
+            color: Color(0xFF1A1D20),
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            fontFamily: 'Poppins',
+          ),
+        ),
+        textTheme: const TextTheme(
+          headlineLarge: TextStyle(
+              color: Color(0xFF1A1D20),
+              fontWeight: FontWeight.w900,
+              fontFamily: 'Poppins'),
+          headlineMedium: TextStyle(
+              color: Color(0xFF1A1D20),
+              fontWeight: FontWeight.w800,
+              fontFamily: 'Poppins'),
+          bodyMedium: TextStyle(
+              color: Color(0xFF6C757D),
+              fontFamily: 'Poppins'),
+        ),
       ),
-      // The app always starts with the Splash Screen
+
+      // ✅ Points to the real SplashScreen in screen/splash_screen.dart
+      // Auth logic (remember me, email verification) lives there.
       home: const SplashScreen(),
-    );
-  }
-}
-
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _checkAuthStatus();
-  }
-
-  Future<void> _checkAuthStatus() async {
-    // 2. Add a artificial delay so the user actually sees your splash screen
-    // Adjust the duration (e.g., 2 or 3 seconds) as per your branding needs
-    await Future.delayed(const Duration(seconds: 3));
-
-    final prefs = await SharedPreferences.getInstance();
-    final bool rememberMe = prefs.getBool('remember_me') ?? false;
-    User? user = FirebaseAuth.instance.currentUser;
-
-    // 3. Logic: If "Remember Me" is off, force a sign-out if a user session exists
-    if (!rememberMe && user != null) {
-      await FirebaseAuth.instance.signOut();
-      user = null;
-    }
-
-    // 4. Determine final destination
-    // User must exist, be verified (if required), and have chosen 'Remember Me'
-    bool canAutoLogin = (user != null && user.emailVerified && rememberMe);
-
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              canAutoLogin ? const DashboardScreen() : const AuthScreen(),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Replace this Icon with your actual logo Image.asset()
-            Icon(Icons.sync_rounded, size: 100, color: Colors.blueAccent),
-            SizedBox(height: 24),
-            Text(
-              'CampusSync',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-            SizedBox(height: 40),
-            // A subtle loader to show the app is working
-            CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
