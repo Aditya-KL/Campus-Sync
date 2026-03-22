@@ -1,169 +1,319 @@
 // lib/services/cloudinary_service.dart
 //
-// Improvements over original:
-//  • Singleton — one instance shared across the whole app.
-//  • Typed CloudinaryUploadException with a code field so callers can
-//    distinguish network errors from file-not-found errors, etc.
-//  • Pre-upload validation: checks file exists and is <= 10 MB.
-//  • onProgress callback (0.0 -> 1.0) for upload progress rings.
-//  • Convenience wrappers: uploadProfilePicture / uploadDocument.
-//  • Static optimiseUrl() helper: appends Cloudinary transforms so images
-//    load faster in the UI without extra packages.
-//  • All errors caught and re-thrown as CloudinaryUploadException —
-//    callers never see raw Cloudinary or Socket internals.
+// ── WHAT THIS FILE DOES ──────────────────────────────────────
+//
+// 1. Uploads files (JPG, PNG, PDF) to Cloudinary via the unsigned
+//    upload API using dart:http — NO extra Cloudinary packages needed.
+//    Remove 'cloudinary_public' from pubspec.yaml; add 'http: ^1.2.0'.
+//
+// 2. After upload, saves the URL to Firestore:
+//    images/{uid} → field named by [slot]
+//    Slots: 'profile', 'id_card', 'fee_receipt',
+//           'semester_marksheet', 'gate_qr',
+//           'marksheet_2', 'marksheet_3', 'marksheet_4'
+//
+// 3. fetchAllUrls(uid) → Map<slot, url>  instant, no local files.
+//
+// 4. 1 MB max file size enforced before network.
+//
+// 5. Progress: 0.05 → 0.15 → 0.90 → 1.0
+//
+// ── FIRESTORE STRUCTURE ──────────────────────────────────────
+//   images/
+//     {uid}/
+//       profile:             "https://res.cloudinary.com/..."
+//       id_card:             "https://..."
+//       fee_receipt:         "https://..."
+//       semester_marksheet:  "https://..."
+//       gate_qr:             "https://..."
+//       marksheet_2:         "https://..."
+//       marksheet_3:         "https://..."
+//       marksheet_4:         "https://..."
+//       updatedAt:           Timestamp
+//
+// ── CLOUDINARY ONE-TIME SETUP ────────────────────────────────
+//   1. Sign up at cloudinary.com (free tier).
+//   2. Settings → Upload → Upload Presets → Add preset
+//      → Signing mode = UNSIGNED → note the preset name.
+//   3. Note your Cloud Name from the dashboard.
+//   4. pubspec.yaml:  http: ^1.2.0
+//   5. No API key/secret in the app — unsigned preset is safe.
 
+import 'dart:convert';
 import 'dart:io';
-import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 
 // ─────────────────────────────────────────────────────────────
 // TYPED ERROR
 // ─────────────────────────────────────────────────────────────
 class CloudinaryUploadException implements Exception {
   final String message;
-
-  /// One of:
-  /// 'file_not_found' | 'file_too_large' | 'upload_failed' |
-  /// 'empty_url'      | 'network'        | 'unknown'
+  // 'file_not_found' | 'file_too_large' | 'bad_format' |
+  // 'upload_failed'  | 'empty_url'      | 'network'    | 'unknown'
   final String code;
-
   const CloudinaryUploadException(this.message, {this.code = 'unknown'});
-
   @override
   String toString() => 'CloudinaryUploadException[$code]: $message';
 }
 
 // ─────────────────────────────────────────────────────────────
-// SERVICE
+// SLOTS  —  UI card name → Firestore field name
+// ─────────────────────────────────────────────────────────────
+class CloudinarySlots {
+  static const String profile           = 'profile';
+  static const String idCard            = 'id_card';
+  static const String feeReceipt        = 'fee_receipt';
+  static const String semesterMarksheet = 'semester_marksheet';
+  static const String gateQr            = 'gate_qr';
+  static const String marksheet2        = 'marksheet_2';
+  static const String marksheet3        = 'marksheet_3';
+  static const String marksheet4        = 'marksheet_4';
+
+  static String fromDocName(String docName) {
+    switch (docName) {
+      case 'ID Card':            return idCard;
+      case 'Fee Receipt':        return feeReceipt;
+      case 'Semester Marksheet': return semesterMarksheet;
+      case 'Gate QR':            return gateQr;
+      default:
+        return docName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// SERVICE  (singleton)
 // ─────────────────────────────────────────────────────────────
 class CloudinaryService {
-  // ── Credentials ─────────────────────────────────────────────
-  // The upload preset must be UNSIGNED in Cloudinary Console:
-  //   Settings -> Upload -> Upload Presets -> campus_sync_preset -> Unsigned
+  // ── ★ UPDATE THESE WITH YOUR OWN VALUES ★ ───────────────────
   static const String _cloudName    = 'dw35xfpla';
-  static const String _uploadPreset = 'campus_sync_preset';
+  static const String _uploadPreset = 'campus_sync_preset'; // UNSIGNED
+  // ────────────────────────────────────────────────────────────
 
-  // Singleton — factory constructor returns the same instance every time
+  static const int _maxBytes = 1 * 1024 * 1024; // 1 MB
+  static const Set<String> _allowed = {'jpg', 'jpeg', 'png', 'pdf'};
+
   static final CloudinaryService _instance = CloudinaryService._internal();
   factory CloudinaryService() => _instance;
   CloudinaryService._internal();
 
-  // cache: false -> never serve a stale URL from a previous run
-  final _cloudinary = CloudinaryPublic(_cloudName, _uploadPreset, cache: false);
+  final _db = FirebaseFirestore.instance;
 
-  // ── Core upload ──────────────────────────────────────────────
-  /// Uploads any local file to Cloudinary under campus_sync/{userId}/{fileLabel}.
-  ///
-  /// Re-uploading with the same [fileLabel] overwrites the old file in
-  /// Cloudinary, keeping storage clean (ideal for profile pictures).
-  ///
-  /// [onProgress] fires with values 0.0 -> 1.0 as upload progresses.
-  /// Returns the final secure HTTPS URL.
-  /// Throws [CloudinaryUploadException] on any failure.
+  // ─────────────────────────────────────────────────────────────
+  // CORE UPLOAD
+  //
+  // Why we append a timestamp to public_id:
+  //   Unsigned presets don't allow 'overwrite: true'.
+  //   Without overwrite, uploading to the same public_id returns the
+  //   OLD cached URL — the image never actually changes in the CDN.
+  //
+  //   Solution: every upload gets a UNIQUE public_id by appending the
+  //   current Unix timestamp (e.g. campus_sync/uid/id_card_1748291234).
+  //   This forces Cloudinary to create a fresh asset every time.
+  //   The old Cloudinary asset is abandoned (free tier: 25 GB storage,
+  //   so this is fine). Firestore is updated to the new URL atomically:
+  //   old field deleted → new field written in a single batch.
+  // ─────────────────────────────────────────────────────────────
   Future<String> uploadFile({
     required String userId,
     required String filePath,
-    required String fileLabel,
+    required String slot,
     void Function(double progress)? onProgress,
   }) async {
-    // 1. File-exists check
     final file = File(filePath);
     if (!file.existsSync()) {
       throw const CloudinaryUploadException(
-        'The selected file could not be found on the device.',
-        code: 'file_not_found',
-      );
+          'File not found on device.', code: 'file_not_found');
     }
 
-    // 2. Size check (10 MB cap on Cloudinary free plan)
+    final ext = filePath.split('.').last.toLowerCase();
+    if (!_allowed.contains(ext)) {
+      throw CloudinaryUploadException(
+          'Only JPG, PNG and PDF files are allowed (got .$ext).',
+          code: 'bad_format');
+    }
+
     final sizeBytes = await file.length();
-    const maxBytes  = 10 * 1024 * 1024; // 10 MB
-    if (sizeBytes > maxBytes) {
-      throw const CloudinaryUploadException(
-        'File exceeds the 10 MB limit. Please choose a smaller image.',
-        code: 'file_too_large',
-      );
+    if (sizeBytes > _maxBytes) {
+      final mb = (sizeBytes / _maxBytes).toStringAsFixed(2);
+      throw CloudinaryUploadException(
+          'File is ${mb} MB — maximum allowed is 1 MB. Please compress it.',
+          code: 'file_too_large');
     }
 
     try {
-      onProgress?.call(0.05); // signal: upload starting
+      onProgress?.call(0.05);
 
-      final response = await _cloudinary.uploadFile(
-        CloudinaryFile.fromFile(
-          filePath,
-          folder:       'campus_sync/$userId', // organised per user
-          identifier:   fileLabel,             // same label = overwrites
-          resourceType: CloudinaryResourceType.Image,
-        ),
-      );
+      // ── Unique public_id — one folder per user ───────────────
+      // Structure in Cloudinary Media Library:
+      //   campus_sync/
+      //     users/
+      //       {uid}/              ← dedicated folder per student
+      //         id_card_1748291234
+      //         fee_receipt_1748291890
+      //         profile_1748290000
+      //         ...
+      //
+      // Timestamp suffix makes every upload a brand-new asset,
+      // bypassing the unsigned-preset overwrite restriction.
+      final ts           = DateTime.now().millisecondsSinceEpoch;
+      final publicId     = 'campus_sync/users/$userId/${slot}_$ts';
+      final resourceType = ext == 'pdf' ? 'raw' : 'image';
+      final uri          = Uri.parse(
+          'https://api.cloudinary.com/v1_1/$_cloudName/$resourceType/upload');
 
-      onProgress?.call(1.0); // signal: complete
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['upload_preset'] = _uploadPreset
+        ..fields['folder'] = 'campus_sync/users/$userId'
+        ..fields['public_id'] = '${slot}_$ts'
+        ..files.add(await http.MultipartFile.fromPath('file', filePath));
 
-      if (response.secureUrl.isEmpty) {
-        throw const CloudinaryUploadException(
-          'Upload finished but no URL was returned.',
-          code: 'empty_url',
-        );
+      onProgress?.call(0.15);
+
+      final streamed  = await request.send();
+      final bodyBytes = await streamed.stream.toBytes();
+      final body      = utf8.decode(bodyBytes);
+
+      onProgress?.call(0.85);
+
+      if (streamed.statusCode != 200) {
+        String msg = 'Upload failed (HTTP ${streamed.statusCode}).';
+        try {
+          final j = jsonDecode(body) as Map<String, dynamic>;
+          msg = (j['error']?['message'] as String?) ?? msg;
+        } catch (_) {}
+        throw CloudinaryUploadException(msg, code: 'upload_failed');
       }
 
-      return response.secureUrl;
+      final json      = jsonDecode(body) as Map<String, dynamic>;
+      final secureUrl = (json['secure_url'] as String?) ?? '';
+      if (secureUrl.isEmpty) {
+        throw const CloudinaryUploadException(
+            'Upload succeeded but no URL was returned.', code: 'empty_url');
+      }
+
+      onProgress?.call(0.95);
+
+      // ── Atomic Firestore update ───────────────────────────────
+      // Delete the old field first, then write the new URL.
+      // Using a WriteBatch so both operations are atomic — the UI
+      // never sees a state where both old and new URLs exist.
+      final docRef = _db.collection('images').doc(userId);
+      final batch  = _db.batch();
+      // Step 1: delete old field (FieldValue.delete removes the key entirely)
+      batch.update(docRef, {slot: FieldValue.delete()});
+      // Step 2: write new URL + timestamp
+      batch.set(docRef, {
+        slot:        secureUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      await batch.commit();
+
+      onProgress?.call(1.0);
+      return secureUrl;
 
     } on CloudinaryUploadException {
       rethrow;
     } on SocketException {
       throw const CloudinaryUploadException(
-        'No internet connection. Check your network and try again.',
-        code: 'network',
-      );
-    } on CloudinaryException catch (e) {
-      throw CloudinaryUploadException(
-        'Upload failed: ${e.message}',
-        code: 'upload_failed',
-      );
+          'No internet. Please check your network and retry.',
+          code: 'network');
     } catch (e) {
       throw CloudinaryUploadException(
-        'Unexpected upload error: $e',
-        code: 'unknown',
-      );
+          'Unexpected upload error: $e', code: 'unknown');
     }
   }
 
-  // ── Convenience: profile picture ────────────────────────────
-  /// Stored as campus_sync/{userId}/profile — overwrites on re-upload.
+  // ─────────────────────────────────────────────────────────────
+  // CONVENIENCE WRAPPERS
+  // ─────────────────────────────────────────────────────────────
+
   Future<String> uploadProfilePicture({
     required String userId,
     required String filePath,
     void Function(double)? onProgress,
   }) =>
       uploadFile(
-        userId:     userId,
-        filePath:   filePath,
-        fileLabel:  'profile',
-        onProgress: onProgress,
-      );
+          userId: userId, filePath: filePath,
+          slot: CloudinarySlots.profile, onProgress: onProgress);
 
-  // ── Convenience: document ────────────────────────────────────
-  Future<String> uploadDocument({
+  Future<String> uploadDocumentCard({
     required String userId,
     required String filePath,
-    required String docLabel,
+    required String docName,
     void Function(double)? onProgress,
   }) =>
       uploadFile(
-        userId:     userId,
-        filePath:   filePath,
-        fileLabel:  'doc_$docLabel',
-        onProgress: onProgress,
-      );
+          userId: userId, filePath: filePath,
+          slot: CloudinarySlots.fromDocName(docName), onProgress: onProgress);
 
-  // ── URL optimisation ─────────────────────────────────────────
-  /// Inserts Cloudinary auto-quality + auto-format + width transforms into
-  /// an existing secure URL so images load faster without extra packages.
-  /// [width] is in logical pixels; doubled internally for @2x screens.
+  // ─────────────────────────────────────────────────────────────
+  // FETCH  —  all saved URLs from Firestore
+  //
+  // serverAndCache: returns instantly from local cache, then
+  // refreshes in background. On first install falls back to server.
+  // ─────────────────────────────────────────────────────────────
+  Future<Map<String, String>> fetchAllUrls(String userId) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> snap;
+      try {
+        snap = await _db.collection('images').doc(userId)
+            .get(const GetOptions(source: Source.serverAndCache));
+      } catch (_) {
+        snap = await _db.collection('images').doc(userId)
+            .get(const GetOptions(source: Source.cache));
+      }
+      if (!snap.exists || snap.data() == null) return {};
+      final out = <String, String>{};
+      snap.data()!.forEach((k, v) {
+        if (k != 'updatedAt' && v is String && v.isNotEmpty) out[k] = v;
+      });
+      return out;
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<String?> fetchUrl(String userId, String slot) async =>
+      (await fetchAllUrls(userId))[slot];
+
+  // ─────────────────────────────────────────────────────────────
+  // DELETE  —  removes the Firestore field for this slot.
+  //
+  // The old Cloudinary asset is NOT deleted here because unsigned
+  // presets cannot call the Cloudinary Destroy API (it requires a
+  // signed request with API secret). The old asset simply becomes
+  // unreferenced — it will sit in your Cloudinary media library
+  // but the app will never show or use it again.
+  //
+  // Free tier gives 25 GB storage so this is not a problem in
+  // practice. To bulk-clean old assets, go to:
+  //   Cloudinary Console → Media Library → campus_sync/{uid}/
+  //   and delete manually if needed.
+  // ─────────────────────────────────────────────────────────────
+  Future<void> deleteUrl(String userId, String slot) async {
+    try {
+      await _db.collection('images').doc(userId).update({
+        slot:        FieldValue.delete(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {}
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // URL OPTIMISATION
+  // Inserts Cloudinary transform params so cards load fast.
+  // PDFs returned unchanged (no image transforms).
+  // [width] is logical px; doubled for @2x screens.
+  // ─────────────────────────────────────────────────────────────
   static String optimiseUrl(String url, {int width = 200}) {
     if (url.isEmpty || !url.contains('cloudinary.com')) return url;
+    if (url.contains('/raw/upload/')) return url; // PDF
     return url.replaceFirst(
-      '/upload/',
-      '/upload/w_${width * 2},c_fill,q_auto,f_auto/',
-    );
+        '/upload/', '/upload/w_${width * 2},c_fill,q_auto,f_auto/');
   }
+
+  static bool isPdf(String url) =>
+      url.isNotEmpty && url.contains('/raw/upload/');
 }
