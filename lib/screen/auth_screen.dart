@@ -46,10 +46,8 @@ class _AuthScreenState extends State<AuthScreen>
   final List<String> _branches = [
     'CSE', 'AI', 'CBE', 'CE', 'CST', 'ECE',
     'ECO', 'EEE', 'EP', 'ME', 'MME', 'MNC',
-
   ];
 
-  
   // ── animations ─────────────────────────────────────────────
   late AnimationController _entryCtrl;
   late AnimationController _bubbleCtrl;
@@ -142,6 +140,19 @@ class _AuthScreenState extends State<AuthScreen>
           setState(() => _generalError = 'Passwords do not match.');
           return;
         }
+
+        // ROLL NUMBER VALIDATION LOGIC MOVED HERE
+        if (_rollCtrl.text.trim().isEmpty) {
+          setState(() => _generalError = 'Roll number is required.');
+          return;
+        }
+        final pattern = r'^[12][0-9][012][123](AI|CB|CE|CS|CT|EC|EE|ES|MC|ME|MM|PH|PR|CM|GT|MT|PC|ST|VL)[0-9]{2}$';
+        final regExp = RegExp(pattern);
+        if (!regExp.hasMatch(_rollCtrl.text.trim().toUpperCase())) {
+          setState(() => _generalError = 'Invalid Roll Number format.');
+          return;
+        }
+
         if (_selectedBranch == null) {
           setState(() => _generalError = 'Please select your branch.');
           return;
@@ -151,11 +162,6 @@ class _AuthScreenState extends State<AuthScreen>
           password: _passCtrl.text.trim(),
         );
 
-        // Send verification email — plain call works out of the box.
-        // ActionCodeSettings with page.link requires Firebase Dynamic Links
-        // to be configured separately and causes errors if not set up.
-        // To keep the link active longer: Firebase Console →
-        // Authentication → Templates → Email address verification → Link expiry.
         await cred.user!.sendEmailVerification();
 
         await FirebaseFirestore.instance
@@ -163,15 +169,13 @@ class _AuthScreenState extends State<AuthScreen>
             .doc(cred.user!.uid)
             .set({
           'name':   _nameCtrl.text.trim(),
-          'rollNo': _rollCtrl.text.trim(),
+          'rollNo': _rollCtrl.text.trim().toUpperCase(), // Save as uppercase
           'branch': _selectedBranch,
           'email':  _emailCtrl.text.trim(),
           'isDeveloper': false,
         });
 
         await FirebaseAuth.instance.signOut();
-        // Set the success message inside the switch callback so it
-        // is not wiped when _switchMode clears _generalError
         _switchMode(() {
           _isLogin      = true;
           _generalError = '✓ Verification email sent! Check your inbox.';
@@ -192,7 +196,6 @@ class _AuthScreenState extends State<AuthScreen>
       }
       setState(() => _generalError = msg);
     } catch (e) {
-      // Catches Firestore write errors, network issues etc.
       debugPrint('Auth error: $e');
       setState(() => _generalError = 'Something went wrong. Please try again.');
     } finally {
@@ -201,11 +204,6 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   // ── Firebase: Password reset ────────────────────────────────
-  // Plain sendPasswordResetEmail works without any extra setup.
-  // To keep the link active longer: Firebase Console →
-  // Authentication → Templates → Password reset → Link expiry.
-  // To improve inbox delivery: customise "From name" and "Reply-to"
-  // in that same Templates section.
   Future<void> _sendResetLink() async {
     setState(() { _emailError = null; _generalError = null; });
 
@@ -216,12 +214,9 @@ class _AuthScreenState extends State<AuthScreen>
 
     setState(() => _isLoading = true);
     try {
-      // Plain call — no ActionCodeSettings needed
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: _emailCtrl.text.trim(),
       );
-      // Switch back to login and show success inside the callback
-      // so _switchMode doesn't wipe the message
       _switchMode(() {
         _isForgot     = false;
         _generalError = '✓ Reset link sent to ${_emailCtrl.text.trim()}. '
@@ -343,7 +338,7 @@ class _AuthScreenState extends State<AuthScreen>
           ),
         ),
         const SizedBox(height: 4),
-        Text(
+        const Text(
           'Your college. Organised.',
           style: TextStyle(
               fontSize: 13,
@@ -418,7 +413,7 @@ class _AuthScreenState extends State<AuthScreen>
                         : null,
                   ),
                   const SizedBox(width: 8),
-                  Text('Remember me',
+                  const Text('Remember me',
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -429,7 +424,7 @@ class _AuthScreenState extends State<AuthScreen>
             const Spacer(),
             GestureDetector(
               onTap: () => _switchMode(() => _isForgot = true),
-              child: Text('Forgot password?',
+              child: const Text('Forgot password?',
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -464,26 +459,20 @@ class _AuthScreenState extends State<AuthScreen>
         Row(
           children: [
             Expanded(
-              child: TextFormField(
-                controller: _rollCtrl,
-                keyboardType: TextInputType.text, // Allows letters for the Dept Code
-                maxLength: 8,
-                textCapitalization: TextCapitalization.characters, // Auto-uppercase
-                decoration: InputDecoration(
-                  labelText: 'Roll Number',
-                  prefixIcon: Icon(Icons.tag_rounded),
-                  counterText: "", 
+              // PROPERLY STYLED ROLL NUMBER FIELD
+              child: _fieldContainer(
+                child: TextField(
+                  controller: _rollCtrl,
+                  keyboardType: TextInputType.text,
+                  maxLength: 8,
+                  textCapitalization: TextCapitalization.characters,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600, color: _ink),
+                  decoration: _inputDecoration(
+                    'Roll No',
+                    Icons.tag_rounded,
+                  ).copyWith(counterText: ""), // Hides the max length counter
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Required';
-                  final pattern = r'^[12][0-9][012][123](AI|CB|CE|CS|CT|EC|EE|ES|MC|ME|MM|PH|PR|CM|GT|MT|PC|ST|VL)[0-9]{2}$';
-                  final regExp = RegExp(pattern);
-
-                  if (!regExp.hasMatch(value.toUpperCase())) {
-                    return 'Invalid Roll Number';
-                  }
-                  return null;
-                },
               ),
             ),
             const SizedBox(width: 12),
@@ -542,7 +531,7 @@ class _AuthScreenState extends State<AuthScreen>
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Text(text,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: _muted)),
@@ -673,6 +662,7 @@ class _AuthScreenState extends State<AuthScreen>
   Widget _branchDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: 48, // Added fixed height to match text fields perfectly
       decoration: BoxDecoration(
         color: const Color(0xFFF8F9FA),
         borderRadius: BorderRadius.circular(14),
@@ -684,7 +674,7 @@ class _AuthScreenState extends State<AuthScreen>
           hint: Text('Branch',
               style: TextStyle(
                   color: _muted.withOpacity(0.7), fontSize: 13)),
-          icon: Icon(Icons.keyboard_arrow_down_rounded,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
               color: _muted, size: 18),
           dropdownColor: Colors.white,
           isExpanded: true,
@@ -810,8 +800,6 @@ class _AuthScreenState extends State<AuthScreen>
 
 // ─────────────────────────────────────────────────────────────
 // ANIMATED BUBBLES BACKGROUND
-// Soft floating circles matching the app-wide bubble theme,
-// but with gentle parallax-style drift animation
 // ─────────────────────────────────────────────────────────────
 class _AnimatedBubbles extends StatelessWidget {
   final Animation<double> pulseAnim;

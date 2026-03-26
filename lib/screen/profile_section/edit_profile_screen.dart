@@ -1,20 +1,8 @@
-// lib/screen/profile_section/edit_profile_screen.dart
-//
-// What was added on top of the provided original:
-//  • Branch dropdown (12 options, pre-filled from Firestore).
-//  • Profile photo picker with preview dialog before upload.
-//  • Cloudinary upload with progress ring on avatar.
-//  • profilePhoto URL saved to Firestore on save.
-//  • serverAndCache fetch so data is always fresh.
-//  • Consistent styling with profile_screen.dart.
-//  • All original functionality (name, phone, roll, email read-only) kept.
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../../services/cloudinary_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -25,37 +13,33 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  // ── palette ─────────────────────────────────────────────────
   final Color primaryYellow  = const Color(0xFFFFD166);
   final Color backgroundGrey = const Color(0xFFF0F2F5);
   final Color surfaceWhite   = Colors.white;
   final Color textBlack      = const Color(0xFF1A1D20);
   final Color textGrey       = const Color(0xFF6C757D);
 
-  // ── all supported branches ──────────────────────────────────
   static const List<String> _branches = [
     'CSE', 'AI', 'CBE', 'CE', 'CST', 'ECE',
     'ECO', 'EEE', 'EP', 'ME', 'MME', 'MNC',
   ];
 
-  // ── controllers ─────────────────────────────────────────────
   final TextEditingController _nameController   = TextEditingController();
   final TextEditingController _phoneController  = TextEditingController();
   final TextEditingController _rollNoController = TextEditingController();
   final TextEditingController _groupController  = TextEditingController();
 
-  // ── state ────────────────────────────────────────────────────
   bool    _isLoading  = true;
   bool    _isSaving   = false;
   String  email       = '';
   String? _selectedBranch;
   String  _existingPhotoUrl = '';
 
-  // Photo upload state
   File?   _pickedImageFile;
   bool    _isUploading    = false;
   double  _uploadProgress = 0.0;
   String? _uploadError;
+  bool    _removePhotoStaged = false;
 
   @override
   void initState() {
@@ -72,14 +56,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
-  // ── load ─────────────────────────────────────────────────────
   Future<void> _loadCurrentData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     email = user.email ?? '';
 
     try {
-      // serverAndCache guarantees fresh data including profilePhoto
       DocumentSnapshot<Map<String, dynamic>> doc;
       try {
         doc = await FirebaseFirestore.instance
@@ -97,12 +79,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final d = doc.data()!;
         setState(() {
           _nameController.text   = d['name']         ?? '';
-          _phoneController.text  = d['phone']         ?? '';
-          // Roll number always stored/shown in UPPERCASE
+          _phoneController.text  = d['phone']        ?? '';
           _rollNoController.text = (d['rollNo'] ?? '').toString().toUpperCase();
           _groupController.text  = (d['group']  ?? 1).toString();
-          _selectedBranch        = d['branch']        as String?;
-          _existingPhotoUrl      = d['profilePhoto']  ?? '';
+          _selectedBranch        = d['branch']       as String?;
+          _existingPhotoUrl      = d['profilePhoto'] ?? '';
           _isLoading = false;
         });
       } else {
@@ -113,13 +94,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // PHOTO FLOW  (same 2-step flow as profile_screen)
-  // Step 1: source picker bottom sheet
-  // Step 2: preview dialog — user taps "Use Photo" to confirm selection
-  // Actual Cloudinary upload happens inside _saveChanges()
-  // ─────────────────────────────────────────────────────────────
-
   void _showPhotoSourceSheet() {
     showModalBottomSheet(
       context: context,
@@ -127,8 +101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       builder: (_) => Container(
         decoration: BoxDecoration(
           color: surfaceWhite,
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         ),
         padding: EdgeInsets.fromLTRB(
             24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
@@ -165,8 +138,66 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 onTap: () { Navigator.pop(context); _pickAndPreview(ImageSource.camera); },
               )),
             ]),
+            if ((_existingPhotoUrl.isNotEmpty || _pickedImageFile != null) && !_removePhotoStaged) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.redAccent,
+                    side: const BorderSide(color: Colors.redAccent),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showDeleteConfirmationDialog();
+                  },
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  label: const Text('Remove Photo', style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: surfaceWhite,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('Remove Photo?',
+            style: TextStyle(fontWeight: FontWeight.w900, color: textBlack, fontSize: 20)),
+        content: Text('Are you sure you want to remove your profile photo? This will be saved when you tap "Save Changes".',
+            style: TextStyle(color: textGrey, fontWeight: FontWeight.w500, fontSize: 14)),
+        actionsPadding: const EdgeInsets.only(bottom: 16, right: 20, left: 20),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: TextStyle(color: textGrey, fontWeight: FontWeight.w800)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _removePhotoStaged = true;
+                _pickedImageFile = null;
+              });
+            },
+            child: const Text('Remove', style: TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ],
       ),
     );
   }
@@ -229,8 +260,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ]),
               const SizedBox(height: 18),
-
-              // preview
               ClipRRect(
                 borderRadius: BorderRadius.circular(18),
                 child: Image.file(imageFile,
@@ -240,7 +269,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Text('This photo will be uploaded when you tap "Save Changes".',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12, color: textGrey, fontWeight: FontWeight.w500)),
-
               const SizedBox(height: 20),
               Row(children: [
                 Expanded(child: OutlinedButton(
@@ -263,8 +291,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
-                    // Stage the file — actual upload happens in _saveChanges()
-                    setState(() { _pickedImageFile = imageFile; _uploadError = null; });
+                    setState(() {
+                      _pickedImageFile = imageFile;
+                      _uploadError = null;
+                      _removePhotoStaged = false;
+                    });
                   },
                   child: const Text('Use Photo', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
                 )),
@@ -276,7 +307,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // ── save ─────────────────────────────────────────────────────
   Future<void> _saveChanges() async {
     if (_nameController.text.trim().isEmpty) {
       _showSnack('Name cannot be empty.', isError: true);
@@ -296,8 +326,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       String photoUrl = _existingPhotoUrl;
 
-      // Upload new photo if one was staged
-      if (_pickedImageFile != null) {
+      if (_removePhotoStaged) {
+        photoUrl = '';
+      } else if (_pickedImageFile != null) {
         setState(() { _isUploading = true; _uploadProgress = 0.0; });
         try {
           photoUrl = await CloudinaryService().uploadProfilePicture(
@@ -319,14 +350,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
       }
 
-      // Write all fields to Firestore
       await FirebaseFirestore.instance
           .collection('students')
           .doc(user.uid)
           .update({
         'name':         _nameController.text.trim(),
         'phone':        _phoneController.text.trim(),
-        // Always stored in UPPERCASE — consistent with display
         'rollNo':       _rollNoController.text.trim().toUpperCase(),
         'branch':       _selectedBranch,
         'group':        parsedGroup,
@@ -355,9 +384,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     ));
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // BUILD
-  // ─────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -378,11 +404,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  // ── Avatar with camera icon + progress ring ──
                   Center(
                     child: Stack(
                       children: [
-                        // outer ring — grey border
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
@@ -401,8 +425,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             child: ClipOval(child: _buildAvatarImage()),
                           ),
                         ),
-
-                        // upload progress ring
                         if (_isUploading)
                           Positioned.fill(
                             child: Padding(
@@ -416,8 +438,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                             ),
                           ),
-
-                        // camera badge
                         Positioned(
                           bottom: 2, right: 2,
                           child: GestureDetector(
@@ -438,9 +458,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ],
                     ),
                   ),
-
-                  // staged photo indicator
-                  if (_pickedImageFile != null) ...[
+                  if (_removePhotoStaged) ...[
+                    const SizedBox(height: 8),
+                    const Text('Profile photo will be removed on save.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.w600)),
+                  ] else if (_pickedImageFile != null) ...[
                     const SizedBox(height: 8),
                     Text('New photo selected — will be uploaded on save.',
                         textAlign: TextAlign.center,
@@ -449,8 +475,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             color: primaryYellow,
                             fontWeight: FontWeight.w600)),
                   ],
-
-                  // upload error
                   if (_uploadError != null) ...[
                     const SizedBox(height: 8),
                     Container(
@@ -466,10 +490,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               fontWeight: FontWeight.w600)),
                     ),
                   ],
-
                   const SizedBox(height: 36),
-
-                  // ── Fields ──────────────────────────────────
                   _buildEditableField('Full Name',    _nameController,
                       Icons.person_outline_rounded),
                   const SizedBox(height: 16),
@@ -477,24 +498,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       Icons.phone_outlined,
                       keyboardType: TextInputType.phone),
                   const SizedBox(height: 16),
-                  // Roll number — auto-capitalised
                   _buildEditableField('Roll Number',  _rollNoController,
                       Icons.badge_outlined,
                       textCapitalization: TextCapitalization.characters),
                   const SizedBox(height: 16),
-                  // Group — number 1–24
                   _buildEditableField('Group (1–24)', _groupController,
                       Icons.group_outlined,
                       keyboardType: TextInputType.number),
                   const SizedBox(height: 16),
-                  // Branch dropdown
                   _buildBranchDropdown(),
                   const SizedBox(height: 16),
                   _buildReadOnlyField('College Email', email),
-
                   const SizedBox(height: 40),
-
-                  // ── Save button ─────────────────────────────
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -535,8 +550,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // ── Avatar: staged file → Cloudinary URL → default icon ─────
   Widget _buildAvatarImage() {
+    if (_removePhotoStaged) {
+      return _defaultIcon();
+    }
     if (_pickedImageFile != null) {
       return Image.file(_pickedImageFile!,
           width: 100, height: 100, fit: BoxFit.cover);
@@ -556,7 +573,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _defaultIcon() => Icon(Icons.person,
       size: 50, color: textBlack.withOpacity(0.5));
 
-  // ── Field builders ───────────────────────────────────────────
   Widget _buildEditableField(
     String label,
     TextEditingController controller,
@@ -584,7 +600,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       );
 
-  // Branch dropdown — NEW
   Widget _buildBranchDropdown() => DropdownButtonFormField<String>(
         value: _selectedBranch,
         hint: Text('Select Branch',

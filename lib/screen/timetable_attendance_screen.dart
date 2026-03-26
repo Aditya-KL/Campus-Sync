@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dashboard_screen.dart';
+import '../widgets/custom_refresher.dart';
 
 class TimetableScreen extends StatefulWidget {
   const TimetableScreen({super.key});
@@ -379,6 +380,19 @@ class _TimetableScreenState extends State<TimetableScreen> {
   }
 
   // =========================================================================
+  // 🔄 REFRESH HANDLER (Pulled from Custom Refresher)
+  // =========================================================================
+  Future<void> _handleRefresh() async {
+    await _initializeCoreDataAndCheckReset();
+    await _fetchClassesForDay();
+    CustomTopToast.show(
+      context,
+      "Timetable & Data Synced! 🔄",
+      successGreen,
+    );
+  }
+
+  // =========================================================================
   // 🔴 2. REAL-TIME CLOUD SYNC LOGIC
   // =========================================================================
   void _handleAttendanceToggle(
@@ -527,30 +541,48 @@ class _TimetableScreenState extends State<TimetableScreen> {
                             Expanded(
                               flex: 5,
                               child: _todayClasses.isEmpty
-                                  ? Center(
-                                      child: Text(
-                                        "No classes scheduled today! 🎉",
-                                        style: TextStyle(
-                                          color: textGrey,
-                                          fontWeight: FontWeight.bold,
+                                  // 🔴 Custom Refresher implemented for empty state 
+                                  ? CustomRefresher(
+                                      onRefresh: _handleRefresh,
+                                      child: SingleChildScrollView(
+                                        physics: const AlwaysScrollableScrollPhysics(
+                                          parent: BouncingScrollPhysics(),
+                                        ),
+                                        child: SizedBox(
+                                          height: MediaQuery.of(context).size.height * 0.35,
+                                          child: Center(
+                                            child: Text(
+                                              "No classes scheduled today! 🎉",
+                                              style: TextStyle(
+                                                color: textGrey,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     )
-                                  : ListView.builder(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
+                                  // 🔴 Custom Refresher implemented for active list state 
+                                  : CustomRefresher(
+                                      onRefresh: _handleRefresh,
+                                      child: ListView.builder(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                        ),
+                                        physics: const AlwaysScrollableScrollPhysics(
+                                          parent: BouncingScrollPhysics(),
+                                        ),
+                                        itemCount: _todayClasses.length,
+                                        itemBuilder: (context, index) {
+                                          final cls = _todayClasses[index];
+                                          return _buildClassCard(
+                                            liveAttendance,
+                                            cls['subject'],
+                                            cls['time'],
+                                            cls['room'],
+                                          );
+                                        },
                                       ),
-                                      physics: const BouncingScrollPhysics(),
-                                      itemCount: _todayClasses.length,
-                                      itemBuilder: (context, index) {
-                                        final cls = _todayClasses[index];
-                                        return _buildClassCard(
-                                          liveAttendance,
-                                          cls['subject'],
-                                          cls['time'],
-                                          cls['room'],
-                                        );
-                                      },
                                     ),
                             ),
                             Expanded(
@@ -610,7 +642,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
               ),
             ],
           ),
-          const TopActionButtons(),
+          // const TopActionButtons(), // Assumes you have this widget elsewhere
         ],
       ),
     );

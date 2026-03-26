@@ -2,7 +2,7 @@
 //
 // ── WHAT THIS FILE DOES ──────────────────────────────────────
 //
-// 1. Uploads files (JPG, PNG, PDF) to Cloudinary via the unsigned
+// 1. Uploads files (JPG, PNG) to Cloudinary via the unsigned
 //    upload API using dart:http — NO extra Cloudinary packages needed.
 //    Remove 'cloudinary_public' from pubspec.yaml; add 'http: ^1.2.0'.
 //
@@ -14,7 +14,7 @@
 //
 // 3. fetchAllUrls(uid) → Map<slot, url>  instant, no local files.
 //
-// 4. 1 MB max file size enforced before network.
+// 4. 5 MB max file size enforced before network.
 //
 // 5. Progress: 0.05 → 0.15 → 0.90 → 1.0
 //
@@ -91,8 +91,9 @@ class CloudinaryService {
   static const String _uploadPreset = 'campus_sync_preset'; // UNSIGNED
   // ────────────────────────────────────────────────────────────
 
-  static const int _maxBytes = 1 * 1024 * 1024; // 1 MB
-  static const Set<String> _allowed = {'jpg', 'jpeg', 'png', 'pdf'};
+  static const int _maxBytes = 5 * 1024 * 1024; // 5 MB
+  // PDF removed — only images allowed
+  static const Set<String> _allowed = {'jpg', 'jpeg', 'png'};
 
   static final CloudinaryService _instance = CloudinaryService._internal();
   factory CloudinaryService() => _instance;
@@ -103,17 +104,12 @@ class CloudinaryService {
   // ─────────────────────────────────────────────────────────────
   // CORE UPLOAD
   //
-  // Why we append a timestamp to public_id:
-  //   Unsigned presets don't allow 'overwrite: true'.
-  //   Without overwrite, uploading to the same public_id returns the
-  //   OLD cached URL — the image never actually changes in the CDN.
+  // All files are uploaded as resource_type=image.
+  // Every upload gets a unique public_id by appending the current
+  // Unix timestamp, forcing Cloudinary to create a fresh asset.
   //
-  //   Solution: every upload gets a UNIQUE public_id by appending the
-  //   current Unix timestamp (e.g. campus_sync/uid/id_card_1748291234).
-  //   This forces Cloudinary to create a fresh asset every time.
-  //   The old Cloudinary asset is abandoned (free tier: 25 GB storage,
-  //   so this is fine). Firestore is updated to the new URL atomically:
-  //   old field deleted → new field written in a single batch.
+  // Firestore write uses set+merge so it works for both new users
+  // (document doesn't exist yet) and existing users.
   // ─────────────────────────────────────────────────────────────
   Future<String> uploadFile({
     required String userId,
@@ -130,43 +126,29 @@ class CloudinaryService {
     final ext = filePath.split('.').last.toLowerCase();
     if (!_allowed.contains(ext)) {
       throw CloudinaryUploadException(
-          'Only JPG, PNG and PDF files are allowed (got .$ext).',
+          'Only JPG and PNG files are allowed (got .$ext).',
           code: 'bad_format');
     }
 
     final sizeBytes = await file.length();
     if (sizeBytes > _maxBytes) {
-      final mb = (sizeBytes / _maxBytes).toStringAsFixed(2);
+      final mb = (sizeBytes / (1024 * 1024)).toStringAsFixed(2);
       throw CloudinaryUploadException(
-          'File is ${mb} MB — maximum allowed is 1 MB. Please compress it.',
+          'File is ${mb} MB — maximum allowed is 5 MB. Please compress it.',
           code: 'file_too_large');
     }
 
     try {
       onProgress?.call(0.05);
 
-      // ── Unique public_id — one folder per user ───────────────
-      // Structure in Cloudinary Media Library:
-      //   campus_sync/
-      //     users/
-      //       {uid}/              ← dedicated folder per student
-      //         id_card_1748291234
-      //         fee_receipt_1748291890
-      //         profile_1748290000
-      //         ...
-      //
-      // Timestamp suffix makes every upload a brand-new asset,
-      // bypassing the unsigned-preset overwrite restriction.
-      final ts           = DateTime.now().millisecondsSinceEpoch;
-      final publicId     = 'campus_sync/users/$userId/${slot}_$ts';
-      final resourceType = ext == 'pdf' ? 'raw' : 'image';
-      final uri          = Uri.parse(
-          'https://api.cloudinary.com/v1_1/$_cloudName/$resourceType/upload');
+      final ts       = DateTime.now().millisecondsSinceEpoch;
+      final uri      = Uri.parse(
+          'https://api.cloudinary.com/v1_1/$_cloudName/image/upload');
 
       final request = http.MultipartRequest('POST', uri)
         ..fields['upload_preset'] = _uploadPreset
-        ..fields['folder'] = 'campus_sync/users/$userId'
-        ..fields['public_id'] = '${slot}_$ts'
+        ..fields['folder']        = 'campus_sync/users/$userId'
+        ..fields['public_id']     = '${slot}_$ts'
         ..files.add(await http.MultipartFile.fromPath('file', filePath));
 
       onProgress?.call(0.15);
@@ -195,20 +177,15 @@ class CloudinaryService {
 
       onProgress?.call(0.95);
 
-      // ── Atomic Firestore update ───────────────────────────────
-      // Delete the old field first, then write the new URL.
-      // Using a WriteBatch so both operations are atomic — the UI
-      // never sees a state where both old and new URLs exist.
-      final docRef = _db.collection('images').doc(userId);
-      final batch  = _db.batch();
-      // Step 1: delete old field (FieldValue.delete removes the key entirely)
-      batch.update(docRef, {slot: FieldValue.delete()});
-      // Step 2: write new URL + timestamp
-      batch.set(docRef, {
+      // ── Firestore write ───────────────────────────────────────
+      // set + merge: creates the document if it doesn't exist (new user)
+      // and updates the field if it does (existing user).
+      // No batch.update needed — the timestamp suffix in public_id already
+      // guarantees a fresh Cloudinary asset every time.
+      await _db.collection('images').doc(userId).set({
         slot:        secureUrl,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-      await batch.commit();
 
       onProgress?.call(1.0);
       return secureUrl;
@@ -250,9 +227,6 @@ class CloudinaryService {
 
   // ─────────────────────────────────────────────────────────────
   // FETCH  —  all saved URLs from Firestore
-  //
-  // serverAndCache: returns instantly from local cache, then
-  // refreshes in background. On first install falls back to server.
   // ─────────────────────────────────────────────────────────────
   Future<Map<String, String>> fetchAllUrls(String userId) async {
     try {
@@ -280,17 +254,6 @@ class CloudinaryService {
 
   // ─────────────────────────────────────────────────────────────
   // DELETE  —  removes the Firestore field for this slot.
-  //
-  // The old Cloudinary asset is NOT deleted here because unsigned
-  // presets cannot call the Cloudinary Destroy API (it requires a
-  // signed request with API secret). The old asset simply becomes
-  // unreferenced — it will sit in your Cloudinary media library
-  // but the app will never show or use it again.
-  //
-  // Free tier gives 25 GB storage so this is not a problem in
-  // practice. To bulk-clean old assets, go to:
-  //   Cloudinary Console → Media Library → campus_sync/{uid}/
-  //   and delete manually if needed.
   // ─────────────────────────────────────────────────────────────
   Future<void> deleteUrl(String userId, String slot) async {
     try {
@@ -304,16 +267,11 @@ class CloudinaryService {
   // ─────────────────────────────────────────────────────────────
   // URL OPTIMISATION
   // Inserts Cloudinary transform params so cards load fast.
-  // PDFs returned unchanged (no image transforms).
   // [width] is logical px; doubled for @2x screens.
   // ─────────────────────────────────────────────────────────────
   static String optimiseUrl(String url, {int width = 200}) {
     if (url.isEmpty || !url.contains('cloudinary.com')) return url;
-    if (url.contains('/raw/upload/')) return url; // PDF
     return url.replaceFirst(
         '/upload/', '/upload/w_${width * 2},c_fill,q_auto,f_auto/');
   }
-
-  static bool isPdf(String url) =>
-      url.isNotEmpty && url.contains('/raw/upload/');
 }

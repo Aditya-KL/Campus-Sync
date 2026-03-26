@@ -1,14 +1,4 @@
 // lib/screen/profile_section/profile_screen.dart
-//
-// What was added on top of the provided original:
-//  • Profile photo displayed from Firestore (profilePhoto field) with
-//    Image.network + Cloudinary-optimised URL.
-//  • Camera icon on avatar -> _showPhotoOptionsSheet() bottom sheet.
-//  • Photo preview + Upload / Cancel dialog before actually uploading.
-//  • Cloudinary upload with progress ring overlay on the avatar.
-//  • isDeveloper flag read from Firestore.
-//  • "Developer Panel" menu item (visible only when isDeveloper == true).
-//  • All existing functionality (logout, change password, etc.) preserved.
 
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -122,13 +112,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final String typeCode = roll.substring(4, 6).toUpperCase();
     final courseCode = roll.substring(2, 4);
 
-    // Degree type based on position 2–3 of roll number:
-    //   '01' → B.Tech (4 yr)
-    //   '02' → B.Tech (5 yr, Dual)
-    //   '03' → B.Tech (5 yr, Dual)
-    //   '1x' → M.Tech (2 yr)
-    //   'ES' → B.S Engineering Sciences
-    //   'PH' → B.S Physics / Physical Sciences
     String degreeType;
     int duration;
 
@@ -150,10 +133,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // FULL SCREEN IMAGE VIEWER (NEW)
+  // ─────────────────────────────────────────────────────────────
+  void _showFullImageView() {
+    showDialog(
+      context: context,
+      builder: (ctx) => Scaffold(
+        backgroundColor: Colors.black.withOpacity(0.9),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          actions: [
+            // Edit button so they can still change their photo
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _showPhotoOptionsSheet();
+              },
+              icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
+              label: const Text(
+                'Edit',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: Center(
+          child: InteractiveViewer(
+            panEnabled: true,
+            minScale: 1.0,
+            maxScale: 4.0,
+            child: Image.network(
+              // You can optionally remove width constraints here if your service supports full res
+              CloudinaryService.optimiseUrl(profilePhoto), 
+              fit: BoxFit.contain,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // PHOTO UPLOAD FLOW
-  // Step 1: bottom sheet — pick source (Gallery / Camera)
-  // Step 2: preview dialog — see image before uploading
-  // Step 3: Cloudinary upload with progress ring
   // ─────────────────────────────────────────────────────────────
 
   // Step 1 — source picker bottom sheet
@@ -648,7 +677,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ]),
                 const SizedBox(height: 20),
-                if (errorMsg   != null) banner(errorMsg!,   false),
+                if (errorMsg   != null) banner(errorMsg!,  false),
                 if (successMsg != null) banner(successMsg!, true),
                 Text('Current Password', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textGrey)),
                 const SizedBox(height: 6),
@@ -761,13 +790,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
 
-                      // avatar — tappable, shows camera badge, upload ring
+                      // avatar — tappable, now opens view if image exists or sheet if empty
                       Positioned(
                         bottom: -44, left: 24,
                         child: GestureDetector(
                           onTap: _isUploading
                               ? null
-                              : _showPhotoOptionsSheet,
+                              : () {
+                                  if (profilePhoto.isNotEmpty) {
+                                    _showFullImageView(); // OPEN IMAGE
+                                  } else {
+                                    _showPhotoOptionsSheet(); // OPEN UPLOAD SHEET
+                                  }
+                                },
                           child: Stack(
                             children: [
                               // border ring
@@ -802,24 +837,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       strokeWidth: 3,
                                       color: primaryYellow,
                                     ),
-                                  ),
-                                ),
-
-                              // camera badge
-                              if (!_isUploading)
-                                Positioned(
-                                  bottom: 2, right: 2,
-                                  child: Container(
-                                    width: 28, height: 28,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                          color: backgroundGrey, width: 2),
-                                    ),
-                                    child: const Icon(
-                                        Icons.camera_alt_rounded,
-                                        color: Colors.white, size: 14),
                                   ),
                                 ),
                             ],
@@ -967,9 +984,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
 
                           // ── Developer Panel ──────────────────
-                          // Only visible when isDeveloper == true in Firestore.
-                          // To grant access: Firebase Console -> students/{uid}
-                          //   -> isDeveloper: true
                           if (isDeveloper) ...[
                             _buildDivider(),
                             _buildMenuItem(

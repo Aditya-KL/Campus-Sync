@@ -24,6 +24,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dashboard_screen.dart';
 import '../services/firebase_service.dart';
+import '../widgets/custom_refresher.dart'; // NEW IMPORT HERE
 
 // ─────────────────────────────────────────────────────────────
 // GRADE POINT TABLE
@@ -524,32 +525,35 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
             bottom: false,
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: _yellow))
-                : CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(child: _buildHeader()),
-                      SliverToBoxAdapter(child: _statsRow()),
-                      SliverToBoxAdapter(child: _currentSemHeader()),
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (_, i) => _courseRow(_currentCourses[i]),
-                            childCount: _currentCourses.length,
+                : CustomRefresher( // WRAPPED HERE
+                    onRefresh: _fetchAcademicData,
+                    child: CustomScrollView(
+                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), // UPDATED PHYSICS HERE
+                      slivers: [
+                        SliverToBoxAdapter(child: _buildHeader()),
+                        SliverToBoxAdapter(child: _statsRow()),
+                        SliverToBoxAdapter(child: _currentSemHeader()),
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (_, i) => _courseRow(_currentCourses[i]),
+                              childCount: _currentCourses.length,
+                            ),
                           ),
                         ),
-                      ),
-                      if (_pastSemesters.isNotEmpty)
-                        SliverToBoxAdapter(
-                          child: _sectionLabel(
-                            'Academic History',
-                            'Tap SGPA to edit',
+                        if (_pastSemesters.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: _sectionLabel(
+                              'Academic History',
+                              'Tap SGPA to edit',
+                            ),
                           ),
-                        ),
-                      if (_pastSemesters.isNotEmpty)
-                        SliverToBoxAdapter(child: _historyTable()),
-                      const SliverToBoxAdapter(child: SizedBox(height: 120)),
-                    ],
+                        if (_pastSemesters.isNotEmpty)
+                          SliverToBoxAdapter(child: _historyTable()),
+                        const SliverToBoxAdapter(child: SizedBox(height: 120)),
+                      ],
+                    ),
                   ),
           ),
         ],

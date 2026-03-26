@@ -1,33 +1,26 @@
 // lib/screen/document_manager_screen.dart
 //
 // ── STORAGE ARCHITECTURE ─────────────────────────────────────
-// NO local file storage.
-// 1. User picks file (JPG/PNG from image_picker, PDF from file_picker)
+// NO local file storage. NO PDF support.
+// 1. User picks file (JPG/PNG only — from image_picker gallery or camera)
 // 2. CloudinaryService.uploadDocumentCard() → uploads to Cloudinary
 // 3. Secure URL saved to Firestore: images/{uid}.{slot}
 // 4. On screen open: CloudinaryService.fetchAllUrls(uid) restores all cards
 //    from Firestore → works on any device, instant from cache.
 //
 // ── PUBSPEC ──────────────────────────────────────────────────
-//   image_picker:                  ^1.0.0
-//   file_picker:                   ^10.3.10
-//   http:                          ^1.2.0  (inside cloudinary_service.dart)
-//   syncfusion_flutter_pdfviewer:  ^28.1.39  ← PDF viewer
-//
-//   After adding syncfusion_flutter_pdfviewer, run:  flutter pub get
+//   image_picker: ^1.0.0
+//   http:         ^1.2.0  (inside cloudinary_service.dart)
 //
 // ── FIREBASE ─────────────────────────────────────────────────
 //   Firestore collection:  images/{uid}
 //     id_card, fee_receipt, semester_marksheet, gate_qr: "https://..."
 //     updatedAt: Timestamp
 
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'dashboard_screen.dart';
 import '../services/cloudinary_service.dart';
 
@@ -128,7 +121,8 @@ class _DocumentManagerScreenState extends State<DocumentManagerScreen>
   }
 
   // ── file picker ──────────────────────────────────────────────
-  // Shows Gallery / Camera / PDF choice, returns local temp path.
+  // Shows Gallery / Camera choice, returns local temp path.
+  // PDF removed entirely.
   Future<String?> _pickFile() async {
     final choice = await showModalBottomSheet<String>(
       context: context,
@@ -147,29 +141,24 @@ class _DocumentManagerScreenState extends State<DocumentManagerScreen>
           const Text('Choose source',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900,
                   color: Color(0xFF1A1D20))),
+          const SizedBox(height: 6),
+          const Text('JPG or PNG only  •  Max 5 MB',
+              style: TextStyle(fontSize: 12, color: Color(0xFF6C757D),
+                  fontWeight: FontWeight.w500)),
           const SizedBox(height: 20),
           Row(children: [
             Expanded(child: _srcBtn(Icons.photo_library_rounded,
                 'Gallery', const Color(0xFF007AFF),
                 () => Navigator.pop(context, 'gallery'))),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(child: _srcBtn(Icons.camera_alt_rounded,
                 'Camera', const Color(0xFFE5A91A),
                 () => Navigator.pop(context, 'camera'))),
-            const SizedBox(width: 10),
-            Expanded(child: _srcBtn(Icons.picture_as_pdf_rounded,
-                'PDF', _red,
-                () => Navigator.pop(context, 'pdf'))),
           ]),
         ]),
       ),
     );
     if (choice == null) return null;
-    if (choice == 'pdf') {
-      final result = await FilePicker.platform.pickFiles(
-          type: FileType.custom, allowedExtensions: ['pdf'], withData: false);
-      return result?.files.single.path;
-    }
     final src    = choice == 'camera' ? ImageSource.camera : ImageSource.gallery;
     final picked = await ImagePicker().pickImage(
         source: src, imageQuality: 85, maxWidth: 1200, maxHeight: 1200);
@@ -180,16 +169,16 @@ class _DocumentManagerScreenState extends State<DocumentManagerScreen>
       GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
               color: color.withOpacity(0.08),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: color.withOpacity(0.25))),
           child: Column(children: [
-            Icon(icon, color: color, size: 26),
-            const SizedBox(height: 6),
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
             Text(label, style: TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+                fontSize: 13, fontWeight: FontWeight.w700, color: color)),
           ]),
         ),
       );
@@ -209,13 +198,7 @@ class _DocumentManagerScreenState extends State<DocumentManagerScreen>
         },
       );
       if (!mounted) return;
-
-      // ── Dismiss the bottom sheet immediately when done ────────
-      // Pop before setState so the sheet closes instantly without
-      // the user having to tap anywhere.
       if (Navigator.canPop(context)) Navigator.pop(context);
-
-      // Update state after dismissal so grid refreshes cleanly
       setState(() {
         _urls[doc.slot]      = url;
         _progress[doc.slot]  = null;
@@ -241,8 +224,6 @@ class _DocumentManagerScreenState extends State<DocumentManagerScreen>
     HapticFeedback.heavyImpact();
     await CloudinaryService().deleteUrl(_uid, doc.slot);
     if (!mounted) return;
-
-    // Dismiss sheet immediately, then update grid
     if (Navigator.canPop(context)) Navigator.pop(context);
     setState(() => _urls[doc.slot] = null);
     _showSnack('${doc.name} removed.', ok: true);
@@ -260,23 +241,19 @@ class _DocumentManagerScreenState extends State<DocumentManagerScreen>
 
   // ── view ─────────────────────────────────────────────────────
   void _openViewer(_DocConfig doc, String url) {
-    if (CloudinaryService.isPdf(url)) {
-      Navigator.push(context, MaterialPageRoute(
-          builder: (_) => _PdfViewer(url: url, docName: doc.name, accent: doc.accent)));
-    } else {
-      Navigator.push(context, PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 350),
-        pageBuilder: (_, anim, __) => FadeTransition(
-          opacity: anim,
-          child: _ImageViewer(url: url, docName: doc.name, accent: doc.accent, slot: doc.slot),
-        ),
-      ));
-    }
+    Navigator.push(context, PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 350),
+      pageBuilder: (_, anim, __) => FadeTransition(
+        opacity: anim,
+        child: _ImageViewer(
+            url: url, docName: doc.name, accent: doc.accent, slot: doc.slot),
+      ),
+    ));
   }
 
   // ── bottom sheet ─────────────────────────────────────────────
   void _showDocSheet(_DocConfig doc) {
-    final url  = _urls[doc.slot];
+    final url = _urls[doc.slot];
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -426,11 +403,10 @@ class _DocCardState extends State<_DocCard> with SingleTickerProviderStateMixin 
 
   @override
   Widget build(BuildContext context) {
-    final isSaved    = widget.url != null;
-    final isPdf      = isSaved && CloudinaryService.isPdf(widget.url!);
+    final isSaved     = widget.url != null;
     final isUploading = widget.progress != null;
-    final accent     = widget.doc.accent;
-    final thumbUrl   = isSaved && !isPdf
+    final accent      = widget.doc.accent;
+    final thumbUrl    = isSaved
         ? CloudinaryService.optimiseUrl(widget.url!, width: 80)
         : null;
 
@@ -524,16 +500,15 @@ class _DocCardState extends State<_DocCard> with SingleTickerProviderStateMixin 
                           borderRadius: BorderRadius.circular(8)),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
                         Icon(
-                          isSaved ? (isPdf
-                              ? Icons.picture_as_pdf_rounded
-                              : Icons.check_circle_rounded)
+                          isSaved
+                              ? Icons.check_circle_rounded
                               : Icons.add_circle_outline_rounded,
                           size: 12,
                           color: isSaved ? accent : const Color(0xFF6C757D),
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          isSaved ? (isPdf ? 'PDF' : 'Secured') : 'Tap to add',
+                          isSaved ? 'Secured' : 'Tap to add',
                           style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
                               color: isSaved ? accent : const Color(0xFF6C757D)),
                         ),
@@ -559,21 +534,6 @@ class _DocCardState extends State<_DocCard> with SingleTickerProviderStateMixin 
                                   color: accent.withOpacity(0.2),
                                   child: Icon(widget.doc.icon,
                                       color: accent, size: 16)))),
-                    )),
-
-              // PDF badge
-              if (isSaved && isPdf)
-                Positioned(top: 12, right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                          color: const Color(0xFFFF3B30).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: const Color(0xFFFF3B30).withOpacity(0.3))),
-                      child: const Text('PDF', style: TextStyle(fontSize: 9,
-                          fontWeight: FontWeight.w900, color: Color(0xFFFF3B30),
-                          letterSpacing: 0.5)),
                     )),
             ]),
           ),
@@ -614,10 +574,9 @@ class _DocSheetState extends State<_DocSheet> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    final isSaved    = widget.url != null;
-    final isPdf      = isSaved && CloudinaryService.isPdf(widget.url!);
+    final isSaved     = widget.url != null;
     final isUploading = widget.progress != null;
-    final accent     = widget.doc.accent;
+    final accent      = widget.doc.accent;
 
     Widget preview;
     if (isUploading) {
@@ -634,28 +593,6 @@ class _DocSheetState extends State<_DocSheet> with SingleTickerProviderStateMixi
           Text('${((widget.progress ?? 0) * 100).toInt()}% uploading…',
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: accent)),
         ]),
-      );
-    } else if (isSaved && isPdf) {
-      preview = GestureDetector(
-        onTap: widget.onView,
-        child: Container(
-          height: 130, width: double.infinity,
-          decoration: BoxDecoration(
-              color: const Color(0xFFFF3B30).withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFFF3B30).withOpacity(0.25))),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(Icons.picture_as_pdf_rounded,
-                color: Color(0xFFFF3B30), size: 44),
-            const SizedBox(height: 8),
-            const Text('PDF Document', style: TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1A1D20))),
-            const SizedBox(height: 4),
-            Text('Tap to open', style: TextStyle(
-                fontSize: 11, color: const Color(0xFF6C757D).withOpacity(0.7),
-                fontWeight: FontWeight.w600)),
-          ]),
-        ),
       );
     } else if (isSaved) {
       preview = GestureDetector(
@@ -722,7 +659,7 @@ class _DocSheetState extends State<_DocSheet> with SingleTickerProviderStateMixi
             Text('Tap to upload', style: TextStyle(
                 color: accent, fontWeight: FontWeight.w700, fontSize: 13)),
             const SizedBox(height: 2),
-            const Text('JPG, PNG or PDF  •  Max 1 MB',
+            const Text('JPG or PNG  •  Max 5 MB',
                 style: TextStyle(color: Color(0xFF6C757D),
                     fontSize: 11, fontWeight: FontWeight.w500)),
           ]),
@@ -772,7 +709,7 @@ class _DocSheetState extends State<_DocSheet> with SingleTickerProviderStateMixi
                         : const Color(0xFFF0F2F5),
                     borderRadius: BorderRadius.circular(20)),
                 child: Text(
-                  isSaved ? (isPdf ? 'PDF' : 'Secured') : 'Empty',
+                  isSaved ? 'Secured' : 'Empty',
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800,
                       color: isSaved ? accent : const Color(0xFF6C757D)),
                 ),
@@ -915,317 +852,4 @@ class _ImageViewer extends StatelessWidget {
       ),
     ),
   );
-}
-
-// ─────────────────────────────────────────────────────────────
-// PDF VIEWER SCREEN  — full in-app rendering via Syncfusion
-// Loads directly from the Cloudinary URL — no download needed.
-// Features: scroll, pinch-to-zoom, page counter, search button.
-// ─────────────────────────────────────────────────────────────
-class _PdfViewer extends StatefulWidget {
-  final String url;
-  final String docName;
-  final Color  accent;
-
-  const _PdfViewer({
-    required this.url,
-    required this.docName,
-    required this.accent,
-  });
-
-  @override
-  State<_PdfViewer> createState() => _PdfViewerState();
-}
-
-class _PdfViewerState extends State<_PdfViewer> {
-  static const Color _ink   = Color(0xFF1A1D20);
-  static const Color _muted = Color(0xFF6C757D);
-  static const Color _bg    = Color(0xFFF0F2F5);
-  static const Color _red   = Color(0xFFFF3B30);
-
-  final PdfViewerController         _pdfCtrl   = PdfViewerController();
-  final TextEditingController       _searchCtrl = TextEditingController();
-
-  // Incrementing this forces Flutter to rebuild SfPdfViewer from scratch
-  // (equivalent to reload — SfPdfViewerState has no reload() method)
-  int  _reloadKey  = 0;
-  int  _currentPage = 1;
-  int  _totalPages  = 0;
-  bool _isLoading   = true;
-  bool _hasError    = false;
-  bool _showSearch  = false;
-
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        shadowColor: Colors.black12,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              size: 18, color: _ink),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: _showSearch
-            ? TextField(
-                controller: _searchCtrl,
-                autofocus: true,
-                style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600, color: _ink),
-                decoration: InputDecoration(
-                  hintText:   'Search in PDF…',
-                  hintStyle:  const TextStyle(color: _muted, fontSize: 13),
-                  filled:     true,
-                  fillColor:  _bg,
-                  isDense:    true,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8),
-                ),
-                onSubmitted: (text) {
-                  if (text.isNotEmpty) {
-                    _pdfCtrl.searchText(text);
-                  }
-                },
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(widget.docName,
-                      style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: _ink),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  if (_totalPages > 0)
-                    Text('Page $_currentPage of $_totalPages',
-                        style: const TextStyle(
-                            fontSize: 11,
-                            color: _muted,
-                            fontWeight: FontWeight.w500)),
-                ],
-              ),
-        actions: [
-          // PDF badge
-          if (!_showSearch)
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                  color: _red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(6)),
-              child: const Text('PDF',
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: _red)),
-            ),
-
-          // Search toggle
-          IconButton(
-            icon: Icon(
-              _showSearch ? Icons.close_rounded : Icons.search_rounded,
-              color: _ink, size: 22,
-            ),
-            onPressed: () {
-              setState(() => _showSearch = !_showSearch);
-              if (!_showSearch) {
-                _searchCtrl.clear();
-                _pdfCtrl.clearSelection();
-              }
-            },
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
-
-      body: Stack(
-        children: [
-          // ── PDF viewer ─────────────────────────────────────
-          SfPdfViewer.network(
-            widget.url,
-            key:        ValueKey(_reloadKey),
-            controller: _pdfCtrl,
-            onDocumentLoaded: (details) {
-              setState(() {
-                _totalPages = details.document.pages.count;
-                _isLoading  = false;
-                _hasError   = false;
-              });
-            },
-            onDocumentLoadFailed: (details) {
-              setState(() {
-                _isLoading = false;
-                _hasError  = true;
-              });
-            },
-            onPageChanged: (details) {
-              setState(() => _currentPage = details.newPageNumber);
-            },
-            // Themed scroll indicator
-            scrollDirection: PdfScrollDirection.vertical,
-            pageLayoutMode:  PdfPageLayoutMode.continuous,
-            canShowScrollStatus: true,
-            canShowPageLoadingIndicator: true,
-          ),
-
-          // ── Loading overlay ────────────────────────────────
-          if (_isLoading)
-            Container(
-              color: Colors.white,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                        color: widget.accent, strokeWidth: 3),
-                    const SizedBox(height: 16),
-                    const Text('Loading PDF…',
-                        style: TextStyle(
-                            fontSize: 13,
-                            color: _muted,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-            ),
-
-          // ── Error state ────────────────────────────────────
-          if (_hasError && !_isLoading)
-            Container(
-              color: Colors.white,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline_rounded,
-                          size: 56, color: _red),
-                      const SizedBox(height: 16),
-                      const Text('Failed to load PDF',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: _ink)),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Check your internet connection\nand try again.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 13,
-                            color: _muted,
-                            height: 1.5),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _ink,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isLoading = true;
-                            _hasError  = false;
-                            _reloadKey++;   // new key → Flutter rebuilds SfPdfViewer fresh
-                          });
-                        },
-                        icon: const Icon(Icons.refresh_rounded, size: 16),
-                        label: const Text('Retry',
-                            style: TextStyle(fontWeight: FontWeight.w800)),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-          // ── Page navigation bar (bottom) ───────────────────
-          if (!_isLoading && !_hasError && _totalPages > 1)
-            Positioned(
-              left: 0, right: 0, bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, -3))],
-                ),
-                child: Row(
-                  children: [
-                    // Prev
-                    IconButton(
-                      onPressed: _currentPage > 1
-                          ? () => _pdfCtrl.previousPage()
-                          : null,
-                      icon: Icon(Icons.chevron_left_rounded,
-                          color: _currentPage > 1 ? _ink : _muted),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                          minWidth: 36, minHeight: 36),
-                    ),
-
-                    // Page counter pill
-                    Expanded(
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 5),
-                          decoration: BoxDecoration(
-                              color: widget.accent.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(20)),
-                          child: Text(
-                            '$_currentPage / $_totalPages',
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: widget.accent ==
-                                        const Color(0xFFFFD166)
-                                    ? const Color(0xFF1A1D20)
-                                    : widget.accent),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Next
-                    IconButton(
-                      onPressed: _currentPage < _totalPages
-                          ? () => _pdfCtrl.nextPage()
-                          : null,
-                      icon: Icon(Icons.chevron_right_rounded,
-                          color: _currentPage < _totalPages
-                              ? _ink : _muted),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                          minWidth: 36, minHeight: 36),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }

@@ -63,7 +63,7 @@
             { "code": "CS2203", "name": "Artificial Intelligence", "credits": 4.5 },
             { "code": "CS2204", "name": "IT Workshop", "credits": 3.0 },
             { "code": "CS2205", "name": "Computer Architecture", "credits": 4.5 },
-            { "code": "CS2209", "name": "IDE I (Introduction to Data Science)", "credits": 3.0 }
+            { "code": "CS2209", "name": "Inter-Departmental Elective I (Introduction to Data Science)", "credits": 3.0 }
           ]
         },
         "timetable": {
@@ -109,7 +109,7 @@
             { "code": "CS3102", "name": "Computer Network", "credits": 4.5 },
             { "code": "CS3103", "name": "Machine Learning", "credits": 4.5 },
             { "code": "CS3104", "name": "Compiler", "credits": 4.5 },
-            { "code": "CS3109", "name": "IDE II (Computer Graphics)", "credits": 3.0 }
+            { "code": "CS3109", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -122,7 +122,7 @@
             { "code": "CS3201", "name": "Cyber Security", "credits": 4.0 },
             { "code": "CS3202", "name": "Deep Learning", "credits": 4.5 },
             { "code": "CS3203", "name": "Internet of Things", "credits": 4.5 },
-            { "code": "CS32XX", "name": "DE I (CS Electives List)", "credits": 3.0 },
+            { "code": "CS32XX", "name": "Departmental Elective I (CS Electives List)", "credits": 3.0 },
             { "code": "CS3299", "name": "Capstone Project", "credits": 3.0 }
           ]
         },
@@ -133,9 +133,9 @@
         "curriculum": {
           "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
           "course": [
-            { "code": "CS41XX", "name": "DE II (CS Electives List)", "credits": 3.0 },
-            { "code": "CS41XX", "name": "DE III (CS Electives List)", "credits": 3.0 },
-            { "code": "CS4109", "name": "IDE III (Data Analysis and Visualization)", "credits": 3.0 },
+            { "code": "CS41XX", "name": "Departmental Elective II (CS Electives List)", "credits": 3.0 },
+            { "code": "CS41XX", "name": "Departmental Elective III (CS Electives List)", "credits": 3.0 },
+            { "code": "CS4109", "name": "Inter-Departmental Elective III (Data Analysis and Visualization)", "credits": 3.0 },
             { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
             { "code": "CS4198", "name": "Summer Internship / Project", "credits": 3.0 },
             { "code": "CS4199", "name": "Project I", "credits": 6.0 }
@@ -148,9 +148,9 @@
         "curriculum": {
           "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
           "course": [
-            { "code": "CS42XX", "name": "DE IV (CS Electives List)", "credits": 3.0 },
-            { "code": "CS42XX", "name": "DE V (CS Electives List)", "credits": 3.0 },
-            { "code": "CS42XX", "name": "DE VI (CS Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "Departmental Elective IV (CS Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "Departmental Elective V (CS Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "Departmental Elective VI (CS Electives List)", "credits": 3.0 },
             { "code": "CS4299", "name": "Project II", "credits": 8.0 }
           ]
         },
@@ -182,12 +182,12 @@
             { "code": "CB2203", "name": "Fundamentals of Biochemical Engineering", "credits": 3.0 },
             { "code": "CB2204", "name": "Process Dynamics and Control", "credits": 4.0 },
             { "code": "CB2205", "name": "Chemical Reaction Engineering I", "credits": 3.0 },
-            { "code": "CB22PQ", "name": "IDE I", "credits": 3.0 }
+            { "code": "CB22PQ", "name": "Inter-Departmental Elective I", "credits": 3.0 }
           ]
         },
         "timetable": {
             "Monday": [
-              { "subject": "IDE", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+              { "subject": "Inter-Departmental Elective", "time": "02:00 PM - 03:00 PM", "room": "R109" },
               { "subject": "CB2201: Mechanical Operations", "time": "03:00 PM - 06:00 PM", "room": "RS07" }
             ],
             "Tuesday": [
@@ -199,18 +199,18 @@
             "Wednesday": [
               { "subject": "CB2203: Fundamentals of Biochemical Engineering", "time": "09:00 AM - 11:00 AM", "room": "R109" },
               { "subject": "CB2202: Mass Transfer-I", "time": "11:00 AM - 12:00 PM", "room": "RS07" },
-              { "subject": "IDE", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+              { "subject": "Inter-Departmental Elective", "time": "02:00 PM - 03:00 PM", "room": "R109" },
               { "subject": "CB2204: Process Dynamics and Control (LAB)", "time": "03:00 PM - 05:00 PM", "room": "LAB" }
             ],
             "Thursday": [
-              { "subject": "IDE", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+              { "subject": "Inter-Departmental Elective", "time": "02:00 PM - 03:00 PM", "room": "R109" },
               { "subject": "CB2202: Mass Transfer-I", "time": "03:00 PM - 04:00 PM", "room": "RS07" },
               { "subject": "CB2204: Process Dynamics and Control", "time": "04:00 PM - 05:00 PM", "room": "LAB" }
             ],
             "Friday": [
               { "subject": "CB2205: Chemical Reaction Engineering-I", "time": "10:00 AM - 11:00 AM", "room": "RS07" },
               { "subject": "CB2201: Mechanical Operations", "time": "11:00 AM - 01:00 PM", "room": "RS07" },
-              { "subject": "IDE", "time": "02:00 PM - 03:00 PM", "room": "R109" }
+              { "subject": "Inter-Departmental Elective", "time": "02:00 PM - 03:00 PM", "room": "R109" }
             ],
             "Saturday": [],
             "Sunday": []
@@ -226,7 +226,7 @@
             { "code": "CB3103", "name": "Process Equipment Design", "credits": 3.0 },
             { "code": "CB3104", "name": "Chemical Reaction Engineering II", "credits": 4.0 },
             { "code": "CB3105", "name": "Chemical Process Modeling and Simulation", "credits": 3.5 },
-            { "code": "CB31PQ", "name": "IDE II", "credits": 3.0 }
+            { "code": "CB31PQ", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -241,7 +241,7 @@
             { "code": "CB3203", "name": "Numerical Methods in Chemical Engineering", "credits": 4.0 },
             { "code": "CB3204", "name": "AI/ML for Chemical Engineers", "credits": 3.0 },
             { "code": "CB3205", "name": "Chemical Plant Safety and Hazards", "credits": 3.0 },
-            { "code": "CB32PQ", "name": "DE I", "credits": 3.0 }
+            { "code": "CB32PQ", "name": "Departmental Elective I", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -251,9 +251,9 @@
         "curriculum": {
           "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
           "course": [
-            { "code": "CB41PQ", "name": "DE II", "credits": 3.0 },
-            { "code": "CB41PQ", "name": "DE III", "credits": 3.0 },
-            { "code": "XX41PQ", "name": "IDE III", "credits": 3.0 },
+            { "code": "CB41PQ", "name": "Departmental Elective II", "credits": 3.0 },
+            { "code": "CB41PQ", "name": "Departmental Elective III", "credits": 3.0 },
+            { "code": "XX41PQ", "name": "Inter-Departmental Elective III", "credits": 3.0 },
             { "code": "HS31PQ", "name": "HSS Elective II", "credits": 3.0 },
             { "code": "CB4198", "name": "Summer Internship", "credits": 3.0 },
             { "code": "CB4199", "name": "Project I", "credits": 6.0 }
@@ -266,9 +266,9 @@
         "curriculum": {
           "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
           "course": [
-            { "code": "CB42PQ", "name": "DE IV", "credits": 3.0 },
-            { "code": "CB42PQ", "name": "DE V", "credits": 3.0 },
-            { "code": "CB4298", "name": "DE VI", "credits": 3.0 },
+            { "code": "CB42PQ", "name": "Departmental Elective IV", "credits": 3.0 },
+            { "code": "CB42PQ", "name": "Departmental Elective V", "credits": 3.0 },
+            { "code": "CB4298", "name": "Departmental Elective VI", "credits": 3.0 },
             { "code": "CB4299", "name": "Project II", "credits": 8.0 }
           ]
         },
@@ -299,10 +299,41 @@
             { "code": "CE2203", "name": "Civil Engineering Materials", "credits": 4.0 },
             { "code": "CE2204", "name": "Water Resources Engineering I", "credits": 3.0 },
             { "code": "CE2205", "name": "Numerical Methods in Civil Engineering", "credits": 3.0 },
-            { "code": "CE22PQ", "name": "IDE I", "credits": 3.0 }
+            { "code": "CE22PQ", "name": "Inter-Departmental Elective I", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "CE2204: Water Resources Engineering-I", "time": "12:00 PM - 01:00 PM", "room": "OP" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "CE2203: Civil Engineering Materials (Workshop)", "time": "04:00 PM - 06:00 PM", "room": "Workshop" }
+          ],
+          "Tuesday": [
+            { "subject": "CE2205: Numerical Methods in Civil Engineering", "time": "11:00 AM - 12:00 PM", "room": "SG/RKB" },
+            { "subject": "CE2201: Structural Analysis", "time": "03:00 PM - 05:00 PM", "room": "SG" }
+          ],
+          "Wednesday": [
+            { "subject": "CE2204: Water Resources Engineering-I", "time": "11:00 AM - 12:00 PM", "room": "OP" },
+            { "subject": "CE2205: Numerical Methods in Civil Engineering", "time": "12:00 PM - 01:00 PM", "room": "SG/RKB" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "CE2202: Soil Mechanics", "time": "03:00 PM - 04:00 PM", "room": "RKB" },
+            { "subject": "CE2203: Civil Engineering Materials", "time": "04:00 PM - 05:00 PM", "room": "SKKH/MS" }
+          ],
+          "Thursday": [
+            { "subject": "CE2202: Soil Mechanics (LAB)", "time": "09:00 AM - 11:00 AM", "room": "RKB Lab" },
+            { "subject": "CE2204: Water Resources Engineering-I", "time": "11:00 AM - 12:00 PM", "room": "OP" },
+            { "subject": "CE2202: Soil Mechanics", "time": "02:00 PM - 04:00 PM", "room": "RKB" },
+            { "subject": "CE2201: Structural Analysis (LAB)", "time": "04:00 PM - 05:00 PM", "room": "B6/131 Lab" }
+          ],
+          "Friday": [
+            { "subject": "CE2205: Numerical Methods in Civil Engineering", "time": "12:00 PM - 01:00 PM", "room": "SG/RKB" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "CE2201: Structural Analysis", "time": "03:00 PM - 04:00 PM", "room": "SG" },
+            { "subject": "CE2203: Civil Engineering Materials", "time": "04:00 PM - 05:00 PM", "room": "SKKH/MS" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -313,7 +344,7 @@
             { "code": "CE3102", "name": "Foundation Engineering", "credits": 4.0 },
             { "code": "CE3103", "name": "Transportation Engineering I", "credits": 5.0 },
             { "code": "CE3104", "name": "Environmental Engineering I", "credits": 4.0 },
-            { "code": "CE3190", "name": "IDE II", "credits": 3.0 }
+            { "code": "CE3190", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -340,7 +371,7 @@
           "course": [
             { "code": "CE41PQ", "name": "Departmental Elective I", "credits": 3.0 },
             { "code": "CE41PQ", "name": "Departmental Elective II", "credits": 3.0 },
-            { "code": "CE41PQ", "name": "IDE III", "credits": 3.0 },
+            { "code": "CE41PQ", "name": "Inter-Departmental Elective III", "credits": 3.0 },
             { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
             { "code": "CE4198", "name": "Summer Internship", "credits": 3.0 },
             { "code": "CE4199", "name": "Project I", "credits": 6.0 }
@@ -387,10 +418,41 @@
             { "code": "CH2203", "name": "Chemical Thermodynamics and Equilibrium", "credits": 4 },
             { "code": "CH2204", "name": "Industrial Chemistry", "credits": 3 },
             { "code": "CH2205", "name": "Chemical Technology Lab I", "credits": 3 },
-            { "code": "CH2206", "name": "IDE I", "credits": 3 }
+            { "code": "CH2206", "name": "Inter-Departmental Elective I", "credits": 3 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "CH2203: Chemical Thermodynamics and Equilibrium (Tutorial)", "time": "09:00 AM - 10:00 AM", "room": "R-305" },
+            { "subject": "CH2203: Chemical Thermodynamics and Equilibrium", "time": "10:00 AM - 11:00 AM", "room": "R-305" },
+            { "subject": "CH2204: Industrial Chemistry", "time": "11:00 AM - 12:00 PM", "room": "R-305" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+          ],
+          "Tuesday": [
+            { "subject": "CH2201: Structure and Function of Biomolecules", "time": "12:00 PM - 01:00 PM", "room": "R-305" },
+            { "subject": "CH2202: Introduction to Organometallics", "time": "04:00 PM - 05:00 PM", "room": "R-305" },
+            { "subject": "CH2203: Chemical Thermodynamics and Equilibrium", "time": "05:00 PM - 06:00 PM", "room": "R-305" }
+          ],
+          "Wednesday": [
+            { "subject": "CH2202: Introduction to Organometallics (Tutorial)", "time": "09:00 AM - 10:00 AM", "room": "R-306" },
+            { "subject": "CH2202: Introduction to Organometallics", "time": "10:00 AM - 11:00 AM", "room": "R-306" },
+            { "subject": "CH2204: Industrial Chemistry", "time": "11:00 AM - 12:00 PM", "room": "R-306" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "CH2205: Chemical Technology Laboratory I", "time": "03:00 PM - 06:00 PM", "room": "Lab 3" }
+          ],
+          "Thursday": [
+            { "subject": "CH2204: Industrial Chemistry", "time": "09:00 AM - 10:00 AM", "room": "R-306" },
+            { "subject": "CH2202: Introduction to Organometallics", "time": "10:00 AM - 11:00 AM", "room": "R-306" },
+            { "subject": "CH2203: Chemical Thermodynamics and Equilibrium", "time": "11:00 AM - 12:00 PM", "room": "R-306" },
+            { "subject": "CH2205: Chemical Technology Laboratory I", "time": "02:00 PM - 05:00 PM", "room": "Lab 3" }
+          ],
+          "Friday": [
+            { "subject": "CH2201: Structure and Function of Biomolecules", "time": "11:00 AM - 01:00 PM", "room": "R-306" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -402,7 +464,7 @@
             { "code": "CH3103", "name": "Chemical Kinetics and Electrochemistry", "credits": 3 },
             { "code": "CH3104", "name": "Chemical Analysis Techniques", "credits": 4 },
             { "code": "CH3105", "name": "Chemical Technology Lab II", "credits": 3 },
-            { "code": "CH3106", "name": "IDE II", "credits": 3 }
+            { "code": "CH3106", "name": "Inter-Departmental Elective II", "credits": 3 }
           ]
         },
         "timetable": {}
@@ -429,7 +491,7 @@
           "course": [
             { "code": "CH41PQ", "name": "Department Elective II", "credits": 3 },
             { "code": "CH41PQ", "name": "Department Elective III", "credits": 3 },
-            { "code": "CH4111", "name": "IDE III (Analytical Chemistry)", "credits": 3 },
+            { "code": "CH4111", "name": "Inter-Departmental Elective III (Analytical Chemistry)", "credits": 3 },
             { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3 },
             { "code": "CH4198", "name": "Internship", "credits": 3 },
             { "code": "CH4199", "name": "Project I", "credits": 6 }
@@ -476,10 +538,43 @@
             { "code": "EE2201", "name": "Control Systems", "credits": 4.0 },
             { "code": "EC2203", "name": "Computer Organization and Architecture", "credits": 3.0 },
             { "code": "EC2204", "name": "Internet of Things", "credits": 3.0 },
-            { "code": "XX22PQ", "name": "IDE I", "credits": 3.0 }
+            { "code": "XX22PQ", "name": "Inter-Departmental Elective I", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+            { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+            { "subject": "EC2202: Microprocessor", "time": "12:00 PM - 01:00 PM", "room": "R502" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+          ],
+          "Tuesday": [
+            { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+            { "subject": "EE2202: Electrical Machines-II", "time": "12:00 PM - 01:00 PM", "room": "R502" },
+            { "subject": "EC2201: Digital Electronics (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+          ],
+          "Wednesday": [
+            { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+            { "subject": "EC2202: Microprocessor", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "EE2201: Control Systems (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" },
+            { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+          ],
+          "Thursday": [
+            { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+            { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+            { "subject": "EE2202: Electrical Machines-II", "time": "12:00 PM - 01:00 PM", "room": "R502" },
+            { "subject": "EC2202: Microprocessor (LAB)", "time": "02:00 PM - 04:00 PM", "room": "Lab" }
+          ],
+          "Friday": [
+            { "subject": "EE2202: Electrical Machines-II (LAB)", "time": "10:00 AM - 12:00 PM", "room": "Lab" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -491,7 +586,7 @@
             { "code": "EC3103", "name": "Analog Communication", "credits": 4.0 },
             { "code": "EC3104", "name": "Engineering Electromagnetics", "credits": 3.0 },
             { "code": "EC3105", "name": "Random Signals and Stochastic Processes", "credits": 3.0 },
-            { "code": "XX31PQ", "name": "IDE II", "credits": 3.0 }
+            { "code": "XX31PQ", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -518,7 +613,7 @@
           "course": [
             { "code": "EC41XX", "name": "Department Elective I", "credits": 3.0 },
             { "code": "EC41XX", "name": "Department Elective II", "credits": 3.0 },
-            { "code": "XX41PQ", "name": "IDE III", "credits": 3.0 },
+            { "code": "XX41PQ", "name": "Inter-Departmental Elective III", "credits": 3.0 },
             { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
             { "code": "EC4198", "name": "Summer Internship", "credits": 3.0 },
             { "code": "EC4199", "name": "Project I", "credits": 6.0 }
@@ -565,10 +660,43 @@
             { "code": "EE2201", "name": "Control Systems", "credits": 4.0 },
             { "code": "EC2203", "name": "Computer Organization and Architecture", "credits": 3.0 },
             { "code": "EC2204", "name": "Internet of Things", "credits": 3.0 },
-            { "code": "XX22PQ", "name": "IDE I", "credits": 3.0 }
+            { "code": "XX22PQ", "name": "Inter-Departmental Elective I", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+            { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+            { "subject": "EC2202: Microprocessor", "time": "12:00 PM - 01:00 PM", "room": "R502" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+          ],
+          "Tuesday": [
+            { "subject": "EC2203: Computer Organization and Architecture", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+            { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" }
+          ],
+          "Wednesday": [
+            { "subject": "EC2203: Computer Organization and Architecture", "time": "09:00 AM - 10:00 AM", "room": "R502" },
+            { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+            { "subject": "EC2202: Microprocessor", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "EC2201: Digital Electronics", "time": "03:00 PM - 05:00 PM", "room": "LT101" },
+            { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+          ],
+          "Thursday": [
+            { "subject": "EC2203: Computer Organization and Architecture", "time": "09:00 AM - 10:00 AM", "room": "R502" },
+            { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+            { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+            { "subject": "EE2201: Control Systems", "time": "03:00 PM - 04:00 PM", "room": "R502" }
+          ],
+          "Friday": [
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "EC2202: Microprocessor", "time": "03:00 PM - 04:00 PM", "room": "R502" },
+            { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -580,7 +708,7 @@
             { "code": "EC3103", "name": "Analog Communication", "credits": 4.0 },
             { "code": "EC3104", "name": "Engineering Electromagnetics", "credits": 3.0 },
             { "code": "EC3105", "name": "Random Signals and Stochastic Processes", "credits": 3.0 },
-            { "code": "XX31PQ", "name": "IDE II", "credits": 3.0 }
+            { "code": "XX31PQ", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -607,7 +735,7 @@
           "course": [
             { "code": "EC41XX", "name": "Department Elective I", "credits": 3.0 },
             { "code": "EC41XX", "name": "Department Elective II", "credits": 3.0 },
-            { "code": "XX41PQ", "name": "IDE III", "credits": 3.0 },
+            { "code": "XX41PQ", "name": "Inter-Departmental Elective III", "credits": 3.0 },
             { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
             { "code": "EC4198", "name": "Summer Internship", "credits": 3.0 },
             { "code": "EC4199", "name": "Project I", "credits": 6.0 }
@@ -649,27 +777,57 @@
         "curriculum": {
           "total": { "L": 18, "T": 2, "P": 0, "credits": 20 },
           "course": [
-            { "code": "HS2201", "name": "Microeconomics I", "credits": 4.0 },
-            { "code": "HS2202", "name": "Macroeconomics I", "credits": 4.0 },
-            { "code": "HS2203", "name": "Econometrics I", "credits": 4.0 },
-            { "code": "HS2204", "name": "Game Theory", "credits": 3.0 },
-            { "code": "HS22XX", "name": "HSS Elective II", "credits": 3.0 },
-            { "code": "MA2201", "name": "Linear Algebra for Economics", "credits": 2.0 }
+            { "code": "HS2201", "name": "Growth and Development", "credits": 4.0 },
+            { "code": "HS2202", "name": "Microeconomic Theory", "credits": 4.0 },
+            { "code": "HS2203", "name": "Macroeconomic Theory", "credits": 4.0 },
+            { "code": "HS2204", "name": "Econometrics I", "credits": 4.0 },
+            { "code": "ID22XX", "name": "Inter-Departmental Elective I", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "HS2203: Macroeconomic Theory", "time": "10:00 AM - 11:00 AM", "room": "R-202" },
+            { "subject": "HS2202: Microeconomic Theory", "time": "11:00 AM - 12:00 PM", "room": "R-202" },
+            { "subject": "HS2204: Econometrics I (Tutorial)", "time": "12:00 PM - 01:00 PM", "room": "R-202" },
+            { "subject": "ID22XX: Inter-Departmental Elective I", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+          ],
+          "Tuesday": [
+            { "subject": "HS2203: Macroeconomic Theory (Tutorial)", "time": "10:00 AM - 11:00 AM", "room": "R-202" },
+            { "subject": "HS2202: Microeconomic Theory", "time": "11:00 AM - 12:00 PM", "room": "R-202" },
+            { "subject": "HS2201: Growth and Development", "time": "12:00 PM - 01:00 PM", "room": "R-202" }
+          ],
+          "Wednesday": [
+            { "subject": "HS2203: Macroeconomic Theory", "time": "10:00 AM - 11:00 AM", "room": "R-202" },
+            { "subject": "HS2202: Microeconomic Theory", "time": "11:00 AM - 12:00 PM", "room": "R-202" },
+            { "subject": "HS2201: Growth and Development", "time": "12:00 PM - 01:00 PM", "room": "R-202" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "HS2204: Econometrics I", "time": "03:00 PM - 04:00 PM", "room": "R-202" }
+          ],
+          "Thursday": [
+            { "subject": "HS2203: Macroeconomic Theory", "time": "10:00 AM - 11:00 AM", "room": "R-202" },
+            { "subject": "HS2202: Microeconomic Theory (Tutorial)", "time": "11:00 AM - 12:00 PM", "room": "R-202" },
+            { "subject": "HS2201: Growth and Development", "time": "12:00 PM - 01:00 PM", "room": "R-202" },
+            { "subject": "HS2204: Econometrics I", "time": "03:00 PM - 04:00 PM", "room": "R-202" }
+          ],
+          "Friday": [
+            { "subject": "HS2201: Growth and Development", "time": "12:00 PM - 01:00 PM", "room": "R-202" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "HS2204: Econometrics I", "time": "03:00 PM - 04:00 PM", "room": "R-202" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
         "curriculum": {
-          "total": { "L": 15, "T": 3, "P": 2, "credits": 20 },
+          "total": { "L": 15, "T": 4, "P": 2, "credits": 20 },
           "course": [
-            { "code": "HS3101", "name": "Microeconomics II", "credits": 4.0 },
-            { "code": "HS3102", "name": "Macroeconomics II", "credits": 4.0 },
-            { "code": "HS3103", "name": "Econometrics II", "credits": 4.0 },
-            { "code": "HS3104", "name": "Development Economics", "credits": 3.0 },
-            { "code": "HS31PQ", "name": "IDE II", "credits": 3.0 },
-            { "code": "HS3105", "name": "Data Analysis Lab", "credits": 2.0 }
+            { "code": "HS3101", "name": "Econometrics II", "credits": 5.0 },
+            { "code": "HS3102", "name": "Mathematical Economics", "credits": 4.0 },
+            { "code": "HS3103", "name": "International Trade and Investment", "credits": 4.0 },
+            { "code": "HS3104", "name": "Debate in Indian Economy  ", "credits": 4.0 },
+            { "code": "ID31PQ", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -677,14 +835,13 @@
 
       "Semester 6": {
         "curriculum": {
-          "total": { "L": 15, "T": 0, "P": 4, "credits": 19 },
+          "total": { "L": 15, "T": 6, "P": 2, "credits": 22 },
           "course": [
-            { "code": "HS3201", "name": "International Economics", "credits": 3.0 },
-            { "code": "HS3202", "name": "Public Economics", "credits": 3.0 },
-            { "code": "HS3203", "name": "Financial Economics", "credits": 3.0 },
-            { "code": "HS3204", "name": "Time Series Analysis", "credits": 4.0 },
-            { "code": "HS32PQ", "name": "Department Elective I", "credits": 3.0 },
-            { "code": "HS3205", "name": "Econometrics Lab", "credits": 3.0 }
+            { "code": "HS3201", "name": "Categorical Data Analysis", "credits": 5.0 },
+            { "code": "HS3202", "name": "Enviromental Economics", "credits": 4.0 },
+            { "code": "HS3203", "name": "Critical Economic Reading and Seminar", "credits": 6.0 },
+            { "code": "HS3204", "name": "Indian Financial System", "credits": 4.0 },
+            { "code": "HS32PQ", "name": "Health Economics", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -692,12 +849,12 @@
 
       "Semester 7": {
         "curriculum": {
-          "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
+          "total": { "L": 12, "T": 2, "P": 24, "credits": 23 },
           "course": [
-            { "code": "HS41PQ", "name": "Department Elective II", "credits": 3.0 },
-            { "code": "HS41PQ", "name": "Department Elective III", "credits": 3.0 },
-            { "code": "HS4101", "name": "Advanced Econometrics", "credits": 3.0 },
-            { "code": "HS41XX", "name": "HSS Elective", "credits": 3.0 },
+            { "code": "HS41PQ", "name": "Specialization Elective I", "credits": 4.0 },
+            { "code": "HS41PQ", "name": "Specialization Elective II", "credits": 4.0 },
+            { "code": "HS41XX", "name": "HSS Elective II", "credits": 3.0 },
+            { "code": "HS41XX", "name": "Inter-Departmental Elective III", "credits": 3.0 },
             { "code": "HS4198", "name": "Internship", "credits": 3.0 },
             { "code": "HS4199", "name": "Project I", "credits": 6.0 }
           ]
@@ -707,11 +864,10 @@
 
       "Semester 8": {
         "curriculum": {
-          "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
+          "total": { "L": 6, "T": 2, "P": 16, "credits": 16 },
           "course": [
-            { "code": "HS42PQ", "name": "Department Elective IV", "credits": 3.0 },
-            { "code": "HS42PQ", "name": "Department Elective V", "credits": 3.0 },
-            { "code": "HS42PQ", "name": "Department Elective VI", "credits": 3.0 },
+            { "code": "HS42PQ", "name": "Specialization Elective III", "credits": 4.0 },
+            { "code": "HS42PQ", "name": "Specialization Elective IV", "credits": 4.0 },
             { "code": "HS4299", "name": "Project II", "credits": 8.0 }
           ]
         },
@@ -743,10 +899,44 @@
             { "code": "CS2201", "name": "Theory of Computation", "credits": 3.0 },
             { "code": "CS2202", "name": "Database Systems", "credits": 4.0 },
             { "code": "MA2203", "name": "Statistical Inference", "credits": 4.0 },
-            { "code": "CS2209", "name": "IDE I (Data Science)", "credits": 3.0 }
+            { "code": "CS2209", "name": "Inter-Departmental Elective I (Data Science)", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "MA2202: Real Analysis and Measure Theory", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+            { "subject": "MA2203: Numerical Linear Algebra", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+            { "subject": "MA2205: Database Management Systems", "time": "12:00 PM - 01:00 PM", "room": "R303" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "MA2203: Numerical Linear Algebra (LAB)", "time": "04:00 PM - 06:00 PM", "room": "Lab" }
+          ],
+          "Tuesday": [
+            { "subject": "MA2204: Computer Architecture and Organization", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+            { "subject": "MA2202: Real Analysis and Measure Theory", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+            { "subject": "MA2201: Introduction to Machine Learning", "time": "12:00 PM - 01:00 PM", "room": "R303" },
+            { "subject": "MA2201: Introduction to Machine Learning (LAB)", "time": "04:00 PM - 06:00 PM", "room": "Lab" }
+          ],
+          "Wednesday": [
+            { "subject": "MA2201: Introduction to Machine Learning", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+            { "subject": "MA2205: Database Management Systems", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+            { "subject": "MA2202: Real Analysis and Measure Theory", "time": "12:00 PM - 01:00 PM", "room": "R303" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "MA2204: Computer Architecture and Organization (LAB)", "time": "04:00 PM - 06:00 PM", "room": "Lab" }
+          ],
+          "Thursday": [
+            { "subject": "MA2205: Database Management Systems", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+            { "subject": "MA2203: Numerical Linear Algebra", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+            { "subject": "MA2204: Computer Architecture and Organization", "time": "12:00 PM - 01:00 PM", "room": "R303" },
+            { "subject": "MA2205: Database Management Systems (LAB)", "time": "04:00 PM - 06:00 PM", "room": "Lab" }
+          ],
+          "Friday": [
+            { "subject": "MA2203: Numerical Linear Algebra", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+            { "subject": "MA2204: Computer Architecture and Organization", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -758,7 +948,7 @@
             { "code": "CS3101", "name": "Operating Systems", "credits": 4.5 },
             { "code": "CS3102", "name": "Computer Networks", "credits": 4.5 },
             { "code": "MA3103", "name": "Stochastic Processes", "credits": 3.0 },
-            { "code": "CS3109", "name": "IDE II (Graphics/ML)", "credits": 3.0 }
+            { "code": "CS3109", "name": "Inter-Departmental Elective II (Graphics/ML)", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -832,10 +1022,49 @@
             { "code": "ME2203", "name": "Machine Drawing", "credits": 3.0 },
             { "code": "ME2204", "name": "Materials Engineering", "credits": 3.0 },
             { "code": "ME2205", "name": "Instrumentation and Control", "credits": 3.0 },
-            { "code": "ME22PQ", "name": "IDE I", "credits": 3.0 }
+            { "code": "ME22PQ", "name": "Inter-Departmental Elective I", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "ME2201: Kinematics and Dynamics of Mechanisms", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+            { "subject": "ME2202: Heat and Mass Transfer", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+            { "subject": "ME2204: Mechanical Measurements and Instrumentation", "time": "11:00 AM - 12:00 PM", "room": "LT102" },
+            { "subject": "HS2208", "time": "02:00 PM - 03:00 PM", "room": "Seminar Room" },
+            { "subject": "ME2203: Mechanics of Solids (Tutorial)", "time": "03:00 PM - 04:00 PM", "room": "LT102" },
+            { "subject": "HS2209", "time": "04:00 PM - 05:00 PM", "room": "R302" }
+          ],
+          "Tuesday": [
+            { "subject": "ME2202: Heat and Mass Transfer", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+            { "subject": "ME2201: Kinematics and Dynamics of Mechanisms", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+            { "subject": "ME2203: Mechanics of Solids", "time": "11:00 AM - 12:00 PM", "room": "LT102" },
+            { "subject": "ME2204: Mechanical Measurements and Instrumentation", "time": "02:00 PM - 03:00 PM", "room": "LT102" },
+            { "subject": "HS2209", "time": "04:00 PM - 05:00 PM", "room": "R302" }
+          ],
+          "Wednesday": [
+            { "subject": "ME2202: Heat and Mass Transfer (LAB)", "time": "09:00 AM - 11:00 AM", "room": "Lab" },
+            { "subject": "ME2203: Mechanics of Solids", "time": "11:00 AM - 12:00 PM", "room": "LT102" },
+            { "subject": "HS2208", "time": "02:00 PM - 03:00 PM", "room": "Seminar Room" },
+            { "subject": "HS2209", "time": "04:00 PM - 05:00 PM", "room": "R302" }
+          ],
+          "Thursday": [
+            { "subject": "ME2201: Kinematics and Dynamics of Mechanisms", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+            { "subject": "ME2202: Heat and Mass Transfer", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+            { "subject": "ME2203: Mechanics of Solids", "time": "11:00 AM - 12:00 PM", "room": "LT102" },
+            { "subject": "HS2208", "time": "02:00 PM - 03:00 PM", "room": "Seminar Room" },
+            { "subject": "ME2204: Mechanical Measurements and Instrumentation", "time": "03:00 PM - 04:00 PM", "room": "LT102" },
+            { "subject": "ME2201: Kinematics and Dynamics of Mechanisms (LAB)", "time": "05:00 PM - 07:00 PM", "room": "Lab" }
+          ],
+          "Friday": [
+            { "subject": "ME2201: Kinematics and Dynamics of Mechanisms (Tutorial)", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+            { "subject": "ME2202: Heat and Mass Transfer (Tutorial)", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+            { "subject": "ME2204: Mechanical Measurements and Instrumentation (LAB)", "time": "11:00 AM - 01:00 PM", "room": "Lab" },
+            { "subject": "HS2208", "time": "02:00 PM - 03:00 PM", "room": "Seminar Room" },
+            { "subject": "HS2209", "time": "04:00 PM - 05:00 PM", "room": "R302" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -847,7 +1076,7 @@
             { "code": "ME3103", "name": "Dynamics of Machines", "credits": 4.0 },
             { "code": "ME3104", "name": "Manufacturing Technology", "credits": 4.0 },
             { "code": "ME3105", "name": "Finite Element Methods", "credits": 3.0 },
-            { "code": "ME31PQ", "name": "IDE II", "credits": 3.0 }
+            { "code": "ME31PQ", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -921,10 +1150,39 @@
             { "code": "MM2203", "name": "Transport Phenomena", "credits": 4.0 },
             { "code": "MM2204", "name": "Polymer Science", "credits": 3.0 },
             { "code": "MM2205", "name": "Ceramic Materials", "credits": 3.0 },
-            { "code": "MM22PQ", "name": "IDE I", "credits": 3.0 }
+            { "code": "MM22PQ", "name": "Inter-Departmental Elective I", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "MM2201: Iron and Steel Making", "time": "10:00 AM - 11:00 AM", "room": "R107" },
+            { "subject": "MM2202: Techniques of Materials Characterization I", "time": "11:00 AM - 12:00 PM", "room": "R107" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "MM2204: Mechanical Behaviour of Materials", "time": "03:00 PM - 05:00 PM", "room": "R107" }
+          ],
+          "Tuesday": [
+            { "subject": "MM2205: Welding and Solidification", "time": "09:00 AM - 10:00 AM", "room": "R107" },
+            { "subject": "MM2201: Iron and Steel Making", "time": "10:00 AM - 11:00 AM", "room": "R107" },
+            { "subject": "MM2202: Techniques of Materials Characterization I", "time": "11:00 AM - 01:00 PM", "room": "R107" },
+            { "subject": "MM2204: Mechanical Behaviour of Materials", "time": "04:00 PM - 05:00 PM", "room": "R107" }
+          ],
+          "Wednesday": [
+            { "subject": "MM2205: Welding and Solidification", "time": "09:00 AM - 11:00 AM", "room": "R107" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "MM2204: Mechanical Behaviour of Materials (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+          ],
+          "Thursday": [
+            { "subject": "MM2203: Phase Transformation and Diffusion", "time": "09:00 AM - 10:00 AM", "room": "R107" },
+            { "subject": "MM2202: Techniques of Materials Characterization I (LAB)", "time": "10:00 AM - 12:00 PM", "room": "Lab" }
+          ],
+          "Friday": [
+            { "subject": "MM2203: Phase Transformation and Diffusion", "time": "09:00 AM - 11:00 AM", "room": "R107" },
+            { "subject": "MM2201: Iron and Steel Making", "time": "11:00 AM - 12:00 PM", "room": "R107" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -936,7 +1194,7 @@
             { "code": "MM3103", "name": "Electronic Materials", "credits": 3.0 },
             { "code": "MM3104", "name": "Computational Materials Science", "credits": 3.0 },
             { "code": "MM3105", "name": "Mechanical Metallurgy", "credits": 4.0 },
-            { "code": "MM31PQ", "name": "IDE II", "credits": 3.0 }
+            { "code": "MM31PQ", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -1010,10 +1268,41 @@
             { "code": "PH2203", "name": "Statistical Mechanics", "credits": 4.0 },
             { "code": "PH2204", "name": "Optics", "credits": 3.0 },
             { "code": "PH2205", "name": "Physics Lab II", "credits": 3.0 },
-            { "code": "PH22PQ", "name": "IDE I", "credits": 3.0 }
+            { "code": "PH22PQ", "name": "Inter-Departmental Elective I", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+          ],
+          "Tuesday": [
+            { "subject": "EP2202: Mathematical Methods for Engineers", "time": "10:00 AM - 11:00 AM", "room": "R102" },
+            { "subject": "EP2201: Introduction to Nuclear and Particle Physics", "time": "11:00 AM - 12:00 PM", "room": "R102" },
+            { "subject": "EP2203: Electromagnetism", "time": "12:00 PM - 01:00 PM", "room": "R102" },
+            { "subject": "EP2205: Analog Electronics (LAB)", "time": "02:00 PM - 05:00 PM", "room": "Lab" }
+          ],
+          "Wednesday": [
+            { "subject": "EP2203: Electromagnetism", "time": "09:00 AM - 10:00 AM", "room": "R102" },
+            { "subject": "EP2201: Introduction to Nuclear and Particle Physics", "time": "10:00 AM - 11:00 AM", "room": "R102" },
+            { "subject": "EP2202: Mathematical Methods for Engineers", "time": "11:00 AM - 01:00 PM", "room": "R102" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "EP2204: Introductory Statistical Mechanics", "time": "03:00 PM - 04:00 PM", "room": "R102" }
+          ],
+          "Thursday": [
+            { "subject": "EP2203: Electromagnetism", "time": "11:00 AM - 12:00 PM", "room": "R102" },
+            { "subject": "EP2204: Introductory Statistical Mechanics", "time": "02:00 PM - 03:00 PM", "room": "R102" },
+            { "subject": "EP2201: Introduction to Nuclear and Particle Physics", "time": "05:00 PM - 06:00 PM", "room": "R102" }
+          ],
+          "Friday": [
+            { "subject": "EP2202: Mathematical Methods for Engineers", "time": "09:00 AM - 10:00 PM", "room": "R102" },
+            { "subject": "EP2203: Electromagnetism", "time": "10:00 AM - 11:00 AM", "room": "R102" },
+            { "subject": "EP2204: Introductory Statistical Mechanics", "time": "11:00 AM - 12:00 PM", "room": "R102" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "EP2205: Analog Electronics", "time": "03:00 PM - 05:00 PM", "room": "R102" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -1025,7 +1314,7 @@
             { "code": "PH3103", "name": "Nuclear and Particle Physics", "credits": 3.0 },
             { "code": "PH3104", "name": "Computational Physics", "credits": 3.0 },
             { "code": "PH3105", "name": "Advanced Lab", "credits": 4.0 },
-            { "code": "PH31PQ", "name": "IDE II", "credits": 3.0 }
+            { "code": "PH31PQ", "name": "Inter-Departmental Elective II", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -1099,10 +1388,42 @@
             { "code": "CS2203", "name": "Artificial Intelligence", "credits": 4.5 },
             { "code": "CS2204", "name": "IT Workshop", "credits": 3.0 },
             { "code": "CS2206", "name": "Data Analytics and Visualization", "credits": 4.5 },
-            { "code": "CS2209", "name": "IDE I (Introduction to Data Science)", "credits": 3.0 }
+            { "code": "CS2209", "name": "Inter-Departmental Elective I (Introduction to Data Science)", "credits": 3.0 }
           ]
         },
-        "timetable": {}
+        "timetable": {
+          "Monday": [
+            { "subject": "CS2203: Artificial Intelligence", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+            { "subject": "CS2206: Data Analytics and Visualization", "time": "12:00 PM - 01:00 PM", "room": "R106" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "CS2204: IT Workshop", "time": "03:00 PM - 06:00 PM", "room": "Lab" }
+          ],
+          "Tuesday": [
+            { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+            { "subject": "CS2201: Formal Language and Automata Theory", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+            { "subject": "CS2206: Data Analytics and Visualization", "time": "12:00 PM - 01:00 PM", "room": "R103" },
+            { "subject": "CS2206: Data Analytics and Visualization (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+          ],
+          "Wednesday": [
+            { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+            { "subject": "CS2201: Formal Language and Automata Theory", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+            { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+            { "subject": "CS2202: Database and Warehousing (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+          ],
+          "Thursday": [
+            { "subject": "CS2201: Formal Language and Automata Theory", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+            { "subject": "CS2202: Database and Warehousing", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+            { "subject": "CS2206: Data Analytics and Visualization", "time": "12:00 PM - 01:00 PM", "room": "R103" },
+            { "subject": "CS2203: Artificial Intelligence (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+          ],
+          "Friday": [
+            { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+            { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+          ],
+          "Saturday": [],
+          "Sunday": []
+        }
       },
 
       "Semester 5": {
@@ -1113,7 +1434,7 @@
             { "code": "CS3102", "name": "Computer Network", "credits": 4.5 },
             { "code": "CS3103", "name": "Machine Learning", "credits": 4.5 },
             { "code": "CS3105", "name": "Natural Language Processing", "credits": 4.5 },
-            { "code": "CS3109", "name": "IDE II (Computer Graphics)", "credits": 3.0 }
+            { "code": "CS3109", "name": "Inter-Departmental Elective II (Computer Graphics)", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -1127,7 +1448,7 @@
             { "code": "CS3202", "name": "Deep Learning", "credits": 4.5 },
             { "code": "CS3204", "name": "Computer Vision", "credits": 4.5 },
             { "code": "CS3299", "name": "Capstone Project", "credits": 3.0 },
-            { "code": "CS32XX", "name": "DE I (AI Electives List)", "credits": 3.0 }
+            { "code": "CS32XX", "name": "Departmental Elective I (AI Electives List)", "credits": 3.0 }
           ]
         },
         "timetable": {}
@@ -1137,9 +1458,9 @@
         "curriculum": {
           "total": { "L": 12, "T": 0, "P": 24, "credits": 21 },
           "course": [
-            { "code": "CS41XX", "name": "DE II (AI Electives List)", "credits": 3.0 },
-            { "code": "CS41XX", "name": "DE III (AI Electives List)", "credits": 3.0 },
-            { "code": "CS4109", "name": "IDE III (Data Analysis and Visualization)", "credits": 3.0 },
+            { "code": "CS41XX", "name": "Departmental Elective II (AI Electives List)", "credits": 3.0 },
+            { "code": "CS41XX", "name": "Departmental Elective III (AI Electives List)", "credits": 3.0 },
+            { "code": "CS4109", "name": "Inter-Departmental Elective III (Data Analysis and Visualization)", "credits": 3.0 },
             { "code": "HS41PQ", "name": "HSS Elective II", "credits": 3.0 },
             { "code": "CS4198", "name": "Summer Internship / Project", "credits": 3.0 },
             { "code": "CS4199", "name": "Project I", "credits": 6.0 }
@@ -1152,9 +1473,9 @@
         "curriculum": {
           "total": { "L": 9, "T": 0, "P": 16, "credits": 17 },
           "course": [
-            { "code": "CS42XX", "name": "DE IV (AI Electives List)", "credits": 3.0 },
-            { "code": "CS42XX", "name": "DE V (AI Electives List)", "credits": 3.0 },
-            { "code": "CS42XX", "name": "DE VI (AI Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "Departmental Elective IV (AI Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "Departmental Elective V (AI Electives List)", "credits": 3.0 },
+            { "code": "CS42XX", "name": "Departmental Elective VI (AI Electives List)", "credits": 3.0 },
             { "code": "CS4299", "name": "Project II", "credits": 8.0 }
           ]
         },
@@ -1237,11 +1558,11 @@
       "Semester 1": 22,
       "Semester 2": 24,
       "Semester 3": 21,
-      "Semester 4": 20,
+      "Semester 4": 19,
       "Semester 5": 20,
-      "Semester 6": 19,
-      "Semester 7": 21,
-      "Semester 8": 17
+      "Semester 6": 22,
+      "Semester 7": 23,
+      "Semester 8": 16
     },
     "MnC": {
       "Semester 1": 22,

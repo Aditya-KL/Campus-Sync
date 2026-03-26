@@ -70,7 +70,7 @@ class FirebaseService {
       _studentDoc(uid).collection('focus_stats');
 
   DocumentReference<Map<String, dynamic>> _dismissedCol(String uid) =>
-      _studentDoc(uid).collection('meta').doc('admin_prefs');     
+      _studentDoc(uid).collection('meta').doc('admin_prefs');
 
   // ── Server-first fetch helper ─────────────────────────────────
   Future<DocumentSnapshot<Map<String, dynamic>>> _fetchDoc(
@@ -180,16 +180,12 @@ class FirebaseService {
     }
 
     // ── 3. Write currentSemester to student doc ──────────────────
-    // Only write if not already set (guard against race conditions)
     try {
       await _studentDoc(uid).update({
         'currentSemester': currentSem,
-        // Set lastSemRollDate to epoch so checkAndRollSemester
-        // knows the last rollover was before the current boundary
         'lastSemRollDate': Timestamp.fromDate(DateTime(2000)),
       });
     } catch (_) {
-      // If update fails (doc might not have these fields yet), use set merge
       await _studentDoc(uid).set({
         'currentSemester': currentSem,
         'lastSemRollDate': Timestamp.fromDate(DateTime(2000)),
@@ -200,15 +196,10 @@ class FirebaseService {
   }
 
   // ── Derive current semester purely from roll number + today ───
-  // Roll "24XXXXXX" → startYear = 2024, joined July 2024.
-  // Sem 1: Jul 2024 – Dec 2024
-  // Sem 2: Jan 2025 – May 2025
-  // Sem 3: Jul 2025 – Dec 2025
-  // Sem 4: Jan 2026 – May 2026  ← today (Mar 2026) → sem 4
   static int _semesterFromRollNo(String rollNo) {
     if (rollNo.length < 2) return 1;
     final startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
-    final joinDate  = DateTime(startYear, 7, 1); // July 1
+    final joinDate  = DateTime(startYear, 7, 1);
     final now       = DateTime.now();
     final months    = (now.year - joinDate.year) * 12
                     + now.month - joinDate.month;
@@ -217,23 +208,16 @@ class FirebaseService {
   }
 
   // ── Fetch credit count for a past semester ────────────────────
-  // Priority:
-  //   1. sem_credits/{branch} → "Semester N" flat field  (most reliable,
-  //      matches your Firestore structure from the screenshot)
-  //   2. curriculum/{branch}_Sem{N} → sum of courses' credit fields
-  //   3. Hardcoded fallback: 21
   Future<int> _creditForSemFromCurriculum({
     required String branch,
     required int    semester,
   }) async {
-    // Primary: sem_credits doc (fast single-doc read, exact data)
     try {
       final creditsDoc = await getSemCredits(branch);
       final cr = creditForSem(creditsDoc, semester);
       if (cr > 0) return cr;
     } catch (_) {}
 
-    // Fallback: sum course credits from curriculum doc
     try {
       final snap = await _db
           .collection('curriculum')
@@ -249,15 +233,13 @@ class FirebaseService {
       }
     } catch (_) {}
 
-    return 21; // final fallback
+    return 21;
   }
 
   // ─────────────────────────────────────────────────────────────
   // PAST SEMESTERS SUBCOLLECTION
-  // students/{uid}/pastSemesters/"Semester N"
   // ─────────────────────────────────────────────────────────────
 
-  /// Returns all past semester docs sorted by semester number ascending.
   Future<List<Map<String, dynamic>>> getPastSemesters(String uid) async {
     try {
       final snap = await _pastSemsCol(uid)
@@ -265,7 +247,6 @@ class FirebaseService {
           .get(const GetOptions(source: Source.serverAndCache));
       return snap.docs.map((d) => d.data()).toList();
     } catch (_) {
-      // serverAndCache failed (first install) — try server directly
       try {
         final snap = await _pastSemsCol(uid)
             .orderBy('semester')
@@ -278,9 +259,6 @@ class FirebaseService {
     }
   }
 
-  /// Write a single semester into the subcollection.
-  /// Document ID = "Semester N" — idempotent (SetOptions merge: false
-  /// only if the doc doesn't already exist).
   Future<void> archiveSemester(String uid, {
     required int    semester,
     required double spi,
@@ -289,7 +267,6 @@ class FirebaseService {
   }) async {
     final ref = _pastSemDoc(uid, semester);
     try {
-      // Only write if not already archived
       final existing = await ref.get(const GetOptions(source: Source.server));
       if (existing.exists) {
         debugPrint('Semester $semester already archived — skipping.');
@@ -298,7 +275,7 @@ class FirebaseService {
       await ref.set({
         'semester': semester,
         'spi':      spi,
-        'spi ':     spi,   // trailing-space key kept for backward compat
+        'spi ':     spi,
         'cpi':      cpi,
         'credit':   credit,
         'lockedAt': FieldValue.serverTimestamp(),
@@ -310,8 +287,6 @@ class FirebaseService {
     }
   }
 
-  /// Update only the SPI (and recomputed CPI) for a past semester.
-  /// Called when the user edits an SGPA value in the history table.
   Future<void> updatePastSemesterSpi(String uid, {
     required int    semester,
     required double spi,
@@ -320,7 +295,7 @@ class FirebaseService {
     try {
       await _pastSemDoc(uid, semester).update({
         'spi':  spi,
-        'spi ': spi, // keep trailing-space key in sync
+        'spi ': spi,
         'cpi':  cpi,
       });
     } catch (e) {
@@ -332,23 +307,8 @@ class FirebaseService {
 
   // ─────────────────────────────────────────────────────────────
   // SEMESTER ROLL-OVER
-  //
-  // Call once on app open (grade calculator initState).
-  //
-  // Roll-over boundaries (Indian academic calendar):
-  //   Odd  sems (1, 3, 5, 7) run Jul–Dec → end Dec 31
-  //   Even sems (2, 4, 6, 8) run Jan–May → end May 31
-  //
-  // So the rule is:
-  //   If current sem is ODD  and today >= Jan 1 of next semester year → roll
-  //   If current sem is EVEN and today >= Jun 1 of same year          → roll
-  //
-  // Guard: students/{uid}.lastSemRollDate is the Timestamp of the LAST time
-  // we rolled. If lastSemRollDate is on or after the boundary date, we
-  // already rolled for this boundary and do nothing.
-  //
-  // Returns new semester number (currentSem + 1) if rolled, else currentSem.
   // ─────────────────────────────────────────────────────────────
+
   Future<int> checkAndRollSemester(String uid, {
     required int    currentSem,
     required double spiForCurrentSem,
@@ -357,28 +317,11 @@ class FirebaseService {
   }) async {
     final now = DateTime.now();
 
-    // ── Compute the boundary date for the CURRENT semester ──────
-    // We need to know WHEN the current semester officially ended
-    // so we can check if that date has passed.
-    //
-    // Academic year starts July 1.
-    // Sem 1 starts Jul year Y,  ends Dec 31 year Y   → boundary Jan 1 Y+1
-    // Sem 2 starts Jan year Y+1, ends May 31 year Y+1 → boundary Jun 1 Y+1
-    // Sem 3 starts Jul year Y+1, ends Dec 31 year Y+1 → boundary Jan 1 Y+2
-    // etc.
-    //
-    // Given semNumber, startYear (the July when sem 1 began):
-    //   Odd  sem N started Jul (startYear + (N-1)÷2)
-    //   Even sem N started Jan (startYear + N÷2)
-    //   → boundary = start of next semester
-
     DateTime _boundaryForSem(int sem, int startYear) {
       if (sem.isOdd) {
-        // Odd sem ends Dec 31 → boundary is Jan 1 of the following year
         final semYear = startYear + (sem - 1) ~/ 2;
         return DateTime(semYear + 1, 1, 1);
       } else {
-        // Even sem ends May 31 → boundary is Jun 1 of the same calendar year
         final semYear = startYear + sem ~/ 2;
         return DateTime(semYear, 6, 1);
       }
@@ -388,30 +331,25 @@ class FirebaseService {
       final snap = await getStudentDoc(uid);
       final d    = snap.data() ?? {};
 
-      final rollNo   = (d['rollNo']   ?? '') as String;
+      final rollNo    = (d['rollNo']   ?? '') as String;
       final startYear = rollNo.length >= 2
           ? 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24)
           : 2024;
 
       final boundary = _boundaryForSem(currentSem, startYear);
 
-      // Boundary hasn't arrived yet — no rollover
       if (now.isBefore(boundary)) return currentSem;
 
-      // Check lastSemRollDate guard
       final lastRollRaw = d['lastSemRollDate'];
       if (lastRollRaw != null) {
         final lastRoll = (lastRollRaw as Timestamp).toDate();
-        // Already rolled on or after this boundary → nothing to do
         if (!lastRoll.isBefore(boundary)) return currentSem;
       }
 
-      // ── Rollover is due ──────────────────────────────────────
       debugPrint(
           'Rolling semester $currentSem → ${currentSem + 1}  '
           '(boundary was ${boundary.toIso8601String()})');
 
-      // 1. Archive the just-finished semester (idempotent — skips if exists)
       await archiveSemester(uid,
         semester: currentSem,
         spi:      spiForCurrentSem,
@@ -419,7 +357,6 @@ class FirebaseService {
         credit:   creditForCurrentSem,
       );
 
-      // 2. Increment currentSemester + stamp lastSemRollDate on student doc
       await _studentDoc(uid).update({
         'currentSemester': currentSem + 1,
         'lastSemRollDate': FieldValue.serverTimestamp(),
@@ -428,18 +365,15 @@ class FirebaseService {
       return currentSem + 1;
 
     } catch (e) {
-      // Never crash the app on rollover failure — log and continue
       debugPrint('Semester rollover error: $e');
       return currentSem;
     }
   }
 
   // ─────────────────────────────────────────────────────────────
-  // CGPA HELPERS  (pure computation — no Firestore calls)
+  // CGPA HELPERS
   // ─────────────────────────────────────────────────────────────
 
-  /// Compute CGPA from a list of past semester maps.
-  /// Each map must have 'spi' (double) and 'credit' (int).
   static double computeCgpaFromList(List<Map<String, dynamic>> past) {
     double sumCP = 0, sumC = 0;
     for (final s in past) {
@@ -451,7 +385,6 @@ class FirebaseService {
     return sumC > 0 ? sumCP / sumC : 0.0;
   }
 
-  /// Compute CGPA from the OLD flat-array format (backward compat).
   static double computeCgpa(Map<String, dynamic> studentData) {
     final rawPast = ((studentData['pastSemesters'] as List?) ?? [])
         .cast<Map<String, dynamic>>();
@@ -468,7 +401,6 @@ class FirebaseService {
 
   // ─────────────────────────────────────────────────────────────
   // TIMETABLE
-  // Format: "{BRANCH}_{startYear}-{endYear}"  e.g. "CSE_2024-2028"
   // ─────────────────────────────────────────────────────────────
 
   Future<DocumentSnapshot<Map<String, dynamic>>?> getTimetableDoc({
@@ -503,7 +435,7 @@ class FirebaseService {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // CURRICULUM  —  curriculum/{BRANCH}_Sem{N}
+  // CURRICULUM
   // ─────────────────────────────────────────────────────────────
 
   Future<DocumentSnapshot<Map<String, dynamic>>?> getCurriculumDoc({
@@ -531,28 +463,21 @@ class FirebaseService {
     }
   }
 
-  /// Extract credit count for a specific semester from the sem_credits doc.
-  /// Matches the exact flat structure: { "Semester 1": 22, "Semester 2": 24, … }
   static int creditForSem(Map<String, dynamic> creditsDoc, int sem) {
-    // Primary: flat key "Semester N" — matches your Firestore structure
     final flat = creditsDoc['Semester $sem'];
     if (flat != null) return (flat as num).toInt();
-    // Legacy fallback keys
     final legacy = creditsDoc['sem_$sem'];
     if (legacy != null) return (legacy as num).toInt();
-    return 21; // final fallback
+    return 21;
   }
 
   // ─────────────────────────────────────────────────────────────
   // ATTENDANCE
-  // Path: timetable_attendance/{uid}/attendance/{courseCode}
-  // Each doc: { attended: N, total: N, Monday: 1/-1/0, Tuesday: … }
   // ─────────────────────────────────────────────────────────────
 
   CollectionReference<Map<String, dynamic>> _attCoursesCol(String uid) =>
       _db.collection('timetable_attendance').doc(uid).collection('courses');
 
-  /// Returns { "CS101": {"attended": 5, "total": 8}, … }
   Future<Map<String, Map<String, int>>> getAttendance(String uid) async {
     try {
       final snap = await _attCoursesCol(uid)
@@ -572,8 +497,6 @@ class FirebaseService {
     }
   }
 
-  /// Update a single course's attended/total.
-  /// merge: true preserves the day-toggle fields (Monday, Tuesday, …).
   Future<void> updateCourseAttendance(
       String uid, String courseCode, int attended, int total) async {
     try {
@@ -598,7 +521,7 @@ class FirebaseService {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // REMINDERS  —  students/{uid}/reminders
+  // REMINDERS
   // ─────────────────────────────────────────────────────────────
 
   Stream<int> unreadCountStream(String uid) =>
@@ -617,7 +540,7 @@ class FirebaseService {
       _remindersCol(uid).doc(id).delete().catchError((_) {});
 
   // ─────────────────────────────────────────────────────────────
-  // LIBRARY  —  students/{uid}/library
+  // LIBRARY
   // ─────────────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getLibraryBooks(String uid) async {
@@ -656,7 +579,7 @@ class FirebaseService {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // FOCUS STATS  —  students/{uid}/focus_stats/summary
+  // FOCUS STATS
   // ─────────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getFocusStats(String uid) async {
@@ -698,7 +621,7 @@ class FirebaseService {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // ADMIN REMINDERS  —  admin_reminders (global collection)
+  // ADMIN REMINDERS
   // ─────────────────────────────────────────────────────────────
 
   Stream<QuerySnapshot<Map<String, dynamic>>> adminRemindersStream() =>
@@ -707,9 +630,9 @@ class FirebaseService {
           .limit(20)
           .snapshots();
 
-Future<Set<String>> getDismissedAdminIds(String uid) async {
+  Future<Set<String>> getDismissedAdminIds(String uid) async {
     try {
-      final doc = await _dismissedCol(uid).get(); 
+      final doc = await _dismissedCol(uid).get();
       if (doc.exists && doc.data() != null) {
         final List<dynamic> dismissedArray = doc.data()!['dismissed_ids'] ?? [];
         return dismissedArray.cast<String>().toSet();
@@ -762,7 +685,7 @@ Future<Set<String>> getDismissedAdminIds(String uid) async {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // PLANNER TASKS  —  students/{uid}/planner
+  // PLANNER TASKS
   // ─────────────────────────────────────────────────────────────
 
   Stream<QuerySnapshot<Map<String, dynamic>>> plannerStream(String uid) =>
