@@ -1,0 +1,732 @@
+{
+  "CSE_Sem4": {
+    "Monday": [
+      { "subject": "CS2203: Artificial Intelligence", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+      { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "CS2204: IT Workshop", "time": "03:00 PM - 06:00 PM", "room": "CC Lab 1" }
+    ],
+    "Tuesday": [
+      { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+      { "subject": "CS2201: Formal Language and Automata", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+      { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" }
+    ],
+    "Wednesday": [
+      { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+      { "subject": "CS2201: Formal Language and Automata", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+      { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "CS2202: Database and Warehousing Lab", "time": "03:00 PM - 05:00 PM", "room": "CC Lab 1" }
+    ],
+    "Thursday": [
+      { "subject": "CS2201: Formal Language and Automata", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+      { "subject": "CS2202: Database and Warehousing", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+      { "subject": "CS2206: Computer Architecture", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+      { "subject": "CS2203: Artificial Intelligence Lab", "time": "03:00 PM - 06:00 PM", "room": "CC Lab 1" }
+    ],
+    "Friday": [
+      { "subject": "CS2206: Computer Architecture Lab", "time": "09:00 AM - 12:00 PM", "room": "Hardware Lab, CSE Dept" },
+      { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+    ]
+  },
+
+  "CSE_Sem6": {
+    "Monday": [
+      { "subject": "CS3201: Cyber Security", "time": "10:00 AM - 10:55 AM", "room": "LT002" },
+      { "subject": "CS3203: Internet of Things", "time": "11:00 AM - 11:55 AM", "room": "LT002" }
+    ],
+    "Tuesday": [
+      { "subject": "CS3201: Cyber Security", "time": "09:00 AM - 09:55 AM", "room": "LT002" },
+      { "subject": "CS3204: Computer Vision", "time": "10:00 AM - 10:55 AM", "room": "LT002" },
+      { "subject": "CS3202: Deep Learning", "time": "11:00 AM - 11:55 AM", "room": "LT002" },
+      { "subject": "CS3205: [Course Name Not Found]", "time": "12:00 PM - 12:55 PM", "room": "LT002" },
+      { "subject": "CS3202: Deep Learning", "time": "03:00 PM - 03:55 PM", "room": "CC Lab1" }
+    ],
+    "Wednesday": [
+      { "subject": "CS3201: Cyber Security", "time": "09:00 AM - 09:55 AM", "room": "LT002" },
+      { "subject": "CS3204: Computer Vision", "time": "10:00 AM - 10:55 AM", "room": "LT002" },
+      { "subject": "CS3202: Deep Learning", "time": "11:00 AM - 11:55 AM", "room": "LT002" },
+      { "subject": "CS3203: Internet of Things", "time": "12:00 PM - 12:55 PM", "room": "R502" },
+      { "subject": "CS3203: Internet of Things Lab", "time": "03:00 PM - 03:55 PM", "room": "Hardware Lab / Outdoor" }
+    ],
+    "Thursday": [
+      { "subject": "CS3205: [Course Name Not Found]", "time": "09:00 AM - 09:55 AM", "room": "LT002" },
+      { "subject": "CS3204: Computer Vision", "time": "10:00 AM - 10:55 AM", "room": "LT002" },
+      { "subject": "CS3202: Deep Learning", "time": "11:00 AM - 11:55 AM", "room": "LT002" },
+      { "subject": "CS3204: Computer Vision Lab", "time": "02:00 PM - 02:55 PM", "room": "CSE Dept" }
+    ],
+    "Friday": [
+      { "subject": "CS3205: [Course Name Not Found]", "time": "09:00 AM - 09:55 AM", "room": "LT002" },
+      { "subject": "CS3201: Cyber Security Lab", "time": "10:00 AM - 11:55 AM", "room": "CC Lab1" },
+      { "subject": "CS3203: Internet of Things", "time": "12:00 PM - 12:55 PM", "room": "LT002" }
+    ]
+  },
+
+  "CBT_Sem4": {
+    "Monday": [
+      { "subject": "Inter-Departmental Elective", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+      { "subject": "CB2201: Mechanical Operations", "time": "03:00 PM - 06:00 PM", "room": "RS07" }
+    ],
+    "Tuesday": [
+      { "subject": "CB2205: Chemical Reaction Engineering-I", "time": "09:00 AM - 11:00 AM", "room": "RS07" },
+      { "subject": "CB2202: Mass Transfer-I", "time": "11:00 AM - 12:00 PM", "room": "RS07" },
+      { "subject": "CB2203: Fundamentals of Biochemical Engineering", "time": "03:00 PM - 04:00 PM", "room": "R109" },
+      { "subject": "CB2204: Process Dynamics and Control", "time": "04:00 PM - 06:00 PM", "room": "LAB" }
+    ],
+    "Wednesday": [
+      { "subject": "CB2203: Fundamentals of Biochemical Engineering", "time": "09:00 AM - 11:00 AM", "room": "R109" },
+      { "subject": "CB2202: Mass Transfer-I", "time": "11:00 AM - 12:00 PM", "room": "RS07" },
+      { "subject": "Inter-Departmental Elective", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+      { "subject": "CB2204: Process Dynamics and Control (LAB)", "time": "03:00 PM - 05:00 PM", "room": "LAB" }
+    ],
+    "Thursday": [
+      { "subject": "Inter-Departmental Elective", "time": "02:00 PM - 03:00 PM", "room": "R109" },
+      { "subject": "CB2202: Mass Transfer-I", "time": "03:00 PM - 04:00 PM", "room": "RS07" },
+      { "subject": "CB2204: Process Dynamics and Control", "time": "04:00 PM - 05:00 PM", "room": "LAB" }
+    ],
+    "Friday": [
+      { "subject": "CB2205: Chemical Reaction Engineering-I", "time": "10:00 AM - 11:00 AM", "room": "RS07" },
+      { "subject": "CB2201: Mechanical Operations", "time": "11:00 AM - 01:00 PM", "room": "RS07" },
+      { "subject": "Inter-Departmental Elective", "time": "02:00 PM - 03:00 PM", "room": "R109" }
+    ]
+  },
+  "CBT_Sem6": {
+    "Monday": [
+      { "subject": "CB3201/CB407", "time": "10:00 AM - 10:55 AM", "room": "R109" },
+      { "subject": "CB3201/CB407", "time": "11:00 AM - 11:55 AM", "room": "R109" },
+      { "subject": "CB3205", "time": "12:00 PM - 12:55 PM", "room": "R109" }
+    ],
+    "Tuesday": [
+      { "subject": "CB3203", "time": "09:00 AM - 09:55 AM", "room": "R109" },
+      { "subject": "CB3203", "time": "10:00 AM - 10:55 AM", "room": "R109" },
+      { "subject": "CB3205", "time": "11:00 AM - 11:55 AM", "room": "R109" },
+      { "subject": "CB3202", "time": "12:00 PM - 12:55 PM", "room": "R109" }
+    ],
+    "Wednesday": [
+      { "subject": "CB3203", "time": "09:00 AM - 09:55 AM", "room": "R109" },
+      { "subject": "CB3203", "time": "10:00 AM - 10:55 AM", "room": "R109" },
+      { "subject": "CB3206", "time": "11:00 AM - 11:55 AM", "room": "R109" },
+      { "subject": "CB3204", "time": "12:00 PM - 12:55 PM", "room": "R109" },
+      { "subject": "CB3202", "time": "03:00 PM - 03:55 PM", "room": "R109" },
+      { "subject": "CB3202", "time": "04:00 PM - 04:55 PM", "room": "R109" }
+    ],
+    "Thursday": [
+      { "subject": "CB3204(L)", "time": "10:00 AM - 10:55 AM", "room": "Lab" },
+      { "subject": "CB3204(L)", "time": "11:00 AM - 11:55 AM", "room": "Lab" },
+      { "subject": "CB3202", "time": "02:00 PM - 02:55 PM", "room": "R109" },
+      { "subject": "CB3203", "time": "03:00 PM - 03:55 PM", "room": "R109" },
+      { "subject": "CB3206", "time": "04:00 PM - 04:55 PM", "room": "R109" },
+      { "subject": "CB3205", "time": "05:00 PM - 05:55 PM", "room": "R109" }
+    ],
+    "Friday": [
+      { "subject": "CB3206", "time": "10:00 AM - 10:55 AM", "room": "R109" },
+      { "subject": "CB3201/CB407", "time": "11:00 AM - 11:55 AM", "room": "R109" },
+      { "subject": "CB3204(L)", "time": "03:00 PM - 03:55 PM", "room": "Lab" },
+      { "subject": "CB3204(L)", "time": "04:00 PM - 04:55 PM", "room": "Lab" }
+    ]
+  },
+  "CE_Sem4": {
+    "Monday": [
+      { "subject": "CE2204: Water Resources Engineering-I", "time": "12:00 PM - 01:00 PM", "room": "OP" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "CE2203: Civil Engineering Materials (Workshop)", "time": "04:00 PM - 06:00 PM", "room": "Workshop" }
+    ],
+    "Tuesday": [
+      { "subject": "CE2205: Numerical Methods in Civil Engineering", "time": "11:00 AM - 12:00 PM", "room": "SG/RKB" },
+      { "subject": "CE2201: Structural Analysis", "time": "03:00 PM - 05:00 PM", "room": "SG" }
+    ],
+    "Wednesday": [
+      { "subject": "CE2204: Water Resources Engineering-I", "time": "11:00 AM - 12:00 PM", "room": "OP" },
+      { "subject": "CE2205: Numerical Methods in Civil Engineering", "time": "12:00 PM - 01:00 PM", "room": "SG/RKB" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "CE2202: Soil Mechanics", "time": "03:00 PM - 04:00 PM", "room": "RKB" },
+      { "subject": "CE2203: Civil Engineering Materials", "time": "04:00 PM - 05:00 PM", "room": "SKKH/MS" }
+    ],
+    "Thursday": [
+      { "subject": "CE2202: Soil Mechanics (LAB)", "time": "09:00 AM - 11:00 AM", "room": "RKB Lab" },
+      { "subject": "CE2204: Water Resources Engineering-I", "time": "11:00 AM - 12:00 PM", "room": "OP" },
+      { "subject": "CE2202: Soil Mechanics", "time": "02:00 PM - 04:00 PM", "room": "RKB" },
+      { "subject": "CE2201: Structural Analysis (LAB)", "time": "04:00 PM - 05:00 PM", "room": "B6/131 Lab" }
+    ],
+    "Friday": [
+      { "subject": "CE2205: Numerical Methods in Civil Engineering", "time": "12:00 PM - 01:00 PM", "room": "SG/RKB" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "CE2201: Structural Analysis", "time": "03:00 PM - 04:00 PM", "room": "SG" },
+      { "subject": "CE2203: Civil Engineering Materials", "time": "04:00 PM - 05:00 PM", "room": "SKKH/MS" }
+    ]
+  },
+  "CE_Sem6": {
+    "Monday": [
+      { "subject": "CE3201", "time": "09:00 AM - 09:55 AM", "room": "B9/R104" },
+      { "subject": "CE3204", "time": "10:00 AM - 10:55 AM", "room": "B9/R104" },
+      { "subject": "CE3204 (T)", "time": "11:00 AM - 11:55 AM", "room": "B9/R104" },
+      { "subject": "CE3205", "time": "03:00 PM - 03:55 PM", "room": "B9/R104" }
+    ],
+
+    "Tuesday": [
+      { "subject": "CE3201", "time": "09:00 AM - 09:55 AM", "room": "B9/R104" },
+      { "subject": "CE3204", "time": "10:00 AM - 10:55 AM", "room": "B9/R104" },
+      { "subject": "CE3206", "time": "12:00 Noon - 12:55 PM", "room": "B9/R104" },
+      { "subject": "CE3201 (T)", "time": "05:00 PM - 05:55 PM", "room": "B9/R104" },
+      { "subject": "CE3205", "time": "06:00 PM - 06:55 PM", "room": "B9/R104" }
+    ],
+
+    "Wednesday": [
+      { "subject": "CE3206", "time": "09:00 AM - 09:55 AM", "room": "B9/R104" },
+      { "subject": "CE3203", "time": "10:00 AM - 10:55 AM", "room": "B9/R104" }
+    ],
+
+    "Thursday": [
+      { "subject": "CE3201", "time": "09:00 AM - 09:55 AM", "room": "B9/R104" },
+      { "subject": "CE3204", "time": "10:00 AM - 10:55 AM", "room": "B9/R104" },
+      { "subject": "CE3203", "time": "12:00 Noon - 12:55 PM", "room": "B9/R104" },
+      { "subject": "CE3205", "time": "04:00 PM - 04:55 PM", "room": "B9/R104" }
+    ],
+
+    "Friday": [
+      { "subject": "CE3203", "time": "09:00 AM - 09:55 AM", "room": "B9/R104" },
+      { "subject": "CE3206", "time": "10:00 AM - 10:55 AM", "room": "B9/R104" },
+      { "subject": "CE3202", "time": "04:00 PM - 04:55 PM", "room": "B9/R105" },
+      { "subject": "CE3202", "time": "05:00 PM - 05:55 PM", "room": "B9/R105" },
+      { "subject": "CE3202", "time": "06:00 PM - 06:55 PM", "room": "B9/R104" }
+    ],
+
+    "Saturday": [],
+    "Sunday": []
+  },
+
+  "CST_Sem4": {
+    "Monday": [
+      { "subject": "CH2203: Chemical Thermodynamics and Equilibrium (Tutorial)", "time": "09:00 AM - 10:00 AM", "room": "R-305" },
+      { "subject": "CH2203: Chemical Thermodynamics and Equilibrium", "time": "10:00 AM - 11:00 AM", "room": "R-305" },
+      { "subject": "CH2204: Industrial Chemistry", "time": "11:00 AM - 12:00 PM", "room": "R-305" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+    ],
+    "Tuesday": [
+      { "subject": "CH2201: Structure and Function of Biomolecules", "time": "12:00 PM - 01:00 PM", "room": "R-305" },
+      { "subject": "CH2202: Introduction to Organometallics", "time": "04:00 PM - 05:00 PM", "room": "R-305" },
+      { "subject": "CH2203: Chemical Thermodynamics and Equilibrium", "time": "05:00 PM - 06:00 PM", "room": "R-305" }
+    ],
+    "Wednesday": [
+      { "subject": "CH2202: Introduction to Organometallics (Tutorial)", "time": "09:00 AM - 10:00 AM", "room": "R-306" },
+      { "subject": "CH2202: Introduction to Organometallics", "time": "10:00 AM - 11:00 AM", "room": "R-306" },
+      { "subject": "CH2204: Industrial Chemistry", "time": "11:00 AM - 12:00 PM", "room": "R-306" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "CH2205: Chemical Technology Laboratory I", "time": "03:00 PM - 06:00 PM", "room": "Lab 3" }
+    ],
+    "Thursday": [
+      { "subject": "CH2204: Industrial Chemistry", "time": "09:00 AM - 10:00 AM", "room": "R-306" },
+      { "subject": "CH2202: Introduction to Organometallics", "time": "10:00 AM - 11:00 AM", "room": "R-306" },
+      { "subject": "CH2203: Chemical Thermodynamics and Equilibrium", "time": "11:00 AM - 12:00 PM", "room": "R-306" },
+      { "subject": "CH2205: Chemical Technology Laboratory I", "time": "02:00 PM - 05:00 PM", "room": "Lab 3" }
+    ],
+    "Friday": [
+      { "subject": "CH2201: Structure and Function of Biomolecules", "time": "11:00 AM - 01:00 PM", "room": "R-306" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+    ]
+  },
+  "CST_Sem6": {
+    "Monday": [
+      { "subject": "CH3202", "time": "10:00 AM - 10:55 AM", "room": "R306" },
+      { "subject": "CH3203", "time": "11:00 AM - 11:55 AM", "room": "R306" },
+      { "subject": "CH3204", "time": "12:00 PM - 12:55 PM", "room": "R306" }
+    ],
+    "Tuesday": [
+      { "subject": "CH3203", "time": "10:00 AM - 10:55 AM", "room": "R305" },
+      { "subject": "CH3202", "time": "03:00 PM - 03:55 PM", "room": "R306" },
+      { "subject": "CH3203", "time": "04:00 PM - 04:55 PM", "room": "R306" }
+    ],
+    "Wednesday": [
+      { "subject": "CH3203", "time": "10:00 AM - 10:55 AM", "room": "R306" },
+      { "subject": "CH3201", "time": "12:00 PM - 12:55 PM", "room": "R305" },
+      { "subject": "CH3205 (Lab)", "time": "02:00 PM - 03:55 PM", "room": "4-308" },
+      { "subject": "CH3202", "time": "03:00 PM - 03:55 PM", "room": "R306" }
+    ],
+    "Thursday": [
+      { "subject": "CH3205", "time": "10:00 AM - 10:55 AM", "room": "4-308" },
+      { "subject": "CH3201", "time": "12:00 PM - 12:55 PM", "room": "R305" },
+      { "subject": "CH3207 (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab3" },
+      { "subject": "CH3202", "time": "03:00 PM - 03:55 PM", "room": "R306" },
+      { "subject": "CH3203", "time": "04:00 PM - 04:55 PM", "room": "R306" }
+    ],
+    "Friday": [
+      { "subject": "CH3201", "time": "12:00 PM - 12:55 PM", "room": "R305" },
+      { "subject": "CH3207 (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab3" },
+      { "subject": "CH3203", "time": "03:00 PM - 03:55 PM", "room": "R305" },
+      { "subject": "CH3204", "time": "05:00 PM - 05:55 PM", "room": "R305" }
+    ]
+  },
+  "EEE_Sem4": {
+    "Monday": [
+      { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+      { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+      { "subject": "EC2202: Microprocessor", "time": "12:00 PM - 01:00 PM", "room": "R502" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+    ],
+    "Tuesday": [
+      { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+      { "subject": "EE2202: Electrical Machines-II", "time": "12:00 PM - 01:00 PM", "room": "R502" },
+      { "subject": "EC2201: Digital Electronics (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+    ],
+    "Wednesday": [
+      { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+      { "subject": "EC2202: Microprocessor", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "EE2201: Control Systems (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" },
+      { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+    ],
+    "Thursday": [
+      { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+      { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+      { "subject": "EE2202: Electrical Machines-II", "time": "12:00 PM - 01:00 PM", "room": "R502" },
+      { "subject": "EC2202: Microprocessor (LAB)", "time": "02:00 PM - 04:00 PM", "room": "Lab" }
+    ],
+    "Friday": [
+      { "subject": "EE2202: Electrical Machines-II (LAB)", "time": "10:00 AM - 12:00 PM", "room": "Lab" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+    ]
+  },
+  "EEE_Sem6": {
+    "Monday": [
+      { "subject": "EE3201", "time": "11:00 AM - 11:55 AM", "room": "Block III R129" },
+      { "subject": "EE3202", "time": "02:00 PM - 02:55 PM", "room": "R205" },
+      { "subject": "EC3202", "time": "09:00 AM - 09:55 AM", "room": "LT101" },
+      { "subject": "EC3203", "time": "10:00 AM - 10:55 AM", "room": "LT101" },
+      { "subject": "EC3202 (Gr 2)", "time": "03:00 PM - 04:55 PM", "room": "Lab 2" }
+    ],
+    "Tuesday": [
+      { "subject": "EC3202", "time": "10:00 AM - 10:55 AM", "room": "LT101" },
+      { "subject": "EC3203", "time": "11:00 AM - 11:55 AM", "room": "LT101" },
+      { "subject": "EE3202", "time": "02:00 PM - 02:55 PM", "room": "R205" },
+      { "subject": "EE3201 (Lab)", "time": "04:00 PM - 04:55 PM", "room": "Lab 1" }
+    ],
+    "Wednesday": [
+      { "subject": "EE3203", "time": "12:00 PM - 12:55 PM", "room": "LT101" },
+      { "subject": "EC3202", "time": "11:00 AM - 11:55 AM", "room": "LT101" },
+      { "subject": "EC3202 (Grp 1)", "time": "02:00 PM - 03:55 PM", "room": "Lab 2" }
+    ],
+    "Thursday": [
+      { "subject": "EE3201", "time": "02:00 PM - 02:55 PM", "room": "R205" },
+      { "subject": "EE3202 (Lab)", "time": "05:00 PM - 05:55 PM", "room": "Lab 2" },
+      { "subject": "EC3203", "time": "10:00 AM - 10:55 AM", "room": "LT101" }
+    ],
+    "Friday": [
+      { "subject": "EE3202", "time": "11:00 AM - 11:55 AM", "room": "Block III R129" }
+    ]
+  },
+  "ECE_Sem4": {
+    "Monday": [
+      { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+      { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+      { "subject": "EC2202: Microprocessor", "time": "12:00 PM - 01:00 PM", "room": "R502" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+    ],
+    "Tuesday": [
+      { "subject": "EC2203: Computer Organization and Architecture", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+      { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" }
+    ],
+    "Wednesday": [
+      { "subject": "EC2203: Computer Organization and Architecture", "time": "09:00 AM - 10:00 AM", "room": "R502" },
+      { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+      { "subject": "EC2202: Microprocessor", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "EC2201: Digital Electronics", "time": "03:00 PM - 05:00 PM", "room": "LT101" },
+      { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+    ],
+    "Thursday": [
+      { "subject": "EC2203: Computer Organization and Architecture", "time": "09:00 AM - 10:00 AM", "room": "R502" },
+      { "subject": "EE2201: Control Systems", "time": "10:00 AM - 11:00 AM", "room": "R502" },
+      { "subject": "EC2204: Internet of Things", "time": "11:00 AM - 12:00 PM", "room": "R502" },
+      { "subject": "EE2201: Control Systems", "time": "03:00 PM - 04:00 PM", "room": "R502" }
+    ],
+    "Friday": [
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "EC2202: Microprocessor", "time": "03:00 PM - 04:00 PM", "room": "R502" },
+      { "subject": "EC2201: Digital Electronics", "time": "05:00 PM - 06:00 PM", "room": "LT101" }
+    ]
+  },
+  "ECE_Sem6": {
+    "Monday": [
+      { "subject": "EC3202", "time": "09:00 AM - 09:55 AM", "room": "LT101" },
+      { "subject": "EC3203", "time": "10:00 AM - 10:55 AM", "room": "LT101" },
+      { "subject": "EC3206", "time": "11:00 AM - 11:55 AM", "room": "LT101" },
+      { "subject": "EC3205", "time": "12:00 PM - 12:55 PM", "room": "LT101" },
+      { "subject": "EC3202 (Gr 2)", "time": "03:00 PM - 04:55 PM", "room": "Lab 2" },
+      { "subject": "EC3201", "time": "05:00 PM - 05:55 PM", "room": "R502" },
+      { "subject": "EC3204", "time": "06:00 PM - 06:55 PM", "room": "R502" }
+    ],
+    "Tuesday": [
+      { "subject": "EC3202", "time": "10:00 AM - 10:55 AM", "room": "LT101" },
+      { "subject": "EC3203", "time": "11:00 AM - 11:55 AM", "room": "LT101" },
+      { "subject": "EC3205", "time": "12:00 PM - 12:55 PM", "room": "LT101" },
+      { "subject": "EC3201(Gr 1)", "time": "04:00 PM - 05:55 PM", "room": "Lab 1" },
+      { "subject": "EC3204", "time": "03:00 PM - 03:55 PM", "room": "R502" }
+    ],
+    "Wednesday": [
+      { "subject": "EC3206", "time": "10:00 AM - 10:55 AM", "room": "LT101" },
+      { "subject": "EC3202", "time": "11:00 AM - 11:55 AM", "room": "LT101" },
+      { "subject": "EC3204", "time": "12:00 PM - 12:55 PM", "room": "R205" },
+      { "subject": "EC3202 (Gr 1)", "time": "02:00 PM - 03:55 PM", "room": "Lab 2" },
+      { "subject": "EC3201", "time": "05:00 PM - 05:55 PM", "room": "R502" }
+    ],
+    "Thursday": [
+      { "subject": "EC3203", "time": "10:00 AM - 10:55 AM", "room": "LT101" },
+      { "subject": "EC3206", "time": "11:00 AM - 11:55 AM", "room": "LT101" },
+      { "subject": "EC3205", "time": "12:00 PM - 12:55 PM", "room": "LT101" },
+      { "subject": "EC3201", "time": "02:00 PM - 02:55 PM", "room": "R502" },
+      { "subject": "EC3201 (Gr 2)", "time": "03:00 PM - 03:55 PM", "room": "Lab 1" }
+    ]
+  },
+  "ECO_Sem4": {
+    "Monday": [
+      { "subject": "HS2203: Macroeconomic Theory", "time": "10:00 AM - 11:00 AM", "room": "R-202" },
+      { "subject": "HS2202: Microeconomic Theory", "time": "11:00 AM - 12:00 PM", "room": "R-202" },
+      { "subject": "HS2204: Econometrics I (Tutorial)", "time": "12:00 PM - 01:00 PM", "room": "R-202" },
+      { "subject": "ID22XX: Inter-Departmental Elective I", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+    ],
+    "Tuesday": [
+      { "subject": "HS2203: Macroeconomic Theory (Tutorial)", "time": "10:00 AM - 11:00 AM", "room": "R-202" },
+      { "subject": "HS2202: Microeconomic Theory", "time": "11:00 AM - 12:00 PM", "room": "R-202" },
+      { "subject": "HS2201: Growth and Development", "time": "12:00 PM - 01:00 PM", "room": "R-202" }
+    ],
+    "Wednesday": [
+      { "subject": "HS2203: Macroeconomic Theory", "time": "10:00 AM - 11:00 AM", "room": "R-202" },
+      { "subject": "HS2202: Microeconomic Theory", "time": "11:00 AM - 12:00 PM", "room": "R-202" },
+      { "subject": "HS2201: Growth and Development", "time": "12:00 PM - 01:00 PM", "room": "R-202" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "HS2204: Econometrics I", "time": "03:00 PM - 04:00 PM", "room": "R-202" }
+    ],
+    "Thursday": [
+      { "subject": "HS2203: Macroeconomic Theory", "time": "10:00 AM - 11:00 AM", "room": "R-202" },
+      { "subject": "HS2202: Microeconomic Theory (Tutorial)", "time": "11:00 AM - 12:00 PM", "room": "R-202" },
+      { "subject": "HS2201: Growth and Development", "time": "12:00 PM - 01:00 PM", "room": "R-202" },
+      { "subject": "HS2204: Econometrics I", "time": "03:00 PM - 04:00 PM", "room": "R-202" }
+    ],
+    "Friday": [
+      { "subject": "HS2201: Growth and Development", "time": "12:00 PM - 01:00 PM", "room": "R-202" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "HS2204: Econometrics I", "time": "03:00 PM - 04:00 PM", "room": "R-202" }
+    ]
+  },
+  "MnC_Sem4": {
+    "Monday": [
+      { "subject": "MA2202: Real Analysis and Measure Theory", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+      { "subject": "MA2203: Numerical Linear Algebra", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+      { "subject": "MA2205: Database Management Systems", "time": "12:00 PM - 01:00 PM", "room": "R303" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "MA2203: Numerical Linear Algebra (LAB)", "time": "04:00 PM - 06:00 PM", "room": "Lab" }
+    ],
+    "Tuesday": [
+      { "subject": "MA2204: Computer Architecture and Organization", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+      { "subject": "MA2202: Real Analysis and Measure Theory", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+      { "subject": "MA2201: Introduction to Machine Learning", "time": "12:00 PM - 01:00 PM", "room": "R303" },
+      { "subject": "MA2201: Introduction to Machine Learning (LAB)", "time": "04:00 PM - 06:00 PM", "room": "Lab" }
+    ],
+    "Wednesday": [
+      { "subject": "MA2201: Introduction to Machine Learning", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+      { "subject": "MA2205: Database Management Systems", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+      { "subject": "MA2202: Real Analysis and Measure Theory", "time": "12:00 PM - 01:00 PM", "room": "R303" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "MA2204: Computer Architecture and Organization (LAB)", "time": "04:00 PM - 06:00 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+      { "subject": "MA2205: Database Management Systems", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+      { "subject": "MA2203: Numerical Linear Algebra", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+      { "subject": "MA2204: Computer Architecture and Organization", "time": "12:00 PM - 01:00 PM", "room": "R303" },
+      { "subject": "MA2205: Database Management Systems (LAB)", "time": "04:00 PM - 06:00 PM", "room": "Lab" }
+    ],
+    "Friday": [
+      { "subject": "MA2203: Numerical Linear Algebra", "time": "10:00 AM - 11:00 AM", "room": "R303" },
+      { "subject": "MA2204: Computer Architecture and Organization", "time": "11:00 AM - 12:00 PM", "room": "R303" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+    ]
+  },
+  "MnC_Sem6": {
+    "Monday": [
+      { "subject": "MA3202", "time": "02:00 PM - 02:55 PM", "room": "R301" },
+      { "subject": "MA3204", "time": "03:00 PM - 03:55 PM", "room": "R303" },
+      { "subject": "MA3205", "time": "04:00 PM - 04:55 PM", "room": "R303" },
+      { "subject": "MA3206", "time": "05:00 PM - 05:55 PM", "room": "R303" }
+    ],
+    "Tuesday": [
+      { "subject": "MA3206", "time": "03:00 PM - 03:55 PM", "room": "R303" },
+      { "subject": "MA3201", "time": "04:00 PM - 04:55 PM", "room": "R303" },
+      { "subject": "MA3203", "time": "05:00 PM - 05:55 PM", "room": "R303" },
+      { "subject": "MA3202 (Lab)", "time": "10:00 AM - 11:00 AM", "room": "Dept Lab" }
+    ],
+    "Wednesday": [
+      { "subject": "MA3203", "time": "02:00 PM - 02:55 PM", "room": "R301" },
+      { "subject": "MA3202", "time": "03:00 PM - 03:55 PM", "room": "R303" },
+      { "subject": "MA3204", "time": "04:00 PM - 04:55 PM", "room": "R303" },
+      { "subject": "MA3205", "time": "05:00 PM - 05:55 PM", "room": "R303" },
+      { "subject": "MA3204 (Lab)", "time": "10:00 AM - 11:00 AM", "room": "Dept Lab" }
+    ],
+    "Thursday": [
+      { "subject": "MA3204", "time": "02:00 PM - 02:55 PM", "room": "R303" },
+      { "subject": "MA3205", "time": "03:00 PM - 03:55 PM", "room": "R303" },
+      { "subject": "MA3201", "time": "04:00 PM - 04:55 PM", "room": "R303" },
+      { "subject": "MA3206", "time": "05:00 PM - 05:55 PM", "room": "R303" },
+      { "subject": "MA3206 (Lab)", "time": "10:00 AM - 11:00 AM", "room": "Dept Lab" }
+    ],
+    "Friday": [
+      { "subject": "MA3203", "time": "03:00 PM - 03:55 PM", "room": "R303" },
+      { "subject": "MA3202", "time": "04:00 PM - 04:55 PM", "room": "R303" },
+      { "subject": "MA3201", "time": "05:00 PM - 05:55 PM", "room": "R303" }
+    ]
+  },
+  "ME_Sem4": {
+    "Monday": [
+      { "subject": "ME2201: Kinematics and Dynamics of Mechanisms", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+      { "subject": "ME2202: Heat and Mass Transfer", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+      { "subject": "ME2204: Mechanical Measurements and Instrumentation", "time": "11:00 AM - 12:00 PM", "room": "LT102" },
+      { "subject": "HS2208", "time": "02:00 PM - 03:00 PM", "room": "Seminar Room" },
+      { "subject": "ME2203: Mechanics of Solids (Tutorial)", "time": "03:00 PM - 04:00 PM", "room": "LT102" },
+      { "subject": "HS2209", "time": "04:00 PM - 05:00 PM", "room": "R302" }
+    ],
+    "Tuesday": [
+      { "subject": "ME2202: Heat and Mass Transfer", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+      { "subject": "ME2201: Kinematics and Dynamics of Mechanisms", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+      { "subject": "ME2203: Mechanics of Solids", "time": "11:00 AM - 12:00 PM", "room": "LT102" },
+      { "subject": "ME2204: Mechanical Measurements and Instrumentation", "time": "02:00 PM - 03:00 PM", "room": "LT102" },
+      { "subject": "HS2209", "time": "04:00 PM - 05:00 PM", "room": "R302" }
+    ],
+    "Wednesday": [
+      { "subject": "ME2202: Heat and Mass Transfer (LAB)", "time": "09:00 AM - 11:00 AM", "room": "Lab" },
+      { "subject": "ME2203: Mechanics of Solids", "time": "11:00 AM - 12:00 PM", "room": "LT102" },
+      { "subject": "HS2208", "time": "02:00 PM - 03:00 PM", "room": "Seminar Room" },
+      { "subject": "HS2209", "time": "04:00 PM - 05:00 PM", "room": "R302" }
+    ],
+    "Thursday": [
+      { "subject": "ME2201: Kinematics and Dynamics of Mechanisms", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+      { "subject": "ME2202: Heat and Mass Transfer", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+      { "subject": "ME2203: Mechanics of Solids", "time": "11:00 AM - 12:00 PM", "room": "LT102" },
+      { "subject": "HS2208", "time": "02:00 PM - 03:00 PM", "room": "Seminar Room" },
+      { "subject": "ME2204: Mechanical Measurements and Instrumentation", "time": "03:00 PM - 04:00 PM", "room": "LT102" },
+      { "subject": "ME2201: Kinematics and Dynamics of Mechanisms (LAB)", "time": "05:00 PM - 07:00 PM", "room": "Lab" }
+    ],
+    "Friday": [
+      { "subject": "ME2201: Kinematics and Dynamics of Mechanisms (Tutorial)", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+      { "subject": "ME2202: Heat and Mass Transfer (Tutorial)", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+      { "subject": "ME2204: Mechanical Measurements and Instrumentation (LAB)", "time": "11:00 AM - 01:00 PM", "room": "Lab" },
+      { "subject": "HS2208", "time": "02:00 PM - 03:00 PM", "room": "Seminar Room" },
+      { "subject": "HS2209", "time": "04:00 PM - 05:00 PM", "room": "R302" }
+    ]
+  },
+  "ME_Sem6": {
+    "Monday": [
+      { "subject": "ME3201(T)", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+      { "subject": "ME3202", "time": "10:00 AM - 11:00 AM", "room": "R304" },
+      { "subject": "ME3203", "time": "11:00 AM - 12:00 PM", "room": "R304" },
+      { "subject": "ME3201", "time": "12:00 PM - 01:00 PM", "room": "LT102" }
+    ],
+    "Tuesday": [
+      { "subject": "ME3202", "time": "12:00 PM - 01:00 PM", "room": "R308" },
+      { "subject": "ME3203", "time": "02:00 PM - 03:00 PM", "room": "R304" }
+    ],
+    "Wednesday": [
+      { "subject": "ME3204", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+      { "subject": "ME3201", "time": "10:00 AM - 11:00 AM", "room": "LT102" },
+      { "subject": "ME3201(P)", "time": "11:00 AM - 01:00 PM", "room": "Lab" },
+      { "subject": "ME3205(P)", "time": "02:00 PM - 05:00 PM", "room": "R308" }
+    ],
+    "Thursday": [
+      { "subject": "ME3204", "time": "09:00 AM - 10:00 AM", "room": "R304" },
+      { "subject": "ME3202", "time": "10:00 AM - 11:00 AM", "room": "R308" },
+      { "subject": "ME3204(T)", "time": "11:00 AM - 12:00 PM", "room": "LT103" },
+      { "subject": "ME3201", "time": "12:00 PM - 01:00 PM", "room": "LT102" },
+      { "subject": "ME3202(P)", "time": "02:00 PM - 04:00 PM", "room": "Lab" }
+    ],
+    "Friday": [
+      { "subject": "ME3204", "time": "09:00 AM - 10:00 AM", "room": "LT102" },
+      { "subject": "ME3203", "time": "10:00 AM - 11:00 AM", "room": "R304" },
+      { "subject": "ME3202", "time": "11:00 AM - 12:00 PM", "room": "R308" },
+      { "subject": "ME3203(P)", "time": "02:00 PM - 04:00 PM", "room": "Lab" }
+    ]
+  },
+  "MME_Sem4": {
+    "Monday": [
+      { "subject": "MM2201: Iron and Steel Making", "time": "10:00 AM - 11:00 AM", "room": "R107" },
+      { "subject": "MM2202: Techniques of Materials Characterization I", "time": "11:00 AM - 12:00 PM", "room": "R107" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "MM2204: Mechanical Behaviour of Materials", "time": "03:00 PM - 05:00 PM", "room": "R107" }
+    ],
+    "Tuesday": [
+      { "subject": "MM2205: Welding and Solidification", "time": "09:00 AM - 10:00 AM", "room": "R107" },
+      { "subject": "MM2201: Iron and Steel Making", "time": "10:00 AM - 11:00 AM", "room": "R107" },
+      { "subject": "MM2202: Techniques of Materials Characterization I", "time": "11:00 AM - 01:00 PM", "room": "R107" },
+      { "subject": "MM2204: Mechanical Behaviour of Materials", "time": "04:00 PM - 05:00 PM", "room": "R107" }
+    ],
+    "Wednesday": [
+      { "subject": "MM2205: Welding and Solidification", "time": "09:00 AM - 11:00 AM", "room": "R107" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "MM2204: Mechanical Behaviour of Materials (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+      { "subject": "MM2203: Phase Transformation and Diffusion", "time": "09:00 AM - 10:00 AM", "room": "R107" },
+      { "subject": "MM2202: Techniques of Materials Characterization I (LAB)", "time": "10:00 AM - 12:00 PM", "room": "Lab" }
+    ],
+    "Friday": [
+      { "subject": "MM2203: Phase Transformation and Diffusion", "time": "09:00 AM - 11:00 AM", "room": "R107" },
+      { "subject": "MM2201: Iron and Steel Making", "time": "11:00 AM - 12:00 PM", "room": "R107" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+    ]
+  },
+  "MME_Sem6": {
+    "Monday": [
+      { "subject": "MM3204", "time": "12:00 PM - 01:00 PM", "room": "R107" },
+      { "subject": "MM3201 (Lab)", "time": "03:00 PM - 05:00 PM", "room": "R107" }
+    ],
+    "Tuesday": [
+      { "subject": "MM3210 (Lab)", "time": "09:00 AM - 12:00 PM", "room": "R310" },
+      { "subject": "MM3201", "time": "03:00 PM - 04:00 PM", "room": "R107" }
+    ],
+    "Wednesday": [
+      { "subject": "MM3202", "time": "11:00 AM - 12:00 PM", "room": "R107" },
+      { "subject": "MM3202", "time": "12:00 PM - 01:00 PM", "room": "R107" },
+      { "subject": "MM3201", "time": "03:00 PM - 04:00 PM", "room": "R310" },
+      { "subject": "MM3203", "time": "04:00 PM - 05:00 PM", "room": "R310" }
+    ],
+    "Thursday": [
+      { "subject": "MM3204", "time": "10:00 AM - 11:00 AM", "room": "R107" },
+      { "subject": "MM3204", "time": "11:00 AM - 12:00 PM", "room": "R107" },
+      { "subject": "MM3202", "time": "12:00 PM - 01:00 PM", "room": "R107" },
+      { "subject": "MM3203", "time": "03:00 PM - 04:00 PM", "room": "R310" },
+      { "subject": "MM3203", "time": "04:00 PM - 05:00 PM", "room": "R310" }
+    ],
+    "Friday": [
+      { "subject": "MM3205 (Lab)", "time": "09:00 AM - 12:00 PM", "room": "R310" },
+      { "subject": "MM3201", "time": "03:00 PM - 04:00 PM", "room": "R107" },
+      { "subject": "MM3202 (Lab)", "time": "04:00 PM - 06:00 PM", "room": "R310" }
+    ]
+  },
+  "EP_Sem4": {
+    "Monday": [
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+    ],
+    "Tuesday": [
+      { "subject": "EP2202: Mathematical Methods for Engineers", "time": "10:00 AM - 11:00 AM", "room": "R102" },
+      { "subject": "EP2201: Introduction to Nuclear and Particle Physics", "time": "11:00 AM - 12:00 PM", "room": "R102" },
+      { "subject": "EP2203: Electromagnetism", "time": "12:00 PM - 01:00 PM", "room": "R102" },
+      { "subject": "EP2205: Analog Electronics (LAB)", "time": "02:00 PM - 05:00 PM", "room": "Lab" }
+    ],
+    "Wednesday": [
+      { "subject": "EP2203: Electromagnetism", "time": "09:00 AM - 10:00 AM", "room": "R102" },
+      { "subject": "EP2201: Introduction to Nuclear and Particle Physics", "time": "10:00 AM - 11:00 AM", "room": "R102" },
+      { "subject": "EP2202: Mathematical Methods for Engineers", "time": "11:00 AM - 01:00 PM", "room": "R102" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "EP2204: Introductory Statistical Mechanics", "time": "03:00 PM - 04:00 PM", "room": "R102" }
+    ],
+    "Thursday": [
+      { "subject": "EP2203: Electromagnetism", "time": "11:00 AM - 12:00 PM", "room": "R102" },
+      { "subject": "EP2204: Introductory Statistical Mechanics", "time": "02:00 PM - 03:00 PM", "room": "R102" },
+      { "subject": "EP2201: Introduction to Nuclear and Particle Physics", "time": "05:00 PM - 06:00 PM", "room": "R102" }
+    ],
+    "Friday": [
+      { "subject": "EP2202: Mathematical Methods for Engineers", "time": "09:00 AM - 10:00 PM", "room": "R102" },
+      { "subject": "EP2203: Electromagnetism", "time": "10:00 AM - 11:00 AM", "room": "R102" },
+      { "subject": "EP2204: Introductory Statistical Mechanics", "time": "11:00 AM - 12:00 PM", "room": "R102" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "EP2205: Analog Electronics", "time": "03:00 PM - 05:00 PM", "room": "R102" }
+    ]
+  },
+  "EP_Sem6": {
+    "Monday": [
+      { "subject": "EP3204", "time": "10:00 AM - 10:55 AM", "room": "R103" },
+      { "subject": "EP3201", "time": "11:00 AM - 11:55 AM", "room": "R103" },
+      { "subject": "EP3202", "time": "12:00 PM - 12:55 PM", "room": "R103" },
+      { "subject": "PH3209", "time": "04:00 PM - 04:55 PM", "room": "R103" }
+    ],
+    "Tuesday": [
+      { "subject": "PH3206", "time": "11:00 AM - 11:55 AM", "room": "R103" },
+      { "subject": "PH3201", "time": "02:00 PM - 02:55 PM", "room": "R103" },
+      { "subject": "EP3203", "time": "03:00 PM - 03:55 PM", "room": "R103" },
+      { "subject": "EP3204", "time": "04:00 PM - 04:55 PM", "room": "R103" }
+    ],
+    "Wednesday": [
+      { "subject": "EP3202 LAB", "time": "09:00 AM - 09:55 AM", "room": "LAB" },
+      { "subject": "EP3202 LAB", "time": "10:00 AM - 10:55 AM", "room": "LAB" },
+      { "subject": "EP3202 LAB", "time": "11:00 AM - 11:55 AM", "room": "LAB" },
+      { "subject": "EP3202 LAB", "time": "12:00 PM - 12:55 PM", "room": "LAB" },
+      { "subject": "EP3203", "time": "03:00 PM - 03:55 PM", "room": "R103" },
+      { "subject": "PH3209", "time": "04:00 PM - 04:55 PM", "room": "R103" },
+      { "subject": "EP3204", "time": "05:00 PM - 05:55 PM", "room": "R103" }
+    ],
+    "Thursday": [
+      { "subject": "EP3203 LAB", "time": "09:00 AM - 09:55 AM", "room": "R110" },
+      { "subject": "EP3203 LAB", "time": "10:00 AM - 10:55 AM", "room": "R110" },
+      { "subject": "PH3201", "time": "11:00 AM - 11:55 AM", "room": "R103" },
+      { "subject": "EP3201", "time": "03:00 PM - 03:55 PM", "room": "R103" },
+      { "subject": "EP3203", "time": "04:00 PM - 04:55 PM", "room": "R103" },
+      { "subject": "PH3206", "time": "05:00 PM - 05:55 PM", "room": "R103" }
+    ],
+    "Friday": [
+      { "subject": "EP3201", "time": "10:00 AM - 10:55 AM", "room": "R103" },
+      { "subject": "EP3203", "time": "11:00 AM - 11:55 AM", "room": "R103" },
+      { "subject": "PH3201", "time": "12:00 PM - 12:55 PM", "room": "R103" },
+      { "subject": "PH3209", "time": "04:00 PM - 04:55 PM", "room": "R103" },
+      { "subject": "PH3206", "time": "05:00 PM - 05:55 PM", "room": "R101" }
+    ]
+  },
+  "AI_Sem4": {
+    "Monday": [
+      { "subject": "CS2203: Artificial Intelligence", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+      { "subject": "CS2206: Data Analytics and Visualization", "time": "12:00 PM - 01:00 PM", "room": "R106" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "CS2204: IT Workshop", "time": "03:00 PM - 06:00 PM", "room": "Lab" }
+    ],
+    "Tuesday": [
+      { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+      { "subject": "CS2201: Formal Language and Automata Theory", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+      { "subject": "CS2206: Data Analytics and Visualization", "time": "12:00 PM - 01:00 PM", "room": "R103" },
+      { "subject": "CS2206: Data Analytics and Visualization (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+    ],
+    "Wednesday": [
+      { "subject": "CS2203: Artificial Intelligence", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+      { "subject": "CS2201: Formal Language and Automata Theory", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+      { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" },
+      { "subject": "CS2202: Database and Warehousing (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+      { "subject": "CS2201: Formal Language and Automata Theory", "time": "10:00 AM - 11:00 AM", "room": "LT001" },
+      { "subject": "CS2202: Database and Warehousing", "time": "11:00 AM - 12:00 PM", "room": "LT001" },
+      { "subject": "CS2206: Data Analytics and Visualization", "time": "12:00 PM - 01:00 PM", "room": "R103" },
+      { "subject": "CS2203: Artificial Intelligence (LAB)", "time": "03:00 PM - 05:00 PM", "room": "Lab" }
+    ],
+    "Friday": [
+      { "subject": "CS2202: Database and Warehousing", "time": "12:00 PM - 01:00 PM", "room": "LT001" },
+      { "subject": "ID22XX: Inter-Departmental Elective 1", "time": "02:00 PM - 03:00 PM", "room": "CLH / Block-9" }
+    ]
+  },
+  "AI_Sem6": {
+    "Monday": [
+      { "subject": "CS3201", "time": "10:00 AM - 10:55 AM", "room": "LT002" }
+    ],
+    "Tuesday": [
+      { "subject": "CS3201", "time": "09:00 AM - 09:55 AM", "room": "LT002" },
+      { "subject": "CS3204", "time": "10:00 AM - 10:55 AM", "room": "LT002" },
+      { "subject": "CS3202", "time": "11:00 AM - 11:55 AM", "room": "LT002" },
+      { "subject": "CS3205", "time": "12:00 PM - 12:55 PM", "room": "LT002" },
+      { "subject": "CS3202 (Deep Learning Lab)", "time": "03:00 PM - 04:55 PM", "room": "CC Lab1" }
+    ],
+    "Wednesday": [
+      { "subject": "CS3201", "time": "09:00 AM - 09:55 AM", "room": "LT002" },
+      { "subject": "CS3204", "time": "10:00 AM - 10:55 AM", "room": "LT002" },
+      { "subject": "CS3202", "time": "11:00 AM - 11:55 AM", "room": "LT002" }
+    ],
+    "Thursday": [
+      { "subject": "CS3205", "time": "09:00 AM - 09:55 AM", "room": "LT002" },
+      { "subject": "CS3204", "time": "10:00 AM - 10:55 AM", "room": "LT002" },
+      { "subject": "CS3202", "time": "11:00 AM - 11:55 AM", "room": "LT002" },
+      { "subject": "CS3204 (Computer Vision Lab)", "time": "02:00 PM - 03:55 PM", "room": "CSE Dept Lab" }
+    ],
+    "Friday": [
+      { "subject": "CS3205", "time": "09:00 AM - 09:55 AM", "room": "LT002" },
+      { "subject": "CS3201 (Cybersecurity Lab)", "time": "10:00 AM - 11:55 AM", "room": "CC Lab1" }
+    ]
+  }
+}

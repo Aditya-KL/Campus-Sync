@@ -1,0 +1,122 @@
+{
+    "CSE": {
+        "Semester 1": 22,
+        "Semester 2": 24,
+        "Semester 3": 21,
+        "Semester 4": 22,
+        "Semester 5": 21,
+        "Semester 6": 19,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "AI": {
+        "Semester 1": 23.5,
+        "Semester 2": 22.5,
+        "Semester 3": 21,
+        "Semester 4": 22,
+        "Semester 5": 21,
+        "Semester 6": 19,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "CBT": {
+        "Semester 1": 23.5,
+        "Semester 2": 22.5,
+        "Semester 3": 21.5,
+        "Semester 4": 19.5,
+        "Semester 5": 21,
+        "Semester 6": 20,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "CE": {
+        "Semester 1": 23.5,
+        "Semester 2": 22.5,
+        "Semester 3": 21,
+        "Semester 4": 21,
+        "Semester 5": 20,
+        "Semester 6": 21,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "CST": {
+        "Semester 1": 23.5,
+        "Semester 2": 22.5,
+        "Semester 3": 23,
+        "Semester 4": 20,
+        "Semester 5": 20,
+        "Semester 6": 19,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "ECE": {
+        "Semester 1": 22,
+        "Semester 2": 24,
+        "Semester 3": 22,
+        "Semester 4": 20,
+        "Semester 5": 21,
+        "Semester 6": 20,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "EEE": {
+        "Semester 1": 22,
+        "Semester 2": 24,
+        "Semester 3": 21,
+        "Semester 4": 20,
+        "Semester 5": 20,
+        "Semester 6": 21,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "ECO": {
+        "Semester 1": 22,
+        "Semester 2": 24,
+        "Semester 3": 21,
+        "Semester 4": 19,
+        "Semester 5": 20,
+        "Semester 6": 22,
+        "Semester 7": 23,
+        "Semester 8": 16
+    },
+    "MnC": {
+        "Semester 1": 22,
+        "Semester 2": 24,
+        "Semester 3": 22,
+        "Semester 4": 22,
+        "Semester 5": 21,
+        "Semester 6": 20,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "ME": {
+        "Semester 1": 22,
+        "Semester 2": 24,
+        "Semester 3": 21,
+        "Semester 4": 20,
+        "Semester 5": 21,
+        "Semester 6": 20,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "MME": {
+        "Semester 1": 22,
+        "Semester 2": 24,
+        "Semester 3": 21,
+        "Semester 4": 20,
+        "Semester 5": 21,
+        "Semester 6": 20,
+        "Semester 7": 21,
+        "Semester 8": 17
+    },
+    "EP": {
+        "Semester 1": 22,
+        "Semester 2": 24,
+        "Semester 3": 22,
+        "Semester 4": 22,
+        "Semester 5": 21,
+        "Semester 6": 20,
+        "Semester 7": 21,
+        "Semester 8": 17
+    }
+}
