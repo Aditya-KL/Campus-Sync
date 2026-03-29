@@ -1,16 +1,18 @@
+import 'package:campus_sync/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/custom_refresher.dart';
+// import '../services/notification_services.dart';
 
 // ─────────────────────────────────────────────────────────────
 // REMINDER MODEL
-// Three live sources aggregated into one list:
-//   planner  → students/{uid}/reminders   (source: 'planner')
-//   library  → students/{uid}/library     (auto from dueDate)
-//   admin    → admin_reminders            (broadcast)
+// Two live sources from smart_reminders subcollection:
+//   planner  → source == 'planner'
+//   library  → source == 'library'
+// Plus admin broadcasts from admin_reminders (unchanged).
 // ─────────────────────────────────────────────────────────────
 enum ReminderSource { planner, library, admin }
 
@@ -19,17 +21,19 @@ class SmartReminder {
   final String         title;
   final String         subtitle;
   final DateTime       dateTime;
+  final DateTime       createdAt;  // used for Today / This Week / Earlier
   final ReminderSource source;
   final bool           isRead;
   final bool           isUrgent;
   final String?        description;
-  final String?        priority; // 'high' | 'medium' | 'low' (admin only)
+  final String?        priority; // admin only
 
   SmartReminder({
     required this.id,
     required this.title,
     required this.subtitle,
     required this.dateTime,
+    required this.createdAt,
     required this.source,
     required this.isRead,
     required this.isUrgent,
@@ -37,12 +41,12 @@ class SmartReminder {
     this.priority,
   });
 
-  // Convenience copy-with for local read-state optimistic updates
   SmartReminder copyWith({bool? isRead}) => SmartReminder(
     id:          id,
     title:       title,
     subtitle:    subtitle,
     dateTime:    dateTime,
+    createdAt:   createdAt,
     source:      source,
     isRead:      isRead ?? this.isRead,
     isUrgent:    isUrgent,
@@ -89,227 +93,215 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
 
   final _uid = FirebaseAuth.instance.currentUser?.uid ?? '';
   final _db  = FirebaseFirestore.instance;
+  final _userCreationTime = FirebaseAuth.instance.currentUser?.metadata.creationTime;
 
-  // ── animation state — persists across StreamBuilder rebuilds ─
-  final Set<String> _deletingIds     = {};
-  final Set<String> _togglingReadIds = {};
-  // Optimistic read state: id → isRead (before Firestore confirms)
-  final Map<String, bool> _localRead = {};
-  // Admin reminders dismissed by this user (written to dismissed_admin subcollection)
+  // ── animation / optimistic state ────────────────────────────
+  final Set<String>      _deletingIds     = {};
+  final Set<String>      _togglingReadIds = {};
+  final Map<String, bool> _localRead      = {};
+
+  // ── admin state (unchanged) ──────────────────────────────────
   final Set<String> _dismissedAdminIds = {};
+  final Set<String> _readAdminIds      = {};
 
   // ── streams ─────────────────────────────────────────────────
-  late Stream<QuerySnapshot<Map<String, dynamic>>> _plannerStream;
-  late Stream<QuerySnapshot<Map<String, dynamic>>> _libraryStream;
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _smartRemindersStream;
   late Stream<QuerySnapshot<Map<String, dynamic>>> _adminStream;
 
   @override
   void initState() {
     super.initState();
-    final col = _db.collection('students').doc(_uid);
 
-    // ── Planner reminders: ALL (no isRead filter)
-    _plannerStream = col
-        .collection('reminders')
-        .orderBy('dateTime')
+    // Single stream from smart_reminders subcollection (newest first)
+    _smartRemindersStream = _db
+        .collection('students')
+        .doc(_uid)
+        .collection('smart_reminders')
+        .orderBy('createdAt', descending: true)
         .snapshots();
 
-    // Library: all books (we filter within 24h in _aggregate)
-    _libraryStream = col
-        .collection('library')
-        .orderBy('dueDate')
-        .snapshots();
-
-    // Admin broadcasts: newest first
+    // Admin broadcasts — unchanged
     _adminStream = _db
         .collection('admin_reminders')
         .orderBy('createdAt', descending: true)
         .limit(20)
         .snapshots();
 
-    // Load dismissed admin reminder IDs so we never re-show them
-    _loadDismissedAdminIds();
+    _loadAdminStates();
   }
 
-  Future<void> _loadDismissedAdminIds() async {
+  Future<void> _loadAdminStates() async {
     if (_uid.isEmpty) return;
-    try {
-      final snap = await _db
-          .collection('students')
-          .doc(_uid)
-          .collection('dismissed_admin')
-          .get();
-      if (mounted) {
-        setState(() {
-          for (final doc in snap.docs) {
-            _dismissedAdminIds.add(doc.id);
-          }
-        });
-      }
-    } catch (_) {}
+    final states = await FirebaseService.instance.getAdminStates(_uid);
+    if (mounted) {
+      setState(() {
+        _readAdminIds
+          ..clear()
+          ..addAll(states['read']!);
+        _dismissedAdminIds
+          ..clear()
+          ..addAll(states['dismissed']!);
+      });
+    }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // REFRESH HANDLER
-  // Because Streams are real-time, pulling to refresh is mostly a UX 
-  // pattern here. We simulate a small delay to show the nice animation 
-  // and re-fetch local caches to ensure everything is perfectly synced.
-  // ─────────────────────────────────────────────────────────────
   Future<void> _handleRefresh() async {
     HapticFeedback.lightImpact();
-    // Simulate a brief network call to show your sleek animation
     await Future.delayed(const Duration(milliseconds: 1200));
-    await _loadDismissedAdminIds();
-    
-    // Trigger a rebuild
+    await _loadAdminStates();
     if (mounted) {
       setState(() {});
       HapticFeedback.mediumImpact();
     }
   }
 
+
   // ─────────────────────────────────────────────────────────────
-  // AGGREGATE — merges 3 snapshots into one sorted list
-  // Visibility rules (in order of priority):
-  //   1. _deletingIds  → always hidden (animation playing)
-  //   2. _localRead    → read state override (optimistic)
-  //   3. Firestore     → fallback for read state
+  // BUILD REMINDER LIST from smart_reminders + admin snapshots
   // ─────────────────────────────────────────────────────────────
-  List<SmartReminder> _aggregate(
-    QuerySnapshot<Map<String, dynamic>> plannerSnap,
-    QuerySnapshot<Map<String, dynamic>> librarySnap,
+  List<SmartReminder> _buildList(
+    QuerySnapshot<Map<String, dynamic>> smartSnap,
     QuerySnapshot<Map<String, dynamic>> adminSnap,
   ) {
     final now    = DateTime.now();
     final result = <SmartReminder>[];
     final seen   = <String>{};
 
-    // ── 1. Planner ────────────────────────────────────────────
-    for (final doc in plannerSnap.docs) {
+    // ── 1. smart_reminders (planner + library) ────────────────
+    for (final doc in smartSnap.docs) {
       if (_deletingIds.contains(doc.id)) continue;
-      final d  = doc.data();
-      final dt = _toDateTime(d['dateTime']);
-      if (dt == null) continue;
       if (seen.contains(doc.id)) continue;
       seen.add(doc.id);
 
-      final diff    = dt.difference(now);
-      final isPast  = dt.isBefore(now);
-      final urgent  = !isPast && diff.inMinutes <= 60;
+      final d          = doc.data();
+      final sourceStr  = (d['source'] ?? 'planner') as String;
+      final source     = sourceStr == 'library'
+          ? ReminderSource.library
+          : ReminderSource.planner;
+
+      final dt        = _toDateTime(d['dateTime']);
+      if (dt == null) continue;
+
+      // createdAt drives grouping; fall back to dateTime if missing
+      final createdAt = _toDateTime(d['createdAt']) ?? dt;
 
       final firestoreRead = (d['isRead'] ?? false) as bool;
-      final read = _localRead.containsKey(doc.id)
+      final isRead = _localRead.containsKey(doc.id)
           ? _localRead[doc.id]!
           : firestoreRead;
 
-      if (read) continue;
+      final diff   = dt.difference(now);
+      final isPast = dt.isBefore(now);
 
-      final subtitle = isPast
-          ? '⚠ Overdue — ${_formatDateTime(dt)}'
-          : _relativeTime(dt);
+      // Urgency: library due within 8h, planner due within 2h
+      final bool isUrgent = source == ReminderSource.library
+          ? (!isPast && diff.inHours <= 8)
+          : (!isPast && diff.inHours <= 2);
+
+      final String subtitle;
+      if (source == ReminderSource.library) {
+        subtitle = isPast
+            ? 'Overdue — please return today'
+            : 'Due in ${diff.inHours}h ${diff.inMinutes % 60}m';
+      } else {
+        subtitle = isPast
+            ? '⚠ Overdue — ${_formatDateTime(dt)}'
+            : _relativeTime(dt);
+      }
 
       result.add(SmartReminder(
         id:          doc.id,
-        title:       d['title']       ?? 'Task Reminder',
+        title:       (d['title'] ?? '') as String,
         subtitle:    subtitle,
         dateTime:    dt,
-        source:      ReminderSource.planner,
-        isRead:      false,
-        isUrgent:    urgent,
+        createdAt:   createdAt,
+        source:      source,
+        isRead:      isRead,
+        isUrgent:    isUrgent,
         description: d['description'] as String?,
       ));
     }
 
-    // ── 2. Library due alerts ─────────────────────────────────
-    for (final doc in librarySnap.docs) {
-      final libId = 'lib_${doc.id}';
-      if (_deletingIds.contains(libId)) continue;
-      final d   = doc.data();
-      final due = _toDateTime(d['dueDate']);
-      if (due == null) continue;
-
-      final diff = due.difference(now);
-      if (diff.inHours > 24 || due.isBefore(now)) continue;
-      if (seen.contains(libId)) continue;
-      seen.add(libId);
-
-      final urgent = diff.inHours <= 2;
-      final read = _localRead[libId] ?? false;
-
-      result.add(SmartReminder(
-        id:       libId,
-        title:    'Return "${d['title'] ?? 'Book'}"',
-        subtitle: diff.inHours <= 0
-            ? 'Due now — please return today'
-            : 'Due in ${diff.inHours}h ${diff.inMinutes % 60}m',
-        dateTime: due,
-        source:   ReminderSource.library,
-        isRead:   read,
-        isUrgent: urgent,
-      ));
-    }
-
-    // ── 3. Admin broadcasts ───────────────────────────────────
+    // ── 2. Admin broadcasts (unchanged logic) ─────────────────
     for (final doc in adminSnap.docs) {
       if (_deletingIds.contains(doc.id)) continue;
       if (_dismissedAdminIds.contains(doc.id)) continue;
       if (seen.contains(doc.id)) continue;
       seen.add(doc.id);
 
-      final d      = doc.data();
-      final ts     = _toDateTime(d['timestamp'] ?? d['createdAt']);
-      final dispDt = ts ?? now;
-      final read = _localRead[doc.id] ?? false;
+      final d  = doc.data();
+      final ts = _toDateTime(d['timestamp'] ?? d['createdAt']);
+      if (_userCreationTime != null &&
+          ts != null &&
+          ts.isBefore(_userCreationTime!)) {
+        continue;
+      }
+      final dispDt    = ts ?? now;
+      final createdAt = ts ?? now;
+
+      final firestoreRead = _readAdminIds.contains(doc.id);
+      final isRead = _localRead.containsKey(doc.id)
+          ? _localRead[doc.id]!
+          : firestoreRead;
 
       result.add(SmartReminder(
         id:          doc.id,
-        title:       d['title']       ?? 'Notice',
+        title:       (d['title'] ?? 'Notice') as String,
         subtitle:    ts != null ? _relativeTime(ts) : 'Just now',
         dateTime:    dispDt,
+        createdAt:   createdAt,
         source:      ReminderSource.admin,
-        isRead:      read,
+        isRead:      isRead,
         isUrgent:    d['priority'] == 'high',
         description: d['description'] as String?,
         priority:    d['priority']    as String?,
       ));
     }
 
-    // Urgent first, then nearest dateTime
-    result.sort((a, b) {
-      if (a.isUrgent && !b.isUrgent) return -1;
-      if (!a.isUrgent && b.isUrgent) return 1;
-      return a.dateTime.compareTo(b.dateTime);
-    });
-
     return result;
   }
 
-  // ── Group by Today / Yesterday / Older ──────────────────────
+  // ─────────────────────────────────────────────────────────────
+  // GROUPING — Today / This Week / Earlier
+  // Based on createdAt (when the notification was received),
+  // NOT on the task due date.
+  // ─────────────────────────────────────────────────────────────
   Map<String, List<SmartReminder>> _group(List<SmartReminder> items) {
-    final now       = DateTime.now();
-    final todayMid  = DateTime(now.year, now.month, now.day);
-    final yesterMid = todayMid.subtract(const Duration(days: 1));
+    final now      = DateTime.now();
+    final todayMid = DateTime(now.year, now.month, now.day);
+    final weekAgo  = todayMid.subtract(const Duration(days: 7));
 
     final groups = <String, List<SmartReminder>>{
       'Today':     [],
-      'Yesterday': [],
-      'Older':     [],
+      'This Week': [],
+      'Earlier':   [],
     };
 
     for (final r in items) {
-      final d = DateTime(r.dateTime.year, r.dateTime.month, r.dateTime.day);
-      if (!d.isBefore(todayMid))       groups['Today']!.add(r);
-      else if (!d.isBefore(yesterMid)) groups['Yesterday']!.add(r);
-      else                             groups['Older']!.add(r);
+      final created = DateTime(
+        r.createdAt.year,
+        r.createdAt.month,
+        r.createdAt.day,
+      );
+
+      if (!created.isBefore(todayMid)) {
+        groups['Today']!.add(r);
+      } else if (!created.isBefore(weekAgo)) {
+        groups['This Week']!.add(r);
+      } else {
+        groups['Earlier']!.add(r);
+      }
     }
 
+    // Within each group: urgent first, then newest createdAt first
     for (final list in groups.values) {
       list.sort((a, b) {
         if (a.isUrgent && !b.isUrgent) return -1;
         if (!a.isUrgent && b.isUrgent) return 1;
-        return a.dateTime.compareTo(b.dateTime);
+        return b.createdAt.compareTo(a.createdAt);
       });
     }
+
     return groups;
   }
 
@@ -317,39 +309,23 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
   // SWIPE ACTIONS
   // ─────────────────────────────────────────────────────────────
 
-  void _handleDelete(SmartReminder r) {
-    HapticFeedback.mediumImpact();
+  Future<void> _handleDelete(SmartReminder r) async {
     setState(() => _deletingIds.add(r.id));
-
-    Future.delayed(const Duration(milliseconds: 820), () {
-      if (!mounted) return;
-      _firestoreDelete(r);
-      if (r.source == ReminderSource.planner) {
-        if (mounted) setState(() => _deletingIds.remove(r.id));
-      }
-      if (r.source == ReminderSource.admin) {
-        if (mounted) setState(() => _deletingIds.remove(r.id));
-      }
-    });
+    await Future.delayed(const Duration(milliseconds: 820));
+    await _firestoreDelete(r);
+    if (mounted) setState(() => _deletingIds.remove(r.id));
   }
 
   Future<void> _firestoreDelete(SmartReminder r) async {
     switch (r.source) {
       case ReminderSource.planner:
-        await _db.collection('students').doc(_uid)
-            .collection('reminders').doc(r.id)
-            .delete().catchError((_) {});
-        break;
       case ReminderSource.library:
-        _localRead[r.id] = true;
+        // Delete the smart_reminder doc only — source docs untouched
+        await FirebaseService.instance.deleteSmartReminder(_uid, r.id);
         break;
       case ReminderSource.admin:
         setState(() => _dismissedAdminIds.add(r.id));
-        await _db.collection('students').doc(_uid)
-            .collection('dismissed_admin')
-            .doc(r.id)
-            .set({'dismissedAt': FieldValue.serverTimestamp()})
-            .catchError((_) {});
+        await FirebaseService.instance.dismissAdminReminder(_uid, r.id);
         break;
     }
   }
@@ -373,12 +349,13 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
   Future<void> _firestoreToggleRead(SmartReminder r, bool newRead) async {
     switch (r.source) {
       case ReminderSource.planner:
-        await _db.collection('students').doc(_uid)
-            .collection('reminders').doc(r.id)
-            .update({'isRead': newRead}).catchError((_) {});
-        break;
       case ReminderSource.library:
+        await FirebaseService.instance
+            .toggleSmartReminderRead(_uid, r.id, newRead);
+        break;
       case ReminderSource.admin:
+        await FirebaseService.instance
+            .toggleAdminReminderRead(_uid, r.id, newRead);
         break;
     }
   }
@@ -419,7 +396,6 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
     );
   }
 
-  // ── HEADER ───────────────────────────────────────────────────
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
@@ -470,64 +446,53 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
     );
   }
 
-  // ── BODY (3 nested StreamBuilders) ───────────────────────────
+  // ── BODY — 2 nested StreamBuilders ──────────────────────────
   Widget _buildBody() {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: _plannerStream,
-      builder: (_, plannerSnap) {
+      stream: _smartRemindersStream,
+      builder: (_, smartSnap) {
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: _libraryStream,
-          builder: (_, librarySnap) {
-            return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: _adminStream,
-              builder: (_, adminSnap) {
-                final loading =
-                    (plannerSnap.connectionState == ConnectionState.waiting &&
-                        !plannerSnap.hasData) &&
-                    (librarySnap.connectionState == ConnectionState.waiting &&
-                        !librarySnap.hasData) &&
-                    (adminSnap.connectionState  == ConnectionState.waiting &&
-                        !adminSnap.hasData);
+          stream: _adminStream,
+          builder: (_, adminSnap) {
+            final loading =
+                (smartSnap.connectionState == ConnectionState.waiting &&
+                    !smartSnap.hasData) &&
+                (adminSnap.connectionState == ConnectionState.waiting &&
+                    !adminSnap.hasData);
 
-                if (loading) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: _yellow));
-                }
+            if (loading) {
+              return const Center(
+                  child: CircularProgressIndicator(color: _yellow));
+            }
 
-                final all = _aggregate(
-                  plannerSnap.data  ?? _emptySnap(),
-                  librarySnap.data  ?? _emptySnap(),
-                  adminSnap.data    ?? _emptySnap(),
-                );
-                final grouped = _group(all);
-                final hasAny  = grouped.values.any((l) => l.isNotEmpty);
+            final all = _buildList(
+              smartSnap.data  ?? _emptySnap(),
+              adminSnap.data  ?? _emptySnap(),
+            );
+            final grouped = _group(all);
+            final hasAny  = grouped.values.any((l) => l.isNotEmpty);
 
-                if (!hasAny) return _emptyState();
+            if (!hasAny) return _emptyState();
 
-                final flat = <SmartReminder>[];
-                for (final entry in grouped.entries) {
-                  flat.addAll(entry.value);
-                }
+            // Flat list for stagger index calculation
+            final flat = <SmartReminder>[];
+            for (final g in grouped.values) flat.addAll(g);
 
-                // 🔴 Custom Refresher implemented for active list state
-                return CustomRefresher(
-                  onRefresh: _handleRefresh,
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
-                    children: [
-                      _buildLegend(),
-                      const SizedBox(height: 8),
-                      ...grouped.entries.map((e) {
-                        if (e.value.isEmpty) return const SizedBox.shrink();
-                        return _buildGroup(e.key, e.value, flat);
-                      }),
-                    ],
-                  ),
-                );
-              },
+            return CustomRefresher(
+              onRefresh: _handleRefresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics()),
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
+                children: [
+                  _buildLegend(),
+                  const SizedBox(height: 8),
+                  ...grouped.entries.map((e) {
+                    if (e.value.isEmpty) return const SizedBox.shrink();
+                    return _buildGroup(e.key, e.value, flat);
+                  }),
+                ],
+              ),
             );
           },
         );
@@ -568,9 +533,11 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
   // ── GROUP SECTION ────────────────────────────────────────────
   Widget _buildGroup(String label, List<SmartReminder> items,
       List<SmartReminder> flatAll) {
+
     Color labelColor = _muted;
     if (label == 'Today')     labelColor = _ink;
-    if (label == 'Yesterday') labelColor = _darkYellow;
+    if (label == 'This Week') labelColor = _darkYellow;
+    if (label == 'Earlier')   labelColor = _muted;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -618,7 +585,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // REMINDER CARD — with Dismissible + animations
+  // REMINDER CARD
   // ─────────────────────────────────────────────────────────────
   Widget _buildReminderCard(SmartReminder r, int index) {
     final accent = _srcColor[r.source]!;
@@ -629,7 +596,6 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
     if (r.priority == 'medium') priorityColor = _darkYellow;
     if (r.priority == 'low')    priorityColor = _green;
 
-    // ── Card content ────────────────────────────────────────────
     Widget cardContent = GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -642,10 +608,6 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
         decoration: BoxDecoration(
           color: r.isRead ? Colors.white.withOpacity(0.45) : Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: r.isUrgent
-              ? Border.all(color: _red.withOpacity(0.35), width: 1.5)
-              : Border.all(
-                  color: r.isRead ? Colors.transparent : Colors.white),
           boxShadow: [
             BoxShadow(
               color: r.isUrgent
@@ -662,6 +624,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Colour accent bar
               Container(
                 width: 4,
                 decoration: BoxDecoration(
@@ -674,6 +637,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
                   ),
                 ),
               ),
+              // Icon bubble
               Padding(
                 padding: const EdgeInsets.fromLTRB(14, 16, 10, 16),
                 child: Container(
@@ -692,6 +656,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
                   ),
                 ),
               ),
+              // Text content
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -786,23 +751,22 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
       ),
     );
 
-    // ── Staggered entrance animation ──────────
+    // Staggered entrance
     cardContent = cardContent
         .animate()
         .fade(duration: 380.ms, delay: Duration(milliseconds: 40 * index))
         .slideX(
-          begin: 0.08,
-          end: 0,
+          begin: 0.08, end: 0,
           duration: 380.ms,
           delay: Duration(milliseconds: 40 * index),
           curve: Curves.easeOutCubic,
         );
 
-    // ── Delete animation (Thanos snap) ─
+    // Delete animation
     if (_deletingIds.contains(r.id)) {
       return cardContent
           .animate()
-          .blurXY(begin: 0, end: 20, duration: 800.ms, curve: Curves.easeIn)
+          .blurXY(begin: 0, end: 25, duration: 800.ms, curve: Curves.easeIn)
           .fadeOut(duration: 800.ms, curve: Curves.easeIn)
           .slideX(begin: 0, end: 0.3, duration: 800.ms, curve: Curves.easeIn)
           .scale(
@@ -811,7 +775,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
               duration: 800.ms);
     }
 
-    // ── Read-toggle shimmer pulse ─────
+    // Read-toggle shimmer
     if (_togglingReadIds.contains(r.id)) {
       cardContent = cardContent
           .animate()
@@ -820,8 +784,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
               end:   const Offset(1.03, 1.03),
               duration: 200.ms,
               curve: Curves.easeOut)
-          .shimmer(duration: 400.ms,
-              color: _yellow.withOpacity(0.5))
+          .shimmer(duration: 400.ms, color: _yellow.withOpacity(0.5))
           .then()
           .scale(
               begin: const Offset(1.03, 1.03),
@@ -830,9 +793,10 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
               curve: Curves.easeIn);
     }
 
-    // ── Dismissible wrapper ──────────────────────────────────────
+    // Dismissible wrapper
     return Dismissible(
       key: ValueKey('rem_${r.id}'),
+      // Right-to-left → delete
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 22),
@@ -844,14 +808,13 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
         child: const Icon(Icons.delete_sweep_rounded,
             color: Colors.white, size: 28),
       ),
+      // Left-to-right → toggle read
       secondaryBackground: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 22),
         alignment: Alignment.centerRight,
         decoration: BoxDecoration(
-          color: r.isRead
-              ? _muted.withOpacity(0.25)
-              : _yellow,
+          color: r.isRead ? _muted.withOpacity(0.25) : _yellow,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Icon(
@@ -868,7 +831,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
         } else {
           _handleToggleRead(r);
         }
-        return false;
+        return false; // we handle state ourselves
       },
       child: cardContent,
     );
@@ -929,8 +892,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
                 ),
               ],
             ),
-            if (r.description != null &&
-                r.description!.isNotEmpty) ...[
+            if (r.description != null && r.description!.isNotEmpty) ...[
               const SizedBox(height: 16),
               Container(
                 width: double.infinity,
@@ -949,8 +911,7 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
             Wrap(
               spacing: 8,
               children: [
-                _chip(Icons.schedule_rounded, _formatDateTime(r.dateTime),
-                    _muted),
+                _chip(Icons.schedule_rounded, _formatDateTime(r.dateTime), _muted),
                 _chip(icon, _srcLabel[r.source]!, accent),
                 if (r.priority != null)
                   _chip(Icons.flag_rounded, r.priority!.toUpperCase(),
@@ -964,34 +925,40 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
   }
 
   // ── EMPTY STATE ──────────────────────────────────────────────
-  // 🔴 Custom Refresher implemented for empty state via SingleChildScrollView
   Widget _emptyState() {
     return CustomRefresher(
       onRefresh: _handleRefresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
+            parent: BouncingScrollPhysics()),
         child: SizedBox(
           height: MediaQuery.of(context).size.height * 0.6,
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('🔔', style: TextStyle(fontSize: 52, height: 1.0)),
+                const Text('🔔',
+                    style: TextStyle(fontSize: 52, height: 1.0)),
                 const SizedBox(height: 18),
                 const Text('All clear!',
                     style: TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.w900, color: _ink)),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: _ink)),
                 const SizedBox(height: 8),
-                Text('No upcoming reminders right now.',
+                Text('No reminders right now.',
                     style: TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w500, color: _muted)),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: _muted)),
                 const SizedBox(height: 6),
-                Text('Tasks with Smart Reminder and library\ndue dates will appear here.',
+                Text(
+                    'Tasks with Smart Reminder and library\ndue dates will appear here.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w400, color: _muted)),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: _muted)),
               ],
             ),
           ),
@@ -1013,7 +980,9 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
         const SizedBox(width: 4),
         Text(label,
             style: TextStyle(
-                fontSize: 9, fontWeight: FontWeight.w800, color: color,
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+                color: color,
                 letterSpacing: 0.3)),
       ]),
     );
@@ -1057,14 +1026,16 @@ class _SmartReminderScreenState extends State<SmartReminderScreen> {
     final h = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
     final m = dt.minute.toString().padLeft(2, '0');
     final p = dt.hour >= 12 ? 'PM' : 'AM';
-    const months = ['Jan','Feb','Mar','Apr','May','Jun',
-                    'Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = [
+      'Jan','Feb','Mar','Apr','May','Jun',
+      'Jul','Aug','Sep','Oct','Nov','Dec',
+    ];
     return '${months[dt.month - 1]} ${dt.day}, $h:$m $p';
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-// Empty snapshot stub for null-safe stream fallback
+// Empty snapshot stub
 // ─────────────────────────────────────────────────────────────
 class _EmptyQuerySnapshot<T> implements QuerySnapshot<T> {
   @override List<QueryDocumentSnapshot<T>> get docs       => [];

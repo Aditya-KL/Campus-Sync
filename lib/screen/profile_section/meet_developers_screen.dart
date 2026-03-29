@@ -17,7 +17,7 @@ class DevelopersScreen extends StatelessWidget {
       {
         "name": "Devyansh Kumar",
         "role": "Lead & UI/UX",
-        "image": "assets/devs/lead.png",
+        "image": "assets/devs/dev1.png",
         "color": primaryYellow.withOpacity(0.4), // Theme Yellow
         "ig": "https://www.instagram.com/devyansh_iitp/",
         "linkedin": "https://www.linkedin.com/in/devyanshkumar/",
@@ -25,42 +25,42 @@ class DevelopersScreen extends StatelessWidget {
       {
         "name": "Aditya Kumar Lal",
         "role": "Full Stack Developer",
-        "image": "assets/devs/dev.png",
-        "color": const Color.fromARGB(255, 226, 226, 233), // Theme Soft Grey
-        "ig": "https://instagram.com/john",
-        "linkedin": "https://linkedin.com/in/john",
+        "image": "assets/devs/dev2.png",
+        "color": const Color.fromARGB(255, 185, 234, 249), // Theme Soft Grey
+        "ig": "https://www.instagram.com/aditya_kr_lal/",
+        "linkedin": "https://www.linkedin.com/in/aditya-kumar-lal-307715328/",
       },
       {
         "name": "Sameer Sonkar",
         "role": "Frontend",
-        "image": "assets/devs/dev.png",
+        "image": "assets/devs/dev3 .png",
         "color": const Color(0xFFFFE8D6), // Soft Peach
-        "ig": "https://instagram.com/jane",
-        "linkedin": "https://linkedin.com/in/jane",
+        "ig": "https://www.instagram.com/itsmesam_eer/",
+        "linkedin": "https://www.linkedin.com/in/sameer-sonkar-431ba5320/",
       },
       {
-        "name": "Barvadiya Yash Jigneshbhai",
+        "name": "Yash Barvadiya",
         "role": "Database",
-        "image": "assets/devs/dev.png",
+        "image": "assets/devs/dev4 .png",
         "color": const Color(0xFFD3D6DA), // Theme Darker Grey
-        "ig": "https://instagram.com/alex",
-        "linkedin": "https://linkedin.com/in/alex",
+        "ig": "https://www.instagram.com/yash_barvadiya/",
+        "linkedin": "https://www.linkedin.com/in/yash-barvadiya-87a527326/",
       },
       {
         "name": "Ved Tejani",
         "role": "Cloud Architect",
-        "image": "assets/devs/dev.png",
+        "image": "assets/devs/dev5.png",
         "color": const Color(0xFFE2ECE9), // Soft Mint
-        "ig": "https://instagram.com/sam",
-        "linkedin": "https://linkedin.com/in/sam",
+        "ig": "https://www.instagram.com/ved_tejani07/",
+        "linkedin": "https://www.linkedin.com/in/ved-tejani-813205329/",
       },
       {
         "name": "Rajan Raj",
         "role": "Tester",
-        "image": "assets/devs/dev.png",
+        "image": "assets/devs/dev6.png",
         "color": const Color(0xFFFDE2E4), // Soft Pink
-        "ig": "https://instagram.com/chris",
-        "linkedin": "https://linkedin.com/in/chris",
+        "ig": "https://www.instagram.com/rajan_rajj_/",
+        "linkedin": "https://www.linkedin.com/feed/",
       },
     ];
 
@@ -229,4 +229,5 @@ class DevelopersScreen extends StatelessWidget {
       ),
     );
   }
+
 }

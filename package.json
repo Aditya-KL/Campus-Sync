@@ -1,5 +1,27 @@
 {
   "dependencies": {
     "firebase-admin": "^13.7.0"
-  }
+  },
+  "name": "campus_sync",
+  "version": "1.0.0",
+  "description": "Campus Sync is a student productivity and academic management app designed to simplify college life. The application combines essential academic tools in one platform to help students stay organized, track their progress, and manage important academic resources efficiently.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aditya-KL/Campus-Sync.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Aditya-KL/Campus-Sync/issues"
+  },
+  "homepage": "https://github.com/Aditya-KL/Campus-Sync#readme"
 }

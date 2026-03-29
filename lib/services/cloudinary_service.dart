@@ -148,7 +148,7 @@ class CloudinaryService {
       final request = http.MultipartRequest('POST', uri)
         ..fields['upload_preset'] = _uploadPreset
         ..fields['folder']        = 'campus_sync/users/$userId'
-        ..fields['public_id']     = '${slot}_$ts'
+        ..fields['public_id']     = slot
         ..files.add(await http.MultipartFile.fromPath('file', filePath));
 
       onProgress?.call(0.15);

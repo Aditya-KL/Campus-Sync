@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-// ✅ SplashScreen now lives in screen/splash_screen.dart
+import 'package:flutter/services.dart';
 import 'screen/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
   // Enable Firestore offline persistence
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
+
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.black, // background of status bar
+    statusBarIconBrightness: Brightness.light, // Android icons (battery, network)
+    statusBarBrightness: Brightness.dark, // iOS icons
+  ));
 
   runApp(const CampusSyncApp());
 }

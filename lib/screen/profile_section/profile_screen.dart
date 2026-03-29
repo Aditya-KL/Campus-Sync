@@ -90,9 +90,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getFullBranchName(String shortName) {
     if (shortName.isEmpty) return 'Branch Not Set';
     final n = shortName.toLowerCase().trim();
-    if (n == 'cse' || n.contains('cs'))   return 'Computer Science & Engineering';
+    if (n == 'cse')                       return 'Computer Science & Engineering';
     if (n == 'ai')                        return 'Artificial Intelligence';
-    if (n == 'ece' || n.contains('ec'))   return 'Electronics & Communication';
+    if (n == 'ece')                       return 'Electronics & Communication';
     if (n == 'eee' || n.contains('ee'))   return 'Electrical & Electronics Engg.';
     if (n == 'mnc')                       return 'Mathematics & Computing';
     if (n == 'me'  || n == 'mech')        return 'Mechanical Engineering';

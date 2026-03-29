@@ -4,56 +4,62 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:campus_sync/services/firebase_service.dart';
 import 'dashboard_screen.dart'; // TopActionButtons lives here
-
 
 // ─────────────────────────────────────────────────────────────
 // PLANNER TASK MODEL
 // ─────────────────────────────────────────────────────────────
 class PlannerTask {
-  String   id;
-  String   title;
+  String id;
+  String title;
   DateTime dateTime;
-  String   description;
-  bool     isSmartReminder;
-  bool     isCompleted;
+  String description;
+  bool isSmartReminder;
+  bool isReminderRead;
+  bool isReminderDeleted;
+  bool isCompleted;
   DateTime? completedAt;
-  bool     isDeleting;
+  bool isDeleting;
 
   PlannerTask({
     required this.id,
     required this.title,
     required this.dateTime,
-    this.description    = '',
+    this.description = '',
     this.isSmartReminder = false,
-    this.isCompleted    = false,
+    this.isReminderRead = false,
+    this.isReminderDeleted = false,
+    this.isCompleted = false,
     this.completedAt,
-    this.isDeleting     = false,
+    this.isDeleting = false,
   });
 
   // ── Firestore serialisation ─────────────────────────────────
   Map<String, dynamic> toMap() => {
-    'title':           title,
-    'dateTime':        Timestamp.fromDate(dateTime),
-    'description':     description,
+    'title': title,
+    'dateTime': Timestamp.fromDate(dateTime),
+    'description': description,
     'isSmartReminder': isSmartReminder,
-    'isCompleted':     isCompleted,
-    'completedAt':     completedAt != null
+    'isCompleted': isCompleted,
+    'completedAt': completedAt != null
         ? Timestamp.fromDate(completedAt!)
         : null,
-    'updatedAt':       FieldValue.serverTimestamp(),
+    'updatedAt': FieldValue.serverTimestamp(),
   };
 
   factory PlannerTask.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data()!;
     return PlannerTask(
-      id:              doc.id,
-      title:           d['title']       ?? '',
-      dateTime:        (d['dateTime']   as Timestamp).toDate(),
-      description:     d['description'] ?? '',
+      id: doc.id,
+      title: d['title'] ?? '',
+      dateTime: (d['dateTime'] as Timestamp).toDate(),
+      description: d['description'] ?? '',
       isSmartReminder: d['isSmartReminder'] ?? false,
-      isCompleted:     d['isCompleted']     ?? false,
-      completedAt:     d['completedAt'] != null
+      isReminderRead: d['isReminderRead'] ?? false,
+      isReminderDeleted: d['isReminderDeleted'] ?? false,
+      isCompleted: d['isCompleted'] ?? false,
+      completedAt: d['completedAt'] != null
           ? (d['completedAt'] as Timestamp).toDate()
           : null,
     );
@@ -72,30 +78,25 @@ class PlannerScreen extends StatefulWidget {
 class _PlannerScreenState extends State<PlannerScreen> {
   // ── palette ─────────────────────────────────────────────────
   static const Color _yellow = Color(0xFFFFD166);
-  static const Color _bg     = Color(0xFFF0F2F5);
-  static const Color _white  = Colors.white;
-  static const Color _ink    = Color(0xFF1A1D20);
-  static const Color _muted  = Color(0xFF6C757D);
-  static const Color _red    = Color(0xFFFF3B30);
-  static const Color _green  = Color(0xFF34C759);
+  static const Color _bg = Color(0xFFF0F2F5);
+  static const Color _white = Colors.white;
+  static const Color _ink = Color(0xFF1A1D20);
+  static const Color _muted = Color(0xFF6C757D);
+  static const Color _red = Color(0xFFFF3B30);
+  static const Color _green = Color(0xFF34C759);
 
   String? _expandedTaskId;
-  // IDs of tasks currently playing their delete animation.
-  // Stored here (not on the model) so StreamBuilder rebuilds don't wipe the flag.
   final Set<String> _deletingIds = {};
   late ConfettiController _confetti;
 
   // ── Firestore refs ──────────────────────────────────────────
   final _auth = FirebaseAuth.instance;
-  final _db   = FirebaseFirestore.instance;
+  final _db = FirebaseFirestore.instance;
 
   String? get _uid => _auth.currentUser?.uid;
 
   CollectionReference<Map<String, dynamic>> get _plannerCol =>
       _db.collection('students').doc(_uid).collection('planner');
-
-  CollectionReference<Map<String, dynamic>> get _remindersCol =>
-      _db.collection('students').doc(_uid).collection('reminders');
 
   @override
   void initState() {
@@ -115,41 +116,42 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   Future<void> _addTask(PlannerTask task) async {
     if (_uid == null) return;
-    final ref = await _plannerCol.add(task.toMap());
-
-    // If smart reminder → also write to reminders subcollection so
-    // SmartReminderScreen reflects it immediately
+    final ref = await _plannerCol.add({
+      ...task.toMap(),
+      'isReminderRead': false,
+      'isReminderDeleted': false,
+    });
     if (task.isSmartReminder) {
-      await _remindersCol.doc(ref.id).set({
-        'title':    task.title,
-        'time':     _formatTime(task.dateTime),
-        'dateTime': Timestamp.fromDate(task.dateTime),
-        'isRead':   false,
-        'source':   'planner',
-        'plannerTaskId': ref.id,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      final diff = task.dateTime.difference(DateTime.now());
+      if (diff.inHours <= 6 && !task.dateTime.isBefore(DateTime.now())) {
+        await FirebaseService.instance.upsertPlannerReminder(
+          _uid!,
+          reminderId: ref.id,
+          title: task.title,
+          dateTime: task.dateTime,
+          description: task.description.isNotEmpty ? task.description : null,
+        );
+      }
     }
   }
 
   Future<void> _updateTask(PlannerTask task) async {
     if (_uid == null) return;
-    await _plannerCol.doc(task.id).update(task.toMap());
+    await _plannerCol.doc(task.id).update({
+      ...task.toMap(),
 
-    // Sync smart reminder: upsert or delete from reminders collection
+      if (task.isSmartReminder && task.isCompleted) 'isReminderRead': true,
+    });
     if (task.isSmartReminder) {
-      await _remindersCol.doc(task.id).set({
-        'title':    task.title,
-        'time':     _formatTime(task.dateTime),
-        'dateTime': Timestamp.fromDate(task.dateTime),
-        'isRead':   false,
-        'source':   'planner',
-        'plannerTaskId': task.id,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await FirebaseService.instance.upsertPlannerReminder(
+        _uid!,
+        reminderId: task.id,
+        title: task.title,
+        dateTime: task.dateTime,
+        description: task.description.isNotEmpty ? task.description : null,
+      );
     } else {
-      // Smart reminder was turned off — remove from reminders
-      await _remindersCol.doc(task.id).delete().catchError((_) {});
+      await FirebaseService.instance.deleteSmartReminder(_uid!, task.id);
     }
   }
 
@@ -157,7 +159,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
     if (_uid == null) return;
     final wasCompleted = task.isCompleted;
     final now = DateTime.now();
-
     setState(() {
       task.isCompleted = !wasCompleted;
       task.completedAt = task.isCompleted ? now : null;
@@ -166,17 +167,21 @@ class _PlannerScreenState extends State<PlannerScreen> {
         _confetti.play();
       }
     });
-
     await _plannerCol.doc(task.id).update({
       'isCompleted': task.isCompleted,
       'completedAt': task.isCompleted ? Timestamp.fromDate(now) : null,
-      'updatedAt':   FieldValue.serverTimestamp(),
+      // Only set isReminderRead, never touch isReminderDeleted here
+      if (task.isSmartReminder && task.isCompleted) 'isReminderRead': true,
+      'updatedAt': FieldValue.serverTimestamp(),
     });
-
-    // Mark reminder as read when task is completed
-    if (task.isCompleted && task.isSmartReminder) {
-      await _remindersCol.doc(task.id)
-          .update({'isRead': true}).catchError((_) {});
+    // When a task with smart reminder is completed, mark the
+    // smart_reminder as read too so it doesn't show as unread.
+    if (task.isSmartReminder && task.isCompleted) {
+      await FirebaseService.instance.toggleSmartReminderRead(
+        _uid!,
+        task.id,
+        true,
+      );
     }
   }
 
@@ -198,30 +203,38 @@ class _PlannerScreenState extends State<PlannerScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // header
-              Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: _red,
+                      size: 20,
+                    ),
                   ),
-                  child: const Icon(Icons.delete_outline_rounded,
-                      color: _red, size: 20),
-                ),
-                const SizedBox(width: 12),
-                const Text('Delete Task',
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Delete Task',
                     style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: _ink)),
-              ]),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: _ink,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
-              // task title preview
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 10),
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: _bg,
                   borderRadius: BorderRadius.circular(10),
@@ -229,20 +242,47 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 child: Text(
                   '"${task.title}"',
                   style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: _ink,
-                      fontStyle: FontStyle.italic),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: _ink,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                'This task will be permanently removed and cannot be undone.',
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: _muted,
-                    height: 1.4),
+              // Explain that reminder persists even after deletion
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: _yellow.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: _yellow.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: _yellow.withOpacity(0.8),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This task will be permanently removed.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: _muted,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 22),
               Row(
@@ -254,12 +294,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
                         side: BorderSide(color: _muted.withOpacity(0.3)),
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Cancel',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w800, fontSize: 14)),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -271,15 +316,20 @@ class _PlannerScreenState extends State<PlannerScreen> {
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       onPressed: () {
-                        Navigator.pop(ctx); // close dialog
+                        Navigator.pop(ctx);
                         _runDeleteAnimation(task);
                       },
-                      child: const Text('Delete',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w800, fontSize: 14)),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -296,18 +346,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
     if (_uid == null) return;
     setState(() {
       _deletingIds.add(task.id);
-      // collapse expanded panel so the animation is clean
       if (_expandedTaskId == task.id) _expandedTaskId = null;
     });
-
-    // Wait for animation to finish
     await Future.delayed(const Duration(milliseconds: 820));
-
     await _plannerCol.doc(task.id).delete();
-    // Also remove from reminders if it had one
-    await _remindersCol.doc(task.id).delete().catchError((_) {});
-
-    if (mounted) setState(() => _deletingIds.remove(task.id));
+    if (mounted) {
+      setState(() => _deletingIds.remove(task.id));
+    }
   }
 
   String _formatTime(DateTime dt) {
@@ -321,18 +366,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
   // GROUPING
   // ─────────────────────────────────────────────────────────────
   Map<String, List<PlannerTask>> _group(List<PlannerTask> tasks) {
-    final now      = DateTime.now();
-    final today    = DateTime(now.year, now.month, now.day);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final endOfWeek = today.add(
-        Duration(days: DateTime.sunday - today.weekday + 7));
+      Duration(days: DateTime.sunday - today.weekday + 7),
+    );
 
     final grouped = <String, List<PlannerTask>>{
-      'Pending Tasks':   [],
-      'Today':           [],
-      'Tomorrow':        [],
-      'This Week':       [],
-      'Next Week':       [],
+      'Pending Tasks': [],
+      'Today': [],
+      'Tomorrow': [],
+      'This Week': [],
+      'Next Week': [],
       'Completed Tasks': [],
     };
 
@@ -340,11 +386,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
     for (final task in tasks) {
       final taskDate = DateTime(
-          task.dateTime.year, task.dateTime.month, task.dateTime.day);
+        task.dateTime.year,
+        task.dateTime.month,
+        task.dateTime.day,
+      );
 
       if (task.isCompleted && task.completedAt != null) {
-        final compDate = DateTime(task.completedAt!.year,
-            task.completedAt!.month, task.completedAt!.day);
+        final compDate = DateTime(
+          task.completedAt!.year,
+          task.completedAt!.month,
+          task.completedAt!.day,
+        );
         if (compDate == today) grouped['Completed Tasks']!.add(task);
         continue;
       }
@@ -368,14 +420,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
   // ADD / EDIT DIALOG
   // ─────────────────────────────────────────────────────────────
   void _showTaskDialog({PlannerTask? taskToEdit}) {
-    final isEditing       = taskToEdit != null;
-    final titleCtrl       = TextEditingController(text: taskToEdit?.title ?? '');
-    final descCtrl        = TextEditingController(text: taskToEdit?.description ?? '');
-    DateTime selDate      = taskToEdit?.dateTime ?? DateTime.now();
-    TimeOfDay selTime     = taskToEdit != null
+    final isEditing = taskToEdit != null;
+    final titleCtrl = TextEditingController(text: taskToEdit?.title ?? '');
+    final descCtrl = TextEditingController(text: taskToEdit?.description ?? '');
+    DateTime selDate = taskToEdit?.dateTime ?? DateTime.now();
+    TimeOfDay selTime = taskToEdit != null
         ? TimeOfDay.fromDateTime(taskToEdit.dateTime)
         : TimeOfDay.now();
-    bool isSmartReminder  = taskToEdit?.isSmartReminder ?? false;
+    bool isSmartReminder = taskToEdit?.isSmartReminder ?? false;
     String? errorMsg;
 
     showDialog(
@@ -385,7 +437,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
           void showError(String msg) {
             setDS(() => errorMsg = msg);
             Future.delayed(const Duration(seconds: 4), () {
-              if (mounted) setDS(() { if (errorMsg == msg) errorMsg = null; });
+              if (mounted)
+                setDS(() {
+                  if (errorMsg == msg) errorMsg = null;
+                });
             });
           }
 
@@ -403,100 +458,133 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // title
-                    Text(isEditing ? 'Edit Task' : 'New Task',
-                        style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: _ink)),
+                    Text(
+                      isEditing ? 'Edit Task' : 'New Task',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: _ink,
+                      ),
+                    ),
                     const SizedBox(height: 16),
 
-                    // error banner
                     if (errorMsg != null)
                       Container(
-                        margin: const EdgeInsets.only(bottom: 14),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: _red.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(children: [
-                          const Icon(Icons.error_outline,
-                              color: _red, size: 18),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(errorMsg!,
-                                style: const TextStyle(
-                                    color: _red,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13)),
-                          ),
-                        ]),
-                      ).animate().fadeIn(duration: 200.ms)
+                            margin: const EdgeInsets.only(bottom: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _red.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: _red,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    errorMsg!,
+                                    style: const TextStyle(
+                                      color: _red,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                          .animate()
+                          .fadeIn(duration: 200.ms)
                           .slideY(begin: -0.1, end: 0, duration: 200.ms),
 
-                    // task title field
                     _dialogField(titleCtrl, 'Task Title', maxLines: 1),
                     const SizedBox(height: 12),
 
-                    // date + time row
-                    Row(children: [
-                      Expanded(child: _dateTimeBtn(
-                        icon: Icons.calendar_today,
-                        label: '${selDate.day}/${selDate.month}/${selDate.year}',
-                        onTap: () async {
-                          final d = await showDatePicker(
-                            context: ctx,
-                            initialDate: selDate,
-                            firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                            lastDate: DateTime(2030),
-                          );
-                          if (d != null) setDS(() => selDate = d);
-                        },
-                      )),
-                      const SizedBox(width: 8),
-                      Expanded(child: _dateTimeBtn(
-                        icon: Icons.access_time,
-                        label: selTime.format(ctx),
-                        onTap: () async {
-                          final t = await showTimePicker(
-                              context: ctx, initialTime: selTime);
-                          if (t != null) setDS(() => selTime = t);
-                        },
-                      )),
-                    ]),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _dateTimeBtn(
+                            icon: Icons.calendar_today,
+                            label:
+                                '${selDate.day}/${selDate.month}/${selDate.year}',
+                            onTap: () async {
+                              final d = await showDatePicker(
+                                context: ctx,
+                                initialDate: selDate,
+                                firstDate: DateTime.now().subtract(
+                                  const Duration(days: 1),
+                                ),
+                                lastDate: DateTime(2030),
+                              );
+                              if (d != null) setDS(() => selDate = d);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _dateTimeBtn(
+                            icon: Icons.access_time,
+                            label: selTime.format(ctx),
+                            onTap: () async {
+                              final t = await showTimePicker(
+                                context: ctx,
+                                initialTime: selTime,
+                              );
+                              if (t != null) setDS(() => selTime = t);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
 
-                    // description
-                    _dialogField(descCtrl, 'Short Description',
-                        maxLines: 2, maxLength: 80),
+                    _dialogField(
+                      descCtrl,
+                      'Short Description',
+                      maxLines: 2,
+                      maxLength: 80,
+                    ),
                     const SizedBox(height: 16),
 
-                    // smart reminder toggle
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
-                          color: _bg,
-                          borderRadius: BorderRadius.circular(14)),
+                        color: _bg,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('Smart Reminder',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      color: _ink,
-                                      fontSize: 15)),
+                              Text(
+                                'Smart Reminder',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: _ink,
+                                  fontSize: 15,
+                                ),
+                              ),
                               SizedBox(height: 2),
-                              Text('Appears on Reminders page',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFFD4A33B),
-                                      fontSize: 12)),
+                              Text(
+                                'Appears on Reminders page',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFD4A33B),
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                           Switch(
@@ -505,24 +593,25 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             activeTrackColor: _yellow.withOpacity(0.45),
                             inactiveThumbColor: _muted,
                             inactiveTrackColor: Colors.grey.shade300,
-                            onChanged: (v) =>
-                                setDS(() => isSmartReminder = v),
+                            onChanged: (v) => setDS(() => isSmartReminder = v),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    // action buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
-                          child: Text('Cancel',
-                              style: TextStyle(
-                                  color: _muted,
-                                  fontWeight: FontWeight.w800)),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: _muted,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
@@ -530,9 +619,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             backgroundColor: _yellow,
                             foregroundColor: _ink,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
                           onPressed: () {
@@ -541,8 +633,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
                               return;
                             }
                             final newDT = DateTime(
-                              selDate.year, selDate.month, selDate.day,
-                              selTime.hour, selTime.minute,
+                              selDate.year,
+                              selDate.month,
+                              selDate.day,
+                              selTime.hour,
+                              selTime.minute,
                             );
                             if (newDT.isBefore(DateTime.now()) && !isEditing) {
                               showError('Cannot schedule tasks in the past!');
@@ -550,26 +645,30 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             }
 
                             if (isEditing) {
-                              taskToEdit.title           = titleCtrl.text.trim();
-                              taskToEdit.dateTime        = newDT;
-                              taskToEdit.description     = descCtrl.text.trim();
+                              taskToEdit.title = titleCtrl.text.trim();
+                              taskToEdit.dateTime = newDT;
+                              taskToEdit.description = descCtrl.text.trim();
                               taskToEdit.isSmartReminder = isSmartReminder;
                               _updateTask(taskToEdit);
                             } else {
-                              _addTask(PlannerTask(
-                                id:              '',
-                                title:           titleCtrl.text.trim(),
-                                dateTime:        newDT,
-                                description:     descCtrl.text.trim(),
-                                isSmartReminder: isSmartReminder,
-                              ));
+                              _addTask(
+                                PlannerTask(
+                                  id: '',
+                                  title: titleCtrl.text.trim(),
+                                  dateTime: newDT,
+                                  description: descCtrl.text.trim(),
+                                  isSmartReminder: isSmartReminder,
+                                ),
+                              );
                             }
                             Navigator.pop(ctx);
                           },
                           child: Text(
                             isEditing ? 'Save' : 'Add Task',
                             style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w900),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ),
                       ],
@@ -585,14 +684,21 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   // ── dialog helpers ──────────────────────────────────────────
-  Widget _dialogField(TextEditingController ctrl, String hint,
-      {int maxLines = 1, int? maxLength}) {
+  Widget _dialogField(
+    TextEditingController ctrl,
+    String hint, {
+    int maxLines = 1,
+    int? maxLength,
+  }) {
     return TextField(
       controller: ctrl,
       maxLines: maxLines,
       maxLength: maxLength,
       style: const TextStyle(
-          color: _ink, fontSize: 15, fontWeight: FontWeight.w600),
+        color: _ink,
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+      ),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: _muted),
@@ -600,28 +706,31 @@ class _PlannerScreenState extends State<PlannerScreen> {
         fillColor: _bg,
         counterText: '',
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
       ),
     );
   }
 
-  Widget _dateTimeBtn(
-      {required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
+  Widget _dateTimeBtn({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: _bg,
         foregroundColor: _ink,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       icon: Icon(icon, size: 16, color: _muted),
-      label: Text(label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+      label: Text(
+        label,
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+      ),
       onPressed: onTap,
     );
   }
@@ -632,103 +741,107 @@ class _PlannerScreenState extends State<PlannerScreen> {
   @override
   Widget build(BuildContext context) {
     if (_uid == null) {
-      return const Scaffold(
-        body: Center(child: Text('Not logged in')),
-      );
+      return const Scaffold(body: Center(child: Text('Not logged in')));
     }
 
     return Scaffold(
       backgroundColor: _bg,
       body: Stack(
         children: [
-          // bubbles
-          Positioned(top: -60, right: -40,
-              child: CircleAvatar(radius: 140,
-                  backgroundColor: _yellow.withOpacity(0.35))),
-          Positioned(top: 150, left: -80,
-              child: CircleAvatar(radius: 100,
-                  backgroundColor: const Color(0xFFE2E5E9))),
-          Positioned(bottom: -30, right: -20,
-              child: CircleAvatar(radius: 130,
-                  backgroundColor: _yellow.withOpacity(0.15))),
-          Positioned(bottom: 100, left: 20,
-              child: CircleAvatar(radius: 90,
-                  backgroundColor: const Color(0xFFD3D6DA))),
+          Positioned(
+            top: -60,
+            right: -40,
+            child: CircleAvatar(
+              radius: 140,
+              backgroundColor: _yellow.withOpacity(0.35),
+            ),
+          ),
+          Positioned(
+            top: 150,
+            left: -80,
+            child: CircleAvatar(
+              radius: 100,
+              backgroundColor: const Color(0xFFE2E5E9),
+            ),
+          ),
+          Positioned(
+            bottom: -30,
+            right: -20,
+            child: CircleAvatar(
+              radius: 130,
+              backgroundColor: _yellow.withOpacity(0.15),
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            left: 20,
+            child: CircleAvatar(
+              radius: 90,
+              backgroundColor: const Color(0xFFD3D6DA),
+            ),
+          ),
 
           SafeArea(
             child: Column(
               children: [
                 _buildHeader(),
                 Expanded(
-                  // ── REAL-TIME stream from Firestore ──────────
                   child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                    stream: _plannerCol
-                        .orderBy('dateTime')
-                        .snapshots(),
+                    stream: _plannerCol.orderBy('dateTime').snapshots(),
                     builder: (ctx, snap) {
                       if (snap.connectionState == ConnectionState.waiting) {
                         return const Center(
-                            child: CircularProgressIndicator(
-                                color: _yellow));
+                          child: CircularProgressIndicator(color: _yellow),
+                        );
                       }
                       if (snap.hasError) {
                         return Center(
-                            child: Text('Error loading tasks',
-                                style: TextStyle(color: _muted)));
+                          child: Text(
+                            'Error loading tasks',
+                            style: TextStyle(color: _muted),
+                          ),
+                        );
                       }
 
-                      // Build task list from snapshot
-                      final tasks = snap.data?.docs
-                              .map(PlannerTask.fromDoc)
-                              .toList() ??
+                      final tasks =
+                          snap.data?.docs.map(PlannerTask.fromDoc).toList() ??
                           [];
-
-                      // Preserve isDeleting flag across rebuilds
-                      for (final t in tasks) {
-                        // nothing extra needed — Firestore deletes
-                        // remove docs from stream automatically
-                      }
-
                       final grouped = _group(tasks);
-                      final hasAny =
-                          grouped.values.any((l) => l.isNotEmpty);
+                      final hasAny = grouped.values.any((l) => l.isNotEmpty);
 
-                      if (!hasAny) {
-                        return _emptyState();
-                      }
+                      if (!hasAny) return _emptyState();
 
                       return ListView(
                         padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
                         children: grouped.entries.map((entry) {
-                          if (entry.value.isEmpty) {
+                          if (entry.value.isEmpty)
                             return const SizedBox.shrink();
-                          }
+
                           Color headerColor = _muted;
-                          if (entry.key == 'Pending Tasks') {
-                            headerColor = _red;
-                          }
-                          if (entry.key == 'Completed Tasks') {
+                          if (entry.key == 'Pending Tasks') headerColor = _red;
+                          if (entry.key == 'Completed Tasks')
                             headerColor = _green;
-                          }
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(
-                                    top: 18, bottom: 8, left: 4),
+                                  top: 18,
+                                  bottom: 8,
+                                  left: 4,
+                                ),
                                 child: Text(
                                   entry.key.toUpperCase(),
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w900,
-                                      color: headerColor,
-                                      letterSpacing: 1.5),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                    color: headerColor,
+                                    letterSpacing: 1.5,
+                                  ),
                                 ),
                               ),
-                              ...entry.value
-                                  .map((t) => _buildTaskCard(t))
-                                  .toList(),
+                              ...entry.value.map((t) => _buildTaskCard(t)),
                             ],
                           );
                         }).toList(),
@@ -740,7 +853,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
             ),
           ),
 
-          // confetti
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -763,7 +875,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
-  // ── HEADER ─────────────────────────────────────────────────
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
@@ -774,23 +885,32 @@ class _PlannerScreenState extends State<PlannerScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
-              Text('Productivity',
-                  style: TextStyle(
-                      fontSize: 31,
-                      fontWeight: FontWeight.w900,
-                      color: _ink,
-                      letterSpacing: -0.5)),
-              Text('Tracker',
-                  style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: _yellow)),
+              Text(
+                'Productivity',
+                style: TextStyle(
+                  fontSize: 31,
+                  fontWeight: FontWeight.w900,
+                  color: _ink,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              Text(
+                'Tracker',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: _yellow,
+                ),
+              ),
               SizedBox(height: 6),
-              Text('Manage your timeline',
-                  style: TextStyle(
-                      fontSize: 13,
-                      color: _muted,
-                      fontWeight: FontWeight.w600)),
+              Text(
+                'Manage your timeline',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: _muted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           Column(
@@ -798,7 +918,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
             children: [
               const TopActionButtons(),
               const SizedBox(height: 18),
-              // Add task button
               GestureDetector(
                 onTap: () => _showTaskDialog(),
                 child: Container(
@@ -806,16 +925,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   decoration: BoxDecoration(
                     color: _yellow,
                     borderRadius: const BorderRadius.only(
-                      topLeft:     Radius.circular(20),
-                      topRight:    Radius.circular(8),
-                      bottomLeft:  Radius.circular(8),
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(8),
+                      bottomLeft: Radius.circular(8),
                       bottomRight: Radius.circular(20),
                     ),
                     boxShadow: [
                       BoxShadow(
-                          color: _yellow.withOpacity(0.4),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4))
+                        color: _yellow.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
                   child: const Icon(Icons.add, color: _ink, size: 26),
@@ -828,41 +948,48 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
-  // ── EMPTY STATE ─────────────────────────────────────────────
   Widget _emptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('📋', style: const TextStyle(fontSize: 48)),
+          const Text('📋', style: TextStyle(fontSize: 48)),
           const SizedBox(height: 16),
-          const Text('No tasks yet',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: _ink)),
+          const Text(
+            'No tasks yet',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text('Tap + to add your first task',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: _muted)),
+          Text(
+            'Tap + to add your first task',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: _muted,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // ── TASK CARD ───────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
+  // TASK CARD
+  // ─────────────────────────────────────────────────────────────
   Widget _buildTaskCard(PlannerTask task) {
-    final isExpanded  = _expandedTaskId == task.id;
-    final isPending   = task.dateTime.isBefore(DateTime.now()) && !task.isCompleted;
-    final timeStr     = _formatTime(task.dateTime);
+    final isExpanded = _expandedTaskId == task.id;
+    final isPending =
+        task.dateTime.isBefore(DateTime.now()) && !task.isCompleted;
+    final timeStr = _formatTime(task.dateTime);
 
     Widget card = GestureDetector(
       onTap: () {
         if (!task.isCompleted) {
-          setState(() =>
-              _expandedTaskId = isExpanded ? null : task.id);
+          setState(() => _expandedTaskId = isExpanded ? null : task.id);
         }
       },
       child: Container(
@@ -886,21 +1013,22 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 10)
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                  ),
                 ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── row: checkbox + title + time ───────────
                   Row(
                     children: [
                       GestureDetector(
                         onTap: () => _toggleComplete(task),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          width: 24, height: 24,
+                          width: 24,
+                          height: 24,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: task.isCompleted
@@ -914,8 +1042,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             ),
                           ),
                           child: task.isCompleted
-                              ? const Icon(Icons.check,
-                                  size: 16, color: Colors.white)
+                              ? const Icon(
+                                  Icons.check,
+                                  size: 16,
+                                  color: Colors.white,
+                                )
                               : null,
                         ),
                       ),
@@ -936,18 +1067,22 @@ class _PlannerScreenState extends State<PlannerScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Smart reminder badge
                       if (task.isSmartReminder && !task.isCompleted)
                         Container(
                           margin: const EdgeInsets.only(right: 6),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: _yellow.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Icon(Icons.bolt,
-                              size: 12, color: Color(0xFFD4A33B)),
+                          child: const Icon(
+                            Icons.bolt,
+                            size: 12,
+                            color: Color(0xFFD4A33B),
+                          ),
                         ),
                       Text(
                         timeStr,
@@ -957,14 +1092,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
                           color: isPending
                               ? _red
                               : (task.isCompleted
-                                  ? _muted
-                                  : _ink.withOpacity(0.8)),
+                                    ? _muted
+                                    : _ink.withOpacity(0.8)),
                         ),
                       ),
                     ],
                   ),
 
-                  // ── expanded panel ──────────────────────────
                   AnimatedSize(
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.easeOutQuart,
@@ -974,20 +1108,26 @@ class _PlannerScreenState extends State<PlannerScreen> {
                             children: [
                               const SizedBox(height: 16),
                               Divider(
-                                  color: _muted.withOpacity(0.15), height: 1),
+                                color: _muted.withOpacity(0.15),
+                                height: 1,
+                              ),
                               const SizedBox(height: 12),
 
                               if (task.isSmartReminder) ...[
-                                Row(children: const [
-                                  Icon(Icons.bolt,
-                                      color: _yellow, size: 16),
-                                  SizedBox(width: 6),
-                                  Text('Smart Reminder Active',
+                                Row(
+                                  children: const [
+                                    Icon(Icons.bolt, color: _yellow, size: 16),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Smart Reminder Active',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          color: _ink,
-                                          fontSize: 12)),
-                                ]),
+                                        fontWeight: FontWeight.w800,
+                                        color: _ink,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(height: 10),
                               ],
 
@@ -995,10 +1135,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
                                 Text(
                                   task.description,
                                   style: TextStyle(
-                                      color: _muted,
-                                      fontSize: 14,
-                                      height: 1.4,
-                                      fontWeight: FontWeight.w500),
+                                    color: _muted,
+                                    fontSize: 14,
+                                    height: 1.4,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
 
                               const SizedBox(height: 16),
@@ -1006,14 +1147,21 @@ class _PlannerScreenState extends State<PlannerScreen> {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   TextButton.icon(
-                                    onPressed: () => _confirmAndDeleteTask(task),
-                                    icon: const Icon(Icons.delete_outline,
-                                        color: Colors.redAccent, size: 16),
-                                    label: const Text('Delete',
-                                        style: TextStyle(
-                                            color: Colors.redAccent,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w800)),
+                                    onPressed: () =>
+                                        _confirmAndDeleteTask(task),
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.redAccent,
+                                      size: 16,
+                                    ),
+                                    label: const Text(
+                                      'Delete',
+                                      style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(width: 4),
                                   ElevatedButton.icon(
@@ -1021,19 +1169,24 @@ class _PlannerScreenState extends State<PlannerScreen> {
                                       backgroundColor: _ink,
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 14, vertical: 8),
+                                        horizontal: 14,
+                                        vertical: 8,
+                                      ),
                                       elevation: 0,
                                     ),
                                     onPressed: () =>
                                         _showTaskDialog(taskToEdit: task),
                                     icon: const Icon(Icons.edit, size: 14),
-                                    label: const Text('Edit',
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w900)),
+                                    label: const Text(
+                                      'Edit',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1049,7 +1202,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       ),
     );
 
-    // Delete animation — driven by _deletingIds (persists across StreamBuilder rebuilds)
+    // Delete animation — works because _deletingIds persists across StreamBuilder rebuilds
     if (_deletingIds.contains(task.id)) {
       return card
           .animate()
@@ -1057,9 +1210,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
           .fadeOut(duration: 800.ms, curve: Curves.easeIn)
           .slideX(begin: 0, end: 0.3, duration: 800.ms, curve: Curves.easeIn)
           .scale(
-              begin: const Offset(1, 1),
-              end: const Offset(1.1, 1.1),
-              duration: 800.ms);
+            begin: const Offset(1, 1),
+            end: const Offset(1.1, 1.1),
+            duration: 800.ms,
+          );
     }
     return card;
   }

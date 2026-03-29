@@ -76,6 +76,7 @@ class _DevelopersPageState extends State<DevelopersPage> {
         'createdAt':   now,
         'timestamp':   now,
         'pushedBy':    FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
+        'isRead':    false,
       });
 
       _titleCtrl.clear();

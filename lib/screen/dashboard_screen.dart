@@ -5,13 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/custom_refresher.dart';
+import '../services/firebase_service.dart';
 
 import 'smart_reminder_screen.dart';
-import 'profile_section/profile_screen.dart';
+import 'package:campus_sync/screen/profile_section/profile_screen.dart';
 import 'grade_calculator_screen.dart';
 import 'planner_screen.dart';
 import 'document_manager_screen.dart';
 import 'timetable_attendance_screen.dart';
+import '../services/reminder_badge_controller.dart';
 
 String formatMinutes(int totalMinutes) {
   if (totalMinutes < 60) return '${totalMinutes}m';
@@ -88,6 +90,12 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    ReminderBadgeController.instance.init();
+  }
+
   final List<Widget> _pages = [
     const DashboardView(),
     const TimetableScreen(),
@@ -115,19 +123,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(36),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.10),
+            color: Colors.black.withValues(alpha: 0.10),
             blurRadius: 30,
             spreadRadius: 0,
             offset: const Offset(0, 10),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             spreadRadius: 0,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             blurRadius: 0,
             spreadRadius: 0,
             offset: const Offset(0, -1),
@@ -165,7 +173,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFFFD166).withOpacity(0.6),
+                    color: const Color(0xFFFFD166).withValues(alpha: 0.6),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),
@@ -176,7 +184,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           icon,
           color: isSelected
               ? const Color(0xFF1A1D20)
-              : const Color(0xFF6C757D).withOpacity(0.6),
+              : const Color(0xFF6C757D).withValues(alpha: 0.6),
           size: isSelected ? 26 : 24,
         ),
       ),
@@ -206,7 +214,6 @@ class _DashboardViewState extends State<DashboardView> {
 
   List<Map<String, dynamic>> _upcomingClasses = [];
   bool _hadClassesToday = false;
-  List<Map<String, dynamic>> _reminders = [];
   List<Map<String, dynamic>> _libraryBooks = [];
 
   @override
@@ -258,6 +265,7 @@ class _DashboardViewState extends State<DashboardView> {
 
       final db = FirebaseFirestore.instance;
       final uid = user.uid;
+      // Push any books now within 24h window into smart_reminders
 
       DocumentSnapshot<Map<String, dynamic>> sd;
       try {
@@ -296,37 +304,26 @@ class _DashboardViewState extends State<DashboardView> {
         db
             .collection('timetables')
             .doc(timetableDocId)
-            .get(const GetOptions(source: Source.serverAndCache))
-            .catchError((_) => null as dynamic),
+            .get(const GetOptions(source: Source.serverAndCache)),
         db
             .collection('students')
             .doc(uid)
             .collection('pastSemesters')
             .orderBy('semester')
-            .get(const GetOptions(source: Source.serverAndCache))
-            .catchError((_) => null as dynamic),
+            .get(const GetOptions(source: Source.serverAndCache)),
         db
             .collection('timetable_attendance')
             .doc(uid)
-            .collection('attendace')
-            .get(const GetOptions(source: Source.serverAndCache))
-            .catchError((_) => null as dynamic),
-        db
-            .collection('students')
-            .doc(uid)
-            .collection('reminders')
-            .where('isRead', isEqualTo: false)
-            .orderBy('dateTime')
-            .limit(6)
-            .get(const GetOptions(source: Source.serverAndCache))
-            .catchError((_) => null as dynamic),
+            .collection('attendance')
+            .get(const GetOptions(source: Source.serverAndCache)),
         db
             .collection('students')
             .doc(uid)
             .collection('library')
             .orderBy('dueDate')
-            .get(const GetOptions(source: Source.serverAndCache))
-            .catchError((_) => null as dynamic),
+            .get(
+              const GetOptions(source: Source.serverAndCache),
+            ), // Now index 3!
       ]);
 
       const fullDayNames = [
@@ -344,8 +341,9 @@ class _DashboardViewState extends State<DashboardView> {
         final ttSnap = futures[0] as DocumentSnapshot<Map<String, dynamic>>?;
         if (ttSnap != null && ttSnap.exists) {
           final raw = ttSnap.data()?[todayName];
-          if (raw != null)
+          if (raw != null) {
             allToday = List<Map<String, dynamic>>.from(raw as List);
+          }
         }
       } catch (_) {}
       _hadClassesToday = allToday.isNotEmpty;
@@ -358,14 +356,19 @@ class _DashboardViewState extends State<DashboardView> {
         final psSnap = futures[1] as QuerySnapshot<Map<String, dynamic>>?;
         if (psSnap != null && psSnap.docs.isNotEmpty) {
           for (final doc in psSnap.docs.reversed) {
-            final c = doc.data()['cpi'];
-            if (c != null && (c as num).toDouble() > 0) {
-              cgpa = (c as num).toDouble();
+            final d = doc.data();
+            final c = d['cpi'];
+            final sem = d['semester'];
+            debugPrint('Doc: ${doc.id}, semester: $sem, cpi: $c');
+            if (c != null && (c is double || c is int) && c.toDouble() > 0) {
+              cgpa = c.toDouble();
               break;
             }
           }
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint("🚨 Error fetching CGPA: $e");
+      }
 
       double attPct = 0.0;
       try {
@@ -379,39 +382,84 @@ class _DashboardViewState extends State<DashboardView> {
           }
           if (totalClasses > 0) attPct = (totalAttended / totalClasses) * 100;
         }
-      } catch (_) {}
-
-      List<Map<String, dynamic>> reminders = [];
-      try {
-        final remSnap = futures[3] as QuerySnapshot<Map<String, dynamic>>?;
-        if (remSnap != null) {
-          reminders = remSnap.docs
-              .map((d) => {'_docId': d.id, ...d.data()})
-              .toList();
-        }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint("🚨 Error fetching Attendance: $e");
+      }
 
       List<Map<String, dynamic>> books = [];
       try {
-        final libSnap = futures[4] as QuerySnapshot<Map<String, dynamic>>?;
+        final libSnap =
+            futures[3]
+                as QuerySnapshot<Map<String, dynamic>>?; // Updated to index 3
         if (libSnap != null) {
           books = libSnap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint("🚨 Error fetching Books: $e");
+      }
+      try {
+        final plannerSnap = await db
+            .collection('students')
+            .doc(uid)
+            .collection('planner')
+            .where('isSmartReminder', isEqualTo: true)
+            .where('isCompleted', isEqualTo: false)
+            .get(const GetOptions(source: Source.serverAndCache));
 
-      setState(() {
-        _cgpa = cgpa;
-        _attPct = attPct;
-        _upcomingClasses = upcoming;
-        _hadClassesToday = _hadClassesToday;
-        _reminders = reminders;
-        _libraryBooks = books;
-        _isLoading = false;
-      });
+        for (final doc in plannerSnap.docs) {
+          final d = doc.data();
+          final dt = (d['dateTime'] as Timestamp?)?.toDate();
+          if (dt == null) continue;
+          final diff = dt.difference(DateTime.now());
+          if (diff.inHours <= 6 && !dt.isBefore(DateTime.now())) {
+            await FirebaseService.instance.upsertPlannerReminder(
+              uid,
+              reminderId:  doc.id,
+              title:       (d['title'] ?? 'Task Reminder') as String,
+              dateTime:    dt,
+              description: (d['description'] as String?)?.isNotEmpty == true
+                  ? d['description'] as String
+                  : null,
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint('🚨 Error checking planner window: $e');
+      }
+      // update the smart remnder for library books
+      for (final book in books) {
+        final due = book['dueDate'];
+        if (due == null) continue;
+        final dueDate = due is Timestamp ? due.toDate() : due as DateTime;
+        final diff = dueDate.difference(DateTime.now());
+        if (diff.inHours <= 24 && !dueDate.isBefore(DateTime.now())) {
+          await FirebaseService.instance.upsertLibraryReminder(
+            uid,
+            bookId:    book['id'] as String,
+            bookTitle: (book['title'] ?? '') as String,
+            dueDate:   dueDate,
+          );
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _cgpa = cgpa;
+          _attPct = attPct;
+          _upcomingClasses = upcoming;
+          _libraryBooks = books;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
+      debugPrint("🚨 Master catch block hit: $e");
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -422,7 +470,7 @@ class _DashboardViewState extends State<DashboardView> {
           right: -40,
           child: CircleAvatar(
             radius: 140,
-            backgroundColor: _yellow.withOpacity(0.35),
+            backgroundColor: _yellow.withValues(alpha: 0.35),
           ),
         ),
         Positioned(
@@ -438,7 +486,7 @@ class _DashboardViewState extends State<DashboardView> {
           right: -20,
           child: CircleAvatar(
             radius: 130,
-            backgroundColor: _yellow.withOpacity(0.15),
+            backgroundColor: _yellow.withValues(alpha: 0.15),
           ),
         ),
         Positioned(
@@ -481,15 +529,6 @@ class _DashboardViewState extends State<DashboardView> {
                               _hadClassesToday && _upcomingClasses.isEmpty,
                         ),
                       ),
-                      if (_reminders.isNotEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: _sectionLabel(
-                            'Reminders',
-                            '${_reminders.length} unread',
-                          ),
-                        ),
-                        SliverToBoxAdapter(child: _buildRemindersList()),
-                      ],
                       SliverToBoxAdapter(child: _sectionLabel('Extras', '')),
                       SliverToBoxAdapter(child: _buildExtrasRow()),
                       const SliverToBoxAdapter(child: SizedBox(height: 140)),
@@ -537,7 +576,9 @@ class _DashboardViewState extends State<DashboardView> {
                         TextSpan(
                           text: _firstName,
                           style: const TextStyle(
-                            color: Color(0xFF1A1D20), // Dark color (_ink) for the greeting
+                            color: Color(
+                              0xFF1A1D20,
+                            ), // Dark color (_ink) for the greeting
                           ),
                         ),
                       ],
@@ -599,7 +640,7 @@ class _DashboardViewState extends State<DashboardView> {
         ? _green
         : (_attPct >= 70 ? _darkYellow : _red);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
       child: Row(
         children: [
           Expanded(
@@ -608,7 +649,7 @@ class _DashboardViewState extends State<DashboardView> {
               value: _cgpa > 0 ? _cgpa.toStringAsFixed(2) : '--',
               sub: _cgpa > 0 ? 'Live' : 'No data',
               subColor: _cgpa > 0 ? _green : _muted,
-              dark: true,
+              dark: false,
             ),
           ),
           const SizedBox(width: 12),
@@ -618,54 +659,57 @@ class _DashboardViewState extends State<DashboardView> {
               value: _attPct > 0 ? '${_attPct.toStringAsFixed(1)}%' : '--%',
               sub: _attPct > 0 ? 'Live' : 'No data',
               subColor: _attPct > 0 ? attColor : _muted,
-              dark: false,
-              valueColor: _attPct > 0 ? attColor : null,
+              dark: true,
+              //valueColor: _attPct > 0 ? attColor : null,
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: _yellow.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _yellow.withOpacity(0.4), width: 1.5),
+          Container(
+            width: 70,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: _yellow.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _yellow.withValues(alpha: 0.4),
+                width: 1.5,
               ),
-              child: Column(
-                children: [
-                  Text(
-                    _dayAbbr(),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  _dayAbbr(),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    color: _darkYellow,
+                    letterSpacing: -0.8,
+                    height: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '${DateTime.now().day}',
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      color: _darkYellow,
-                      letterSpacing: -0.3,
+                      color: _ink,
+                      letterSpacing: -0.8,
+                      height: 1.0,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      '${DateTime.now().day}',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: _ink,
-                        letterSpacing: -0.8,
-                        height: 1.0,
-                      ),
-                    ),
+                ),
+                Text(
+                  _monthAbbr(),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: _muted,
                   ),
-                  Text(
-                    _monthAbbr(),
-                    style: const TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: _muted,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -696,203 +740,6 @@ class _DashboardViewState extends State<DashboardView> {
     return m[DateTime.now().month - 1];
   }
 
-  Widget _buildRemindersList() {
-    final now = DateTime.now();
-    final todayMid = DateTime(now.year, now.month, now.day);
-    final yesterMid = todayMid.subtract(const Duration(days: 1));
-
-    final todayList = <Map<String, dynamic>>[];
-    final yesterList = <Map<String, dynamic>>[];
-    final olderList = <Map<String, dynamic>>[];
-
-    for (final r in _reminders) {
-      final raw = r['dateTime'];
-      DateTime? dt;
-      if (raw is Timestamp)
-        dt = raw.toDate();
-      else if (raw is DateTime)
-        dt = raw;
-
-      final bucket = dt == null
-          ? olderList
-          : dt.isAfter(todayMid)
-          ? todayList
-          : dt.isAfter(yesterMid)
-          ? yesterList
-          : olderList;
-      bucket.add(r);
-    }
-
-    Widget buildGroup(String label, List<Map<String, dynamic>> items) {
-      if (items.isEmpty) return const SizedBox.shrink();
-      final labelColor = label == 'Today' ? _darkYellow : _muted;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 10, 24, 6),
-            child: Text(
-              label.toUpperCase(),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                color: labelColor,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-          ...items.map((r) {
-            final docId = (r['_docId'] ?? '') as String;
-            final title = (r['title'] ?? 'Reminder') as String;
-            final raw = r['dateTime'];
-            DateTime? dt;
-            if (raw is Timestamp)
-              dt = raw.toDate();
-            else if (raw is DateTime)
-              dt = raw;
-
-            String timeLabel = '';
-            if (dt != null) {
-              final h = dt.hour > 12
-                  ? dt.hour - 12
-                  : (dt.hour == 0 ? 12 : dt.hour);
-              final m = dt.minute.toString().padLeft(2, '0');
-              final ap = dt.hour >= 12 ? 'PM' : 'AM';
-              const mn = [
-                'Jan',
-                'Feb',
-                'Mar',
-                'Apr',
-                'May',
-                'Jun',
-                'Jul',
-                'Aug',
-                'Sep',
-                'Oct',
-                'Nov',
-                'Dec',
-              ];
-              const dn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-              if (dt.isAfter(todayMid)) {
-                timeLabel = '$h:$m $ap';
-              } else if (dt.isAfter(yesterMid)) {
-                timeLabel = 'Yesterday $h:$m $ap';
-              } else {
-                timeLabel =
-                    '${dn[dt.weekday - 1]}, ${dt.day} ${mn[dt.month - 1]}';
-              }
-            }
-
-            return GestureDetector(
-              onTap: () {
-                if (docId.isNotEmpty) {
-                  final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-                  if (uid.isNotEmpty) {
-                    FirebaseFirestore.instance
-                        .collection('students')
-                        .doc(uid)
-                        .collection('reminders')
-                        .doc(docId)
-                        .update({'isRead': true})
-                        .catchError((_) {});
-                  }
-                  setState(
-                    () => _reminders.removeWhere((x) => x['_docId'] == docId),
-                  );
-                }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const SmartReminderScreen(),
-                  ),
-                );
-              },
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 13,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _yellow.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.notifications_active_rounded,
-                        color: _darkYellow,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: _ink,
-                              letterSpacing: -0.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (timeLabel.isNotEmpty)
-                            Text(
-                              timeLabel,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: _muted,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: _red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        buildGroup('Today', todayList),
-        buildGroup('Yesterday', yesterList),
-        buildGroup('Older', olderList),
-      ],
-    );
-  }
-
   Widget _buildExtrasRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -910,7 +757,7 @@ class _DashboardViewState extends State<DashboardView> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.035),
+                        color: Colors.black.withValues(alpha: 0.035),
                         blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
@@ -922,7 +769,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF007AFF).withOpacity(0.1),
+                          color: const Color(0xFF007AFF).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
@@ -989,7 +836,7 @@ class _DashboardViewState extends State<DashboardView> {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: color.withOpacity(0.1),
+                                  color: color.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -1018,7 +865,9 @@ class _DashboardViewState extends State<DashboardView> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF007AFF).withOpacity(0.08),
+                              color: const Color(
+                                0xFF007AFF,
+                              ).withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
@@ -1048,7 +897,7 @@ class _DashboardViewState extends State<DashboardView> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.035),
+                        color: Colors.black.withValues(alpha: 0.035),
                         blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
@@ -1060,7 +909,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFA78BFA).withOpacity(0.1),
+                          color: const Color(0xFFA78BFA).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
@@ -1099,7 +948,9 @@ class _DashboardViewState extends State<DashboardView> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFA78BFA).withOpacity(0.08),
+                              color: const Color(
+                                0xFFA78BFA,
+                              ).withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
@@ -1177,7 +1028,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(dark ? 0.15 : 0.04),
+            color: Colors.black.withValues(alpha: dark ? 0.15 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -1300,10 +1151,12 @@ class _NextClassSliderState extends State<_NextClassSlider> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.allDoneToday && widget.upcomingClasses.isEmpty)
+    if (!widget.allDoneToday && widget.upcomingClasses.isEmpty) {
       return _freeDay();
-    if (widget.allDoneToday && widget.upcomingClasses.isEmpty)
+    }
+    if (widget.allDoneToday && widget.upcomingClasses.isEmpty) {
       return _allDone();
+    }
 
     final total = widget.upcomingClasses.length;
 
@@ -1360,7 +1213,9 @@ class _NextClassSliderState extends State<_NextClassSlider> {
                 width: isActive ? 16 : 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: isActive ? _darkYellow : _muted.withOpacity(0.25),
+                  color: isActive
+                      ? _darkYellow
+                      : _muted.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(3),
                 ),
               );
@@ -1407,14 +1262,14 @@ class _NextClassSliderState extends State<_NextClassSlider> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isNext ? accent.withOpacity(0.5) : Colors.white,
+          color: isNext ? accent.withValues(alpha: 0.5) : Colors.white,
           width: isNext ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isNext
-                ? accent.withOpacity(0.18)
-                : Colors.black.withOpacity(0.03),
+                ? accent.withValues(alpha: 0.18)
+                : Colors.black.withValues(alpha: 0.03),
             blurRadius: isNext ? 16 : 8,
             offset: const Offset(0, 4),
           ),
@@ -1444,7 +1299,7 @@ class _NextClassSliderState extends State<_NextClassSlider> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: accent.withOpacity(0.12),
+                        color: accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -1542,10 +1397,10 @@ class _NextClassSliderState extends State<_NextClassSlider> {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: _green.withOpacity(0.25), width: 1.5),
+      border: Border.all(color: _green.withValues(alpha: 0.25), width: 1.5),
       boxShadow: [
         BoxShadow(
-          color: _green.withOpacity(0.08),
+          color: _green.withValues(alpha: 0.08),
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),
@@ -1595,7 +1450,7 @@ class _NextClassSliderState extends State<_NextClassSlider> {
           margin: const EdgeInsets.only(right: 20),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: _green.withOpacity(0.1),
+            color: _green.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Text(
@@ -1626,7 +1481,7 @@ class _NextClassSliderState extends State<_NextClassSlider> {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -1724,11 +1579,12 @@ class _LibraryDialogState extends State<_LibraryDialog> {
           .collection('library')
           .orderBy('dueDate')
           .get(const GetOptions(source: Source.serverAndCache));
-      if (mounted)
+      if (mounted) {
         setState(() {
           _books = snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
           _loading = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -1737,26 +1593,50 @@ class _LibraryDialogState extends State<_LibraryDialog> {
   Future<void> _addBook() async {
     if (_titleCtrl.text.trim().isEmpty || _dueDate == null) return;
     setState(() => _adding = true);
+
+    final title = _titleCtrl.text.trim();
+    final dueDate = _dueDate!;
+
     try {
+      // 1. Write to library subcollection
       final ref = await FirebaseFirestore.instance
           .collection('students')
           .doc(widget.uid)
           .collection('library')
           .add({
-            'title': _titleCtrl.text.trim(),
-            'dueDate': Timestamp.fromDate(_dueDate!),
+            'title': title,
+            'dueDate': Timestamp.fromDate(dueDate),
             'addedAt': FieldValue.serverTimestamp(),
+            'isNotified': false,
+            'isRead': false,
+            'isDeleted': false,
           });
+
+      // 2. Mirror to smart_reminders so the bell badge picks it up
+      final diff = dueDate.difference(DateTime.now());
+      if (diff.inHours <= 24 && !dueDate.isBefore(DateTime.now())) {
+        await FirebaseService.instance.upsertLibraryReminder(
+          widget.uid,
+          bookId: ref.id,
+          bookTitle: title,
+          dueDate: dueDate,
+        );
+      }
+
       _titleCtrl.clear();
       setState(() {
         _books.add({
           'id': ref.id,
-          'title': _titleCtrl.text,
-          'dueDate': _dueDate,
+          'title': title,
+          'dueDate': dueDate,
+          'isNotified': false,
+          'isRead': false,
+          'isDeleted': false,
         });
         _dueDate = null;
         _adding = false;
       });
+
       await _fetchBooks();
       widget.onRefresh();
     } catch (e) {
@@ -1774,7 +1654,7 @@ class _LibraryDialogState extends State<_LibraryDialog> {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
-          side: BorderSide(color: _muted.withOpacity(0.1)),
+          side: BorderSide(color: _muted.withValues(alpha: 0.1)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -1787,7 +1667,7 @@ class _LibraryDialogState extends State<_LibraryDialog> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: _green.withOpacity(0.1),
+                      color: _green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -1844,7 +1724,7 @@ class _LibraryDialogState extends State<_LibraryDialog> {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: _muted,
-                        side: BorderSide(color: _muted.withOpacity(0.3)),
+                        side: BorderSide(color: _muted.withValues(alpha: 0.3)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1945,7 +1825,7 @@ class _LibraryDialogState extends State<_LibraryDialog> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: _blue.withOpacity(0.1),
+                        color: _blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -2077,7 +1957,7 @@ class _LibraryDialogState extends State<_LibraryDialog> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: _green.withOpacity(0.12),
+                                color: _green.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Text(
@@ -2305,7 +2185,7 @@ class _StudyTimerDialogState extends State<_StudyTimerDialog>
         final d = doc.data()!;
         final rawLog = (d['dailyLog'] as Map<String, dynamic>?) ?? {};
         final log = rawLog.map((k, v) => MapEntry(k, (v as num).toInt()));
-        if (mounted)
+        if (mounted) {
           setState(() {
             _todayMin = (d['todayMinutes'] ?? 0) as int;
             _weekMin = (d['weekMinutes'] ?? 0) as int;
@@ -2313,6 +2193,7 @@ class _StudyTimerDialogState extends State<_StudyTimerDialog>
             _dailyLog = log;
             _statsLoading = false;
           });
+        }
       } else {
         if (mounted) setState(() => _statsLoading = false);
       }
@@ -2412,7 +2293,7 @@ class _StudyTimerDialogState extends State<_StudyTimerDialog>
         final isHighlight = highlightLast && i == bars.length - 1;
         final frac = (bars[i].$1 / barMax).clamp(0.0, 1.0);
         final barH = (barHeight * frac).clamp(4.0, barHeight);
-        final color = isHighlight ? _purple : _purple.withOpacity(0.28);
+        final color = isHighlight ? _purple : _purple.withValues(alpha: 0.28);
 
         return Flexible(
           child: Padding(
@@ -2638,7 +2519,7 @@ class _StudyTimerDialogState extends State<_StudyTimerDialog>
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: _purple.withOpacity(0.1),
+                      color: _purple.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -2814,10 +2695,14 @@ class _StudyTimerDialogState extends State<_StudyTimerDialog>
                         child: Container(
                           padding: const EdgeInsets.all(13),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF3B30).withOpacity(0.1),
+                            color: const Color(
+                              0xFFFF3B30,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: const Color(0xFFFF3B30).withOpacity(0.3),
+                              color: const Color(
+                                0xFFFF3B30,
+                              ).withValues(alpha: 0.3),
                             ),
                           ),
                           child: const Icon(
@@ -2943,7 +2828,7 @@ class _StudyTimerDialogState extends State<_StudyTimerDialog>
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: _purple.withOpacity(0.1),
+                          color: _purple.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
@@ -3031,7 +2916,7 @@ class _FocusHistoryDialogState extends State<_FocusHistoryDialog> {
                 Container(
                   padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: _purple.withOpacity(0.1),
+                    color: _purple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -3128,7 +3013,7 @@ class _FocusHistoryDialogState extends State<_FocusHistoryDialog> {
                           boxShadow: active
                               ? [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.06),
+                                    color: Colors.black.withValues(alpha: 0.06),
                                     blurRadius: 6,
                                     offset: const Offset(0, 2),
                                   ),
@@ -3184,7 +3069,7 @@ class _FocusHistoryDialogState extends State<_FocusHistoryDialog> {
                 _tabs[_tab].$2,
                 style: TextStyle(
                   fontSize: 10,
-                  color: _muted.withOpacity(0.6),
+                  color: _muted.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -3200,9 +3085,9 @@ class _FocusHistoryDialogState extends State<_FocusHistoryDialog> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
         decoration: BoxDecoration(
-          color: _purple.withOpacity(0.06),
+          color: _purple.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _purple.withOpacity(0.12)),
+          border: Border.all(color: _purple.withValues(alpha: 0.12)),
         ),
         child: Column(
           children: [
@@ -3235,43 +3120,8 @@ class _FocusHistoryDialogState extends State<_FocusHistoryDialog> {
   }
 }
 
-class TopActionButtons extends StatefulWidget {
-  final int unreadCount;
-  const TopActionButtons({super.key, this.unreadCount = 0});
-
-  @override
-  State<TopActionButtons> createState() => _TopActionButtonsState();
-}
-
-class _TopActionButtonsState extends State<TopActionButtons> {
-  int _liveCount = 0;
-  StreamSubscription<QuerySnapshot>? _sub;
-
-  @override
-  void initState() {
-    super.initState();
-    _subscribeUnread();
-  }
-
-  void _subscribeUnread() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-    _sub = FirebaseFirestore.instance
-        .collection('students')
-        .doc(uid)
-        .collection('reminders')
-        .where('isRead', isEqualTo: false)
-        .snapshots()
-        .listen((snap) {
-          if (mounted) setState(() => _liveCount = snap.size);
-        });
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
+class TopActionButtons extends StatelessWidget {
+  const TopActionButtons({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -3291,42 +3141,48 @@ class _TopActionButtonsState extends State<TopActionButtons> {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                const Icon(
-                  Icons.notifications_none_rounded,
-                  color: Color(0xFF1A1D20),
-                  size: 24,
-                ),
-                if (_liveCount > 0)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.redAccent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        _liveCount > 99 ? '99+' : _liveCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          height: 1,
+            // 🟢 NEW: Listens to the global controller!
+            child: ValueListenableBuilder<int>(
+              valueListenable: ReminderBadgeController.instance.unreadCount,
+              builder: (context, count, child) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Icon(
+                      Icons.notifications_none_rounded,
+                      color: Color(0xFF1A1D20),
+                      size: 24,
+                    ),
+                    if (count > 0)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.redAccent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            count > 99 ? '99+' : count.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              height: 1,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ),

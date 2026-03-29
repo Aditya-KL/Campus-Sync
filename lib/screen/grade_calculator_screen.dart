@@ -196,15 +196,6 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
     return (tScore * (tW / 100)) + (lScore * (lW / 100));
   }
 
-  int _calculateCurrentSemester(String roll) {
-    if (roll.length < 4) return 1;
-    final joinYear = 2000 + (int.tryParse(roll.substring(0, 2)) ?? 24);
-    final joinDate = DateTime(joinYear, 7, 1);
-    final now = DateTime.now();
-    final months = (now.year - joinDate.year) * 12 + now.month - joinDate.month;
-    return months < 0 ? 1 : (months / 6).floor() + 1;
-  }
-
   // ─────────────────────────────────────────────────────────────
   // FETCH  —  uses FirebaseService throughout
   // ─────────────────────────────────────────────────────────────
@@ -227,25 +218,21 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
 
       final rollNo = (sd['rollNo'] ?? '') as String;
       final branch = (sd['branch'] ?? 'CSE') as String;
+      final int calculatedSem = FirebaseService.semesterFromRollNo(rollNo);
+      final int? storedSem = sd['currentSemester'] as int?;
 
-      // ── 2. Current semester ───────────────────────────────────
-      // If 'currentSemester' is missing from the student doc it means this
-      // is the very first time they open the grade calculator.
-      // initializeFirstOpen() will:
-      //   • Compute the correct semester from their roll number + today
-      //   • Pre-populate pastSemesters subcollection (spi: 8.0 placeholder)
-      //   • Write currentSemester back to the student doc
+      // 🔹 Final semester (take latest one)
       int currentSem;
-      if (sd['currentSemester'] == null) {
-        // First open — initialise everything
+      if (storedSem == null) {
+        // First time → initialize DB
         currentSem = await _svc.initializeFirstOpen(
           uid,
           rollNo: rollNo,
           branch: branch,
         );
       } else {
-        currentSem = (sd['currentSemester'] as int);
-      }
+        currentSem = calculatedSem;
+      } 
 
       // ── 3. Sem credits doc ────────────────────────────────────
       final creditsDoc = await _svc.getSemCredits(branch);
@@ -301,7 +288,7 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
         for (final raw in (currSnap.data()?['courses'] ?? []) as List) {
           final code = (raw['code'] ?? '') as String;
           final name = (raw['name'] ?? '') as String;
-          final credit = ((raw['credit'] ?? 0) as num).toDouble();
+          final credit = ((raw['credits'] ?? 0) as num).toDouble();
           final saved = savedGrades[code];
           double obt;
           String grade;
@@ -525,10 +512,13 @@ class _GradeCalculatorScreenState extends State<GradeCalculatorScreen> {
             bottom: false,
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: _yellow))
-                : CustomRefresher( // WRAPPED HERE
+                : CustomRefresher(
+                    // WRAPPED HERE
                     onRefresh: _fetchAcademicData,
                     child: CustomScrollView(
-                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), // UPDATED PHYSICS HERE
+                      physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
+                      ), // UPDATED PHYSICS HERE
                       slivers: [
                         SliverToBoxAdapter(child: _buildHeader()),
                         SliverToBoxAdapter(child: _statsRow()),
@@ -1203,42 +1193,42 @@ class _WeightageDialogState extends State<_WeightageDialog> {
           'theory_weight': 70.0,
           'lab_weight': 30.0,
           'theory': [
-            {'name': 'Quiz 1', 'weight': 10.0, 'total': 10.0, 'obtained': 0.0},
-            {'name': 'Midsem', 'weight': 30.0, 'total': 30.0, 'obtained': 0.0},
-            {'name': 'Quiz 2', 'weight': 10.0, 'total': 10.0, 'obtained': 0.0},
-            {'name': 'Endsem', 'weight': 50.0, 'total': 50.0, 'obtained': 0.0},
+            {'name': 'Quiz 1', 'weight': 10.0, 'total': 10.0, 'obtained': 10.0},
+            {'name': 'Midsem', 'weight': 30.0, 'total': 30.0, 'obtained': 30.0},
+            {'name': 'Quiz 2', 'weight': 10.0, 'total': 10.0, 'obtained': 10.0},
+            {'name': 'Endsem', 'weight': 50.0, 'total': 50.0, 'obtained': 50.0},
             {
               'name': 'Assignment',
               'weight': 0.0,
               'total': 10.0,
-              'obtained': 0.0,
+              'obtained': 1.0,
             },
-            {'name': 'Project', 'weight': 0.0, 'total': 10.0, 'obtained': 0.0},
+            {'name': 'Project', 'weight': 0.0, 'total': 10.0, 'obtained': 1.0},
           ],
           'lab': [
             {
               'name': 'Regular Labs',
               'weight': 50.0,
               'total': 50.0,
-              'obtained': 0.0,
+              'obtained': 50.0,
             },
             {
               'name': 'Midsem Lab',
               'weight': 20.0,
               'total': 20.0,
-              'obtained': 0.0,
+              'obtained': 20.0,
             },
             {
               'name': 'Endsem Lab',
               'weight': 30.0,
               'total': 30.0,
-              'obtained': 0.0,
+              'obtained': 30.0,
             },
             {
               'name': 'Lab Project',
               'weight': 0.0,
               'total': 10.0,
-              'obtained': 0.0,
+              'obtained': 10.0,
             },
           ],
         };

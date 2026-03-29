@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dashboard_screen.dart';
 import '../widgets/custom_refresher.dart';
+import '../Services/firebase_service.dart';
 
 class TimetableScreen extends StatefulWidget {
   const TimetableScreen({super.key});
@@ -357,15 +358,9 @@ class _TimetableScreenState extends State<TimetableScreen> {
     if (!userDoc.exists) return;
 
     final String branch = userDoc.data()?['branch'] ?? "CSE";
-    final String rollNo = userDoc.data()?['rollNo'] ?? "2401cs80";
-    final int startYear = 2000 + (int.tryParse(rollNo.substring(0, 2)) ?? 24);
-    final int duration =
-        (rollNo.length >= 4 &&
-            (rollNo.substring(2, 4) == '02' || rollNo.substring(2, 4) == '03'))
-        ? 5
-        : 4;
-    final String batchId = "$startYear-${startYear + duration}";
-    final String timetableDocId = "${branch.toUpperCase()}_$batchId";
+    final String rollNo = userDoc.data()?['rollNo'] ?? "2401CS01";
+    final int semester = FirebaseService.semesterFromRollNo(rollNo);
+    final String timetableDocId = "${branch.trim().toUpperCase()}_Sem$semester";
 
     final timetableDoc = await _getCached(
       db.collection('timetables').doc(timetableDocId),
@@ -642,7 +637,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
               ),
             ],
           ),
-          // const TopActionButtons(), // Assumes you have this widget elsewhere
+          const TopActionButtons(), // Assumes you have this widget elsewhere
         ],
       ),
     );
