@@ -42,7 +42,7 @@
       { "code": "CS2203", "name": "Artificial Intelligence", "credits": 4.5 },
       { "code": "CS2204", "name": "IT Workshop", "credits": 3.0 },
       { "code": "CS2205", "name": "Computer Architecture", "credits": 4.5 },
-      { "code": "CS2209", "name": "Inter-Departmental Elective I (Introduction to Data Science)", "credits": 3.0 }
+      { "code": "CS2209", "name": "Inter-Departmental Elective I", "credits": 3.0 }
     ]
   },
   "CSE_Sem5": {

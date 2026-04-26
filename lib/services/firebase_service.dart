@@ -1,15 +1,15 @@
 // ── COLLECTION OVERVIEW ──────────────────────────────────────
-//   students/{uid}                          main student doc
-//   students/{uid}/pastSemesters/{sem}      one doc per finished semester
-//   students/{uid}/smart_reminders/{id}     unified reminder mirror
-//   students/{uid}/library/{id}             library books
-//   students/{uid}/planner/{id}             planner tasks
-//   students/{uid}/focus_stats/summary      Pomodoro stats
-//   students/{uid}/meta/{admin_prefs}       dismissed broadcast reminders
-//   admin_reminders/{id}                    broadcast to all users
-//   timetables/{branch_batch}               weekly schedule
-//   curriculum/{branch_semN}                course list per semester
-//   sem_credits/{branch}                    credits per semester (flat: "Semester 1": 22)
+//   students/{uid}                             main student doc
+//   students/{uid}/pastSemesters/{sem}         one doc per finished semester
+//   students/{uid}/smart_reminders/{id}        unified reminder mirror
+//   students/{uid}/library/{id}                library books
+//   students/{uid}/planner/{id}                planner tasks
+//   students/{uid}/focus_stats/summary         Pomodoro stats
+//   students/{uid}/meta/{admin_prefs}          dismissed broadcast reminders
+//   admin_reminders/{id}                       broadcast to all users
+//   timetables/{branch_batch}                  weekly schedule
+//   curriculum/{branch_semN}                   course list per semester
+//   sem_credits/{branch}                       credits per semester (flat: "Semester 1": 22)
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -71,37 +71,33 @@ class FirebaseService {
   DocumentReference<Map<String, dynamic>> _dismissedCol(String uid) =>
       _studentDoc(uid).collection('meta').doc('admin_prefs');
 
-  // ── smart_reminders subcollection ────────────────────────────
-  // Schema of each document:
-  //   id          — planner task id  OR  'lib_{bookId}'
-  //   source      — 'planner' | 'library'
-  //   title       — display title
-  //   dateTime    — Timestamp (task due / book due)
-  //   description — optional String
-  //   isRead      — bool  (toggled by left-swipe in SmartReminderScreen)
-  //   createdAt   — server timestamp  (used for Today / This Week / Earlier grouping)
-  //
-  // Lifecycle:
-  //   • Created/updated when a planner task with isSmartReminder=true is saved,
-  //     or when a library book is added.
-  //   • Deleting a task or returning a book does NOT touch this collection.
-  //   • Only SmartReminderScreen's right-swipe deletes the document.
   CollectionReference<Map<String, dynamic>> _smartRemindersCol(String uid) =>
       _studentDoc(uid).collection('smart_reminders');
 
-  // ── Server-first fetch helper ─────────────────────────────────
+  // 🟢 UPDATED: Cache-First Fetch Helper
+  // Eliminates the 15-second block by serving cache instantly, then syncing in background.
   Future<DocumentSnapshot<Map<String, dynamic>>> _fetchDoc(
       DocumentReference<Map<String, dynamic>> ref) async {
     try {
-      return await ref.get(const GetOptions(source: Source.server));
-    } catch (_) {
-      return ref.get(const GetOptions(source: Source.cache));
-    }
+      final cachedDoc = await ref.get(const GetOptions(source: Source.cache));
+      if (cachedDoc.exists) {
+        // Silently update cache from server in the background
+        ref.get(const GetOptions(source: Source.server));
+        return cachedDoc;
+      }
+    } catch (_) {}
+    
+    // Fallback: If cache is empty, wait for server
+    return await ref.get(const GetOptions(source: Source.server));
   }
 
   // ─────────────────────────────────────────────────────────────
   // STUDENT DOCUMENT
   // ─────────────────────────────────────────────────────────────
+
+  // 🟢 UPDATED: Added Stream for Student Doc (Use this with StreamBuilder in your UI!)
+  Stream<DocumentSnapshot<Map<String, dynamic>>> studentDocStream(String uid) =>
+      _studentDoc(uid).snapshots();
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getStudentDoc(
       String uid) async {
@@ -140,8 +136,15 @@ class FirebaseService {
 
       for (int sem = 1; sem < currentSem; sem++) {
         try {
-          final existing = await _pastSemDoc(uid, sem)
-              .get(const GetOptions(source: Source.server));
+          // 🟢 UPDATED: Cache-First check during initialization loop to speed it up
+          var existing = await _pastSemDoc(uid, sem)
+              .get(const GetOptions(source: Source.cache));
+              
+          if (!existing.exists) {
+            existing = await _pastSemDoc(uid, sem)
+                .get(const GetOptions(source: Source.server));
+          }
+
           if (existing.exists) {
             final d = existing.data()!;
             final existSpi = ((d['spi'] ?? 8.0) as num).toDouble();
@@ -235,22 +238,30 @@ class FirebaseService {
   // PAST SEMESTERS SUBCOLLECTION
   // ─────────────────────────────────────────────────────────────
 
+  // 🟢 UPDATED: Explicit Cache-First implementation for Past Semesters
   Future<List<Map<String, dynamic>>> getPastSemesters(String uid) async {
+    try {
+      // Try Cache First
+      final snap = await _pastSemsCol(uid)
+          .orderBy('semester')
+          .get(const GetOptions(source: Source.cache));
+          
+      if (snap.docs.isNotEmpty) {
+        // Background sync
+        _pastSemsCol(uid).orderBy('semester').get(const GetOptions(source: Source.server));
+        return snap.docs.map((d) => d.data()).toList();
+      }
+    } catch (_) {}
+
+    // Fallback to Server
     try {
       final snap = await _pastSemsCol(uid)
           .orderBy('semester')
-          .get(const GetOptions(source: Source.serverAndCache));
+          .get(const GetOptions(source: Source.server));
       return snap.docs.map((d) => d.data()).toList();
-    } catch (_) {
-      try {
-        final snap = await _pastSemsCol(uid)
-            .orderBy('semester')
-            .get(const GetOptions(source: Source.server));
-        return snap.docs.map((d) => d.data()).toList();
-      } catch (e) {
-        throw FirebaseServiceException(
-            'Failed to load past semesters: $e', code: 'past_sem_fetch');
-      }
+    } catch (e) {
+      throw FirebaseServiceException(
+          'Failed to load past semesters: $e', code: 'past_sem_fetch');
     }
   }
 
@@ -398,26 +409,27 @@ class FirebaseService {
   // TIMETABLE
   // ─────────────────────────────────────────────────────────────
 
+  // 🟢 UPDATED: Re-ordered to check Cache FIRST, then Server.
   Future<DocumentSnapshot<Map<String, dynamic>>?> getTimetableDoc({
     required String branch,
     required int semester,
   }) async {
     final id = '${branch.toUpperCase()}_Sem$semester';
+    final ref = _db.collection('timetables').doc(id);
+    
     try {
-      final doc = await _db
-          .collection('timetables')
-          .doc(id)
-          .get(const GetOptions(source: Source.server));
+      final doc = await ref.get(const GetOptions(source: Source.cache));
+      if (doc.exists) {
+        ref.get(const GetOptions(source: Source.server)); // Background sync
+        return doc;
+      }
+    } catch (_) {}
+    
+    try {
+      final doc = await ref.get(const GetOptions(source: Source.server));
       if (doc.exists) return doc;
-    } catch (_) {
-      try {
-        final doc = await _db
-            .collection('timetables')
-            .doc(id)
-            .get(const GetOptions(source: Source.cache));
-        if (doc.exists) return doc;
-      } catch (_) {}
-    }
+    } catch (_) {}
+    
     return null;
   }
 
@@ -440,10 +452,7 @@ class FirebaseService {
 
   Future<Map<String, dynamic>> getSemCredits(String branch) async {
     try {
-      final snap = await _db
-          .collection('sem_credits')
-          .doc(branch.toUpperCase())
-          .get(const GetOptions(source: Source.serverAndCache));
+      final snap = await _fetchDoc(_db.collection('sem_credits').doc(branch.toUpperCase()));
       return snap.data() ?? {};
     } catch (_) {
       return {};
@@ -528,42 +537,19 @@ class FirebaseService {
 
   // ─────────────────────────────────────────────────────────────
   // SMART REMINDERS subcollection
-  //
-  // Document id convention:
-  //   planner task  →  same as planner doc id
-  //   library book  →  'lib_{bookId}'
-  //
-  // Fields:
-  //   source      'planner' | 'library'
-  //   title       display title
-  //   dateTime    Timestamp — task due / book due date
-  //   description optional String (planner only)
-  //   isRead      bool — toggled by SmartReminderScreen left-swipe
-  //   createdAt   server timestamp — used for Today/This Week/Earlier grouping
-  //
-  // Rules:
-  //   • upsertPlannerReminder — called on task create/edit
-  //   • upsertLibraryReminder — called on book issue
-  //   • Deleting a task OR returning a book does NOT touch smart_reminders
-  //   • Only SmartReminderScreen right-swipe deletes the doc
   // ─────────────────────────────────────────────────────────────
 
-  /// Stream of all smart reminders ordered by creation time (newest first).
-  /// SmartReminderScreen uses this as its single source of truth.
   Stream<QuerySnapshot<Map<String, dynamic>>> smartRemindersStream(String uid) =>
       _smartRemindersCol(uid)
           .orderBy('createdAt', descending: true)
           .snapshots();
 
-  /// Unread count for the bell badge — reads from smart_reminders only.
   Stream<int> smartReminderUnreadCountStream(String uid) =>
       _smartRemindersCol(uid)
           .where('isRead', isEqualTo: false)
           .snapshots()
           .map((s) => s.size);
 
-  /// Upsert a smart reminder for a planner task.
-  /// Safe to call on every create/edit — preserves existing [isRead] state.
   Future<void> upsertPlannerReminder(
     String uid, {
     required String reminderId,
@@ -574,7 +560,6 @@ class FirebaseService {
     try {
       final ref = _smartRemindersCol(uid).doc(reminderId);
 
-      // Preserve read state if doc already exists
       bool existingIsRead = false;
       try {
         final existing = await ref.get(const GetOptions(source: Source.cache));
@@ -603,8 +588,6 @@ class FirebaseService {
     }
   }
 
-  /// Upsert a smart reminder for a library book.
-  /// Safe to call on every book issue — preserves existing [isRead] state.
   Future<void> upsertLibraryReminder(
     String uid, {
     required String bookId,
@@ -643,8 +626,6 @@ class FirebaseService {
     }
   }
 
-  /// Toggle read state on a smart reminder.
-  /// Called by SmartReminderScreen left-swipe.
   Future<void> toggleSmartReminderRead(
       String uid, String reminderId, bool isRead) async {
     try {
@@ -654,9 +635,6 @@ class FirebaseService {
     }
   }
 
-  /// Permanently delete a smart reminder.
-  /// Called by SmartReminderScreen right-swipe.
-  /// Does NOT touch the source planner task or library book.
   Future<void> deleteSmartReminder(String uid, String reminderId) async {
     try {
       await _smartRemindersCol(uid).doc(reminderId).delete();
@@ -692,7 +670,6 @@ class FirebaseService {
         'isDeleted': false,
       });
 
-      // Mirror to smart_reminders immediately on issue
       await upsertLibraryReminder(
         uid,
         bookId:    ref.id,
@@ -707,9 +684,6 @@ class FirebaseService {
     }
   }
 
-  /// Delete (return) a library book.
-  /// Does NOT touch smart_reminders — the notification persists until
-  /// the user dismisses it from SmartReminderScreen.
   Future<void> deleteLibraryBook(String uid, String bookId) async {
     try {
       await _libraryCol(uid).doc(bookId).delete();
@@ -874,7 +848,6 @@ class FirebaseService {
       data['isReminderDeleted'] = false;
       final ref = await _plannerCol(uid).add(data);
 
-      // Mirror to smart_reminders if isSmartReminder is true
       if (data['isSmartReminder'] == true) {
         final dt = (data['dateTime'] as Timestamp).toDate();
         await upsertPlannerReminder(
@@ -896,7 +869,6 @@ class FirebaseService {
     try {
       await _plannerCol(uid).doc(id).update(data);
 
-      // Keep the smart_reminder mirror in sync
       if (data['isSmartReminder'] == true) {
         final dtRaw = data['dateTime'];
         final dt = dtRaw is Timestamp ? dtRaw.toDate() : dtRaw as DateTime;
@@ -908,7 +880,6 @@ class FirebaseService {
           description: data['description'] as String?,
         );
       } else if (data.containsKey('isSmartReminder') && data['isSmartReminder'] == false) {
-        // User toggled Smart Reminder OFF — remove the mirrored doc
         await deleteSmartReminder(uid, id);
       }
     } catch (e) {
@@ -916,9 +887,6 @@ class FirebaseService {
     }
   }
 
-  /// Delete a planner task.
-  /// Does NOT touch smart_reminders — notification persists until
-  /// the user dismisses it from SmartReminderScreen.
   Future<void> deletePlannerTask(String uid, String id) async {
     try {
       await _plannerCol(uid).doc(id).delete();

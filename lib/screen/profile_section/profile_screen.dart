@@ -721,7 +721,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ── bug report (unchanged) ───────────────────────────────────
   Future<void> _openBugReportForm() async {
-    final uri = Uri.parse('https://forms.gle/YOUR_FORM_LINK_HERE');
+    final uri = Uri.parse('https://forms.gle/oG2AvLWnFsPaix288');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication) &&
         mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

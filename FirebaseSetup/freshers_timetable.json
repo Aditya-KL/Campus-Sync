@@ -1,0 +1,755 @@
+{
+    "G1": {
+    "Monday": [
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Tutorial)", "time": "02:00 PM - 02:55 PM", "room": "Block-9, Room 101" }
+    ],
+    "Tuesday": [
+        { "subject": "CH1201: Chemistry (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 101" },
+        { "subject": "CH1201: Chemistry", "time": "09:00 AM - 09:55 AM", "room": "LT103" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry", "time": "05:00 PM - 05:55 PM", "room": "LT103" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Lab)", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CH1201: Chemistry (Lab)", "time": "04:00 PM - 04:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 101" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ]
+    },
+    "G2": {
+    "Monday": [
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Tutorial)", "time": "02:00 PM - 02:55 PM", "room": "Block-9, Room 102" }
+    ],
+    "Tuesday": [
+        { "subject": "CH1201: Chemistry (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 102" },
+        { "subject": "CH1201: Chemistry", "time": "09:00 AM - 09:55 AM", "room": "LT103" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry", "time": "05:00 PM - 05:55 PM", "room": "LT103" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Lab)", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CH1201: Chemistry (Lab)", "time": "04:00 PM - 04:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 102" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ]
+    },
+    "G3": {
+    "Monday": [
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Tutorial)", "time": "02:00 PM - 02:55 PM", "room": "Block-9, Room 103" }
+    ],
+    "Tuesday": [
+        { "subject": "CH1201: Chemistry (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 103" },
+        { "subject": "CH1201: Chemistry", "time": "09:00 AM - 09:55 AM", "room": "LT103" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry", "time": "05:00 PM - 05:55 PM", "room": "LT103" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Lab)", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "ME1201: Mechanical Fabrication (Lab)", "time": "04:00 PM - 04:55 PM", "room": "Mechanical Dept Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 103" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ]
+    },
+    "G4": {
+    "Monday": [
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Tutorial)", "time": "02:00 PM - 02:55 PM", "room": "Block-9, Room 104" }
+    ],
+    "Tuesday": [
+        { "subject": "CH1201: Chemistry (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 104" },
+        { "subject": "CH1201: Chemistry", "time": "09:00 AM - 09:55 AM", "room": "LT103" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Lab)", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "ME1201: Mechanical Fabrication (Lab)", "time": "04:00 PM - 04:55 PM", "room": "Mechanical Dept Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 104" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ]
+    },
+    "G5": {
+    "Monday": [
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Tutorial)", "time": "02:00 PM - 02:55 PM", "room": "Block-9, Room 105" }
+    ],
+    "Tuesday": [
+        { "subject": "CH1201: Chemistry (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 105" },
+        { "subject": "CH1201: Chemistry", "time": "09:00 AM - 09:55 AM", "room": "LT103" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Lab)", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "ME1201: Mechanical Fabrication (Lab)", "time": "04:00 PM - 04:55 PM", "room": "Mechanical Dept Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 105" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ]
+    },
+    "G6": {
+    "Monday": [
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Tutorial)", "time": "02:00 PM - 02:55 PM", "room": "Block-9, Room 106" }
+    ],
+    "Tuesday": [
+        { "subject": "CH1201: Chemistry (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 106" },
+        { "subject": "CH1201: Chemistry", "time": "09:00 AM - 09:55 AM", "room": "LT103" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry", "time": "05:00 PM - 05:55 PM", "room": "LT103" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Lab)", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CH1201: Chemistry (Lab)", "time": "04:00 PM - 04:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 106" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ]
+    },
+    "G7": {
+    "Monday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Tutorial)", "time": "02:00 PM - 02:55 PM", "room": "Block-9, Room 107" }
+    ],
+    "Tuesday": [
+        { "subject": "PH1201: Physics (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 107" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry", "time": "04:00 PM - 04:55 PM", "room": "LT103" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1201: Mechanical Fabrication (Lab)", "time": "02:00 PM - 04:55 PM", "room": "Mechanical Dept Lab" },
+        { "subject": "CH1201: Chemistry", "time": "04:00 PM - 04:55 PM", "room": "LT103" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 107" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CH1201: Chemistry", "time": "05:00 PM - 05:55 PM", "room": "LT103" }
+    ]
+    },
+    "G8": {
+    "Monday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics (Tutorial)", "time": "02:00 PM - 02:55 PM", "room": "Block-9, Room 108" }
+    ],
+    "Tuesday": [
+        { "subject": "PH1201: Physics (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 108" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry", "time": "04:00 PM - 04:55 PM", "room": "LT103" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "CH1201: Chemistry", "time": "04:00 PM - 04:55 PM", "room": "LT103" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 108" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CH1201: Chemistry", "time": "05:00 PM - 05:55 PM", "room": "LT103" }
+    ]
+    },
+    "G9": {
+    "Monday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "PH1201: Physics (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 109" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 109" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G10": {
+    "Monday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "PH1201: Physics (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 110" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1201: Mechanical Fabrication (Lab)", "time": "04:00 PM - 05:55 PM", "room": "Mechanical Dept Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 110" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G11": {
+    "Monday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "PH1201: Physics (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 205" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1201: Mechanical Fabrication (Lab)", "time": "04:00 PM - 05:55 PM", "room": "Mechanical Dept Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 205" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G12": {
+    "Monday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "PH1201: Physics (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 301" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "09:00 AM - 09:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "IK1201: Indian Knowledge System (IKS)", "time": "08:00 AM - 08:55 AM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1201: Mechanical Fabrication (Lab)", "time": "04:00 PM - 05:55 PM", "room": "Mechanical Dept Lab" }
+    ],
+    "Friday": [
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations (Tutorial)", "time": "08:00 AM - 08:55 AM", "room": "Block-9, Room 301" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "10:00 AM - 10:55 AM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT003" },
+        { "subject": "ME1202: Engineering Mechanics", "time": "12:00 PM - 12:55 PM", "room": "LT103" }
+    ]
+    },
+    "G13": {
+    "Monday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "11:00 AM - 11:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" }
+    ],
+    "Wednesday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" },
+        { "subject": "PH1201: Physics (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" }
+    ]
+    },
+    "G14": {
+    "Monday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "11:00 AM - 11:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Wednesday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" },
+        { "subject": "PH1201: Physics (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" }
+    ]
+    },
+    "G15": {
+    "Monday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "11:00 AM - 11:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" }
+    ],
+    "Wednesday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" },
+        { "subject": "PH1201: Physics (Lab)", "time": "03:00 PM - 06:00 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" }
+    ],
+    "Friday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" }
+    ]
+    },
+    "G16": {
+    "Monday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "11:00 AM - 11:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" }
+    ],
+    "Wednesday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" },
+        { "subject": "PH1201: Physics (Lab)", "time": "03:00 PM - 06:00 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" }
+    ],
+    "Friday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" }
+    ]
+    },
+    "G17": {
+    "Monday": [
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G18": {
+    "Monday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "PH1201: Physics (Lab)", "time": "03:00 PM - 06:00 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "PH1201: Physics", "time": "10:00 AM - 10:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G19": {
+    "Monday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" }
+    ],
+    "Thursday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" }
+    ],
+    "Friday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G20": {
+    "Monday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Friday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G21": {
+    "Monday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" }
+    ],
+    "Thursday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "05:00 PM - 05:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G22": {
+    "Monday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "EE1201: Electrical Sciences (Lab)", "time": "02:00 PM - 02:55 PM", "room": "EE Dept Lab" }
+    ],
+    "Thursday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Friday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G23": {
+    "Monday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "PH1201: Physics (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "PH1201: Physics (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "05:00 PM - 05:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    },
+    "G24": {
+    "Monday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ],
+    "Tuesday": [
+        { "subject": "CE1201: Engineering Graphics (Lab)", "time": "08:00 AM - 08:55 AM", "room": "Lab" },
+        { "subject": "EE1201: Electrical Sciences", "time": "11:00 AM - 11:55 AM", "room": "LT103" },
+        { "subject": "PH1201: Physics (Lab)", "time": "02:00 PM - 02:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" },
+        { "subject": "CS1201: Data Structure", "time": "05:00 PM - 05:55 PM", "room": "LT003" }
+    ],
+    "Wednesday": [
+        { "subject": "EE1201: Electrical Sciences", "time": "12:00 PM - 12:55 PM", "room": "LT003" }
+    ],
+    "Thursday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "LT003" },
+        { "subject": "PH1201: Physics (Lab)", "time": "03:00 PM - 03:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure (Lab)", "time": "05:00 PM - 05:55 PM", "room": "Lab" }
+    ],
+    "Friday": [
+        { "subject": "PH1201: Physics", "time": "12:00 PM - 12:55 PM", "room": "Lab" },
+        { "subject": "CS1201: Data Structure", "time": "03:00 PM - 03:55 PM", "room": "LT003" },
+        { "subject": "MA1201: Probability Theory and Ordinary Differential Equations", "time": "04:00 PM - 04:55 PM", "room": "LT003" }
+    ]
+    }
+}

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "914348006913",
+    "firebase_url": "https://campus-sync-b4cff-default-rtdb.firebaseio.com",
     "project_id": "campus-sync-b4cff",
     "storage_bucket": "campus-sync-b4cff.firebasestorage.app"
   },
